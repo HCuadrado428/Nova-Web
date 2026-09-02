@@ -11,21 +11,31 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
+  <!--
+    LOGO / FAVICON:
+    Guarda la imagen del logo (la variante azul/verde glitch) como images/logo.webp
+    en la carpeta del proyecto. Se usa tanto en el header y footer como de favicon.
+  -->
+  <link rel="icon" href="images/logo.webp" type="image/webp">
+
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
+  <!-- Capas de ambientación: grano/estática y líneas de escaneo tipo VHS, fijas sobre toda la página -->
+  <div class="noise-overlay" aria-hidden="true"></div>
+  <div class="scanline-overlay" aria-hidden="true"></div>
 
   <!-- ==================== HEADER / NAV ==================== -->
   <header class="site-header" id="top">
     <div class="header-inner">
       <a href="#top" class="logo">
-        <span class="logo-mark">◆</span>
-        <span class="logo-text">NOVA<span class="logo-accent">2</span></span>
+        <!-- LOGO: sustituye por tu archivo real en images/logo.webp si cambias de versión -->
+        <img class="logo-img" src="images/logo.webp" alt="NOVA 2 SMP">
       </a>
 
       <nav class="main-nav" id="main-nav">
         <ul class="nav-links">
-          <li><a href="#estado">Estado</a></li>
           <li><a href="#noticias">Noticias</a></li>
           <li><a href="#reglas">Reglas</a></li>
           <li><a href="#galeria">Galería</a></li>
@@ -71,12 +81,13 @@
       del servidor, por ejemplo: background-image: url('images/hero-bg.jpg');
     -->
     <div class="hero-overlay"></div>
+    <div class="hero-glitch-bar" aria-hidden="true"></div>
     <div class="hero-content reveal">
       <p class="hero-kicker">Temporada II del SMP de rol</p>
-      <h1 class="hero-title">NOVA 2</h1>
+      <h1 class="hero-title glitch" data-text="NOVA 2">NOVA 2</h1>
       <p class="hero-subtitle">Segunda temporada del SMP modeado de rol. Nuevas tierras, nueva historia, las mismas leyendas.</p>
       <div class="hero-actions">
-        <a href="#estado" class="btn btn-primary btn-lg">Ver estado del server</a>
+        <a href="#noticias" class="btn btn-primary btn-lg">Ver noticias</a>
         <a href="#lore" class="btn btn-outline btn-lg">Descubrir el lore</a>
       </div>
       <p class="hero-daycount" id="day-counter"></p>
@@ -84,36 +95,10 @@
     <div class="scroll-indicator" aria-hidden="true">▼</div>
   </section>
 
-  <!-- ==================== ESTADO DEL SERVIDOR ==================== -->
-  <section class="section" id="estado">
-    <div class="container reveal">
-      <h2 class="section-title"><span class="title-mark">01</span> Estado del Servidor</h2>
-
-      <div class="status-card">
-        <div class="status-row">
-          <div class="status-indicator">
-            <span class="status-dot" id="status-dot"></span>
-            <span id="status-text">Comprobando…</span>
-          </div>
-          <div class="status-players">
-            <span class="players-icon">👥</span>
-            <span id="player-count">—</span> jugadores conectados
-          </div>
-        </div>
-
-        <div class="status-ip">
-          <span class="ip-label">IP del servidor</span>
-          <code class="ip-value" id="server-ip">play.nova2.net</code>
-          <button class="btn btn-small" id="copy-ip-btn">Copiar IP</button>
-        </div>
-      </div>
-    </div>
-  </section>
-
   <!-- ==================== NOTICIAS ==================== -->
-  <section class="section section-alt" id="noticias">
+  <section class="section" id="noticias">
     <div class="container reveal">
-      <h2 class="section-title"><span class="title-mark">02</span> Noticias</h2>
+      <h2 class="section-title"><span class="title-mark">01</span> Noticias</h2>
       <p class="section-lead">Últimas novedades del mundo de NOVA 2.</p>
       <!-- Las tarjetas de noticias se generan dinámicamente desde el array `newsItems` en script.js -->
       <div class="news-grid" id="news-grid"></div>
@@ -121,9 +106,9 @@
   </section>
 
   <!-- ==================== REGLAS ==================== -->
-  <section class="section" id="reglas">
+  <section class="section section-alt" id="reglas">
     <div class="container reveal">
-      <h2 class="section-title"><span class="title-mark">03</span> Reglas del Servidor</h2>
+      <h2 class="section-title"><span class="title-mark">02</span> Reglas del Servidor</h2>
       <p class="section-lead">Para que la convivencia y el rol funcionen, todos seguimos estas normas.</p>
 
       <div class="rules-grid">
@@ -157,9 +142,9 @@
   </section>
 
   <!-- ==================== GALERÍA ==================== -->
-  <section class="section section-alt" id="galeria">
+  <section class="section" id="galeria">
     <div class="container reveal">
-      <h2 class="section-title"><span class="title-mark">04</span> Galería</h2>
+      <h2 class="section-title"><span class="title-mark">03</span> Galería</h2>
       <p class="section-lead">Capturas del mundo de NOVA 2.</p>
 
       <!--
@@ -193,9 +178,9 @@
   </section>
 
   <!-- ==================== LORE ==================== -->
-  <section class="section" id="lore">
+  <section class="section section-alt" id="lore">
     <div class="container reveal">
-      <h2 class="section-title"><span class="title-mark">05</span> La Historia de NOVA</h2>
+      <h2 class="section-title"><span class="title-mark">04</span> La Historia de NOVA</h2>
       <!--
         LORE:
         Sustituye el texto de ejemplo por la historia real de tu servidor.
@@ -210,9 +195,9 @@
   </section>
 
   <!-- ==================== CRÉDITOS ==================== -->
-  <section class="section section-alt" id="creditos">
+  <section class="section" id="creditos">
     <div class="container reveal">
-      <h2 class="section-title"><span class="title-mark">06</span> Créditos</h2>
+      <h2 class="section-title"><span class="title-mark">05</span> Créditos</h2>
       <p class="section-lead">El equipo detrás de NOVA 2.</p>
 
       <!--
@@ -248,8 +233,7 @@
   <footer class="site-footer">
     <div class="container footer-inner">
       <div class="footer-brand">
-        <span class="logo-mark">◆</span>
-        <span class="logo-text">NOVA<span class="logo-accent">2</span></span>
+        <img class="logo-img logo-img-small" src="images/logo.webp" alt="NOVA 2 SMP">
       </div>
       <p class="footer-copy">© <span id="current-year"></span> NOVA 2. Todos los derechos reservados. Servidor comunitario sin fines de lucro.</p>
       <a class="btn btn-ghost btn-small" href="https://discord.gg/PLACEHOLDER" target="_blank" rel="noopener">Unirse a Discord</a>

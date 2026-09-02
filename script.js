@@ -5,8 +5,6 @@
 document.addEventListener('DOMContentLoaded', () => {
   initNav();
   initNews();
-  initServerStatus();
-  initCopyIp();
   initGallery();
   initDayCounter();
   initScrollReveal();
@@ -43,26 +41,18 @@ function initNav() {
    No hace falta tocar el HTML.
 --------------------------------------------------- */
 const newsItems = [
-  {
-    title: '¡Arranca NOVA 2!',
-    date: '01 Sep 2026',
-    excerpt: 'La segunda temporada del SMP ya está en marcha. Nuevo mundo, nuevos mods y una historia por escribir entre todos.',
-  },
-  {
-    title: 'Nueva zona de rol: el Bosque Susurrante',
-    date: '15 Sep 2026',
-    excerpt: 'Se ha habilitado una nueva región para eventos de rol, con misiones y NPCs preparados por el equipo de builders.',
-  },
-  {
-    title: 'Actualización de reglas de construcción',
-    date: '28 Sep 2026',
-    excerpt: 'Revisamos las normas de construcción para mantener la coherencia visual de cada región. Consulta la sección de Reglas.',
-  },
+  // Añade aquí tus noticias como objetos { title, date, excerpt }, por ejemplo:
+  // { title: '¡Arranca NOVA 2!', date: '01 Sep 2026', excerpt: 'La segunda temporada ya está en marcha.' },
 ];
 
 function initNews() {
   const grid = document.getElementById('news-grid');
   if (!grid) return;
+
+  if (newsItems.length === 0) {
+    grid.innerHTML = '<p class="news-empty">Aún no hay noticias.</p>';
+    return;
+  }
 
   grid.innerHTML = newsItems
     .map(
@@ -75,61 +65,6 @@ function initNews() {
     `
     )
     .join('');
-}
-
-/* ---------------------------------------------------
-   Estado del servidor
-   Por ahora está SIMULADO. Para conectarlo a datos reales:
-   1) Usa la API pública de mcsrvstat.us, por ejemplo:
-        fetch('https://api.mcsrvstat.us/3/play.nova2.net')
-          .then((res) => res.json())
-          .then((data) => {
-            // data.online -> boolean
-            // data.players.online -> número de jugadores conectados
-          });
-   2) Sustituye la IP 'play.nova2.net' de abajo (y en el HTML) por la IP real.
-   3) Reemplaza la simulación de setTimeout por la llamada fetch de arriba.
---------------------------------------------------- */
-function initServerStatus() {
-  const dot = document.getElementById('status-dot');
-  const text = document.getElementById('status-text');
-  const players = document.getElementById('player-count');
-  if (!dot || !text || !players) return;
-
-  // Simulación: tras un breve "chequeo", mostramos el server como online.
-  setTimeout(() => {
-    const isOnline = true; // <- cambia esto para probar el estado offline
-    dot.classList.add(isOnline ? 'online' : 'offline');
-    text.textContent = isOnline ? 'Servidor online' : 'Servidor offline';
-    players.textContent = isOnline ? Math.floor(Math.random() * 12) + 3 : 0;
-  }, 900);
-}
-
-/* ---------------------------------------------------
-   Botón "Copiar IP"
---------------------------------------------------- */
-function initCopyIp() {
-  const btn = document.getElementById('copy-ip-btn');
-  const ipEl = document.getElementById('server-ip');
-  if (!btn || !ipEl) return;
-
-  btn.addEventListener('click', async () => {
-    const ip = ipEl.textContent.trim();
-    try {
-      await navigator.clipboard.writeText(ip);
-    } catch (err) {
-      // Fallback para navegadores sin soporte de Clipboard API
-      const helper = document.createElement('textarea');
-      helper.value = ip;
-      document.body.appendChild(helper);
-      helper.select();
-      document.execCommand('copy');
-      document.body.removeChild(helper);
-    }
-    const original = btn.textContent;
-    btn.textContent = '¡Copiado!';
-    setTimeout(() => { btn.textContent = original; }, 1600);
-  });
 }
 
 /* ---------------------------------------------------
@@ -165,18 +100,36 @@ function initGallery() {
 }
 
 /* ---------------------------------------------------
-   Contador de días desde que empezó NOVA 2
-   Cambia START_DATE por la fecha real de inicio de la temporada.
+   Cuenta regresiva hasta el lanzamiento de NOVA 2
+   Cambia START_DATE por la fecha/hora real de inicio de la temporada.
+   Mientras falte, se actualiza en tiempo real (cada segundo). En cuanto
+   se cumpla, cambia automáticamente a contar los días ya transcurridos.
 --------------------------------------------------- */
 function initDayCounter() {
   const el = document.getElementById('day-counter');
   if (!el) return;
 
-  const START_DATE = new Date('2026-09-01T00:00:00');
-  const now = new Date();
-  const diffDays = Math.max(0, Math.floor((now - START_DATE) / (1000 * 60 * 60 * 24)));
+  const START_DATE = new Date('2026-09-06T22:00:00');
+  const pad = (n) => String(n).padStart(2, '0');
 
-  el.textContent = `Día ${diffDays} desde que empezó NOVA 2`;
+  const tick = () => {
+    const diff = START_DATE - new Date();
+
+    if (diff > 0) {
+      const totalSeconds = Math.floor(diff / 1000);
+      const days = Math.floor(totalSeconds / 86400);
+      const hours = Math.floor((totalSeconds % 86400) / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+      el.textContent = `Faltan ${days}d ${pad(hours)}h ${pad(minutes)}m ${pad(seconds)}s para el lanzamiento de NOVA 2`;
+    } else {
+      const elapsedDays = Math.floor(-diff / 86400000);
+      el.textContent = `Día ${elapsedDays} desde que empezó NOVA 2`;
+    }
+  };
+
+  tick();
+  setInterval(tick, 1000);
 }
 
 /* ---------------------------------------------------
