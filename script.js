@@ -204,7 +204,10 @@ function initDayCounter() {
   const el = document.getElementById('day-counter');
   if (!el) return;
 
-  const START_DATE = new Date('2026-09-06T22:00:00');
+  // 06/09/2026 22:00, hora de España peninsular (CEST, UTC+2 en esa fecha) = 20:00 UTC.
+  // Se fija como instante UTC para que la cuenta atrás sea igual para todo el mundo
+  // (Argentina, México, etc.), en vez de usar la zona horaria de cada visitante.
+  const START_DATE = new Date('2026-09-06T20:00:00Z');
   const pad = (n) => String(n).padStart(2, '0');
   let currentText = '';
 
