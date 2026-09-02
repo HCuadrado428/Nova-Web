@@ -14,7 +14,7 @@
   <!--
     LOGO / FAVICON:
     Guarda la imagen del logo (la variante azul/verde glitch) como images/logo.webp
-    en la carpeta del proyecto. Se usa tanto en el header y footer como de favicon.
+    en la carpeta del proyecto.
   -->
   <link rel="icon" href="images/logo.webp" type="image/webp">
 
@@ -26,23 +26,34 @@
   <div class="noise-overlay" aria-hidden="true"></div>
   <div class="scanline-overlay" aria-hidden="true"></div>
 
-  <!-- ==================== HEADER / NAV ==================== -->
-  <header class="site-header" id="top">
-    <div class="header-inner">
-      <a href="#top" class="logo">
-        <!-- LOGO: sustituye por tu archivo real en images/logo.webp si cambias de versión -->
-        <img class="logo-img" src="images/logo.webp" alt="NOVA 2 SMP">
-      </a>
+  <!-- Filtro SVG para la aberración cromática de los picos de estática ambiente -->
+  <svg class="glitch-filter-defs" aria-hidden="true" focusable="false">
+    <filter id="chromatic-split" x="-20%" y="-20%" width="140%" height="140%">
+      <feColorMatrix type="matrix" values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" result="red"/>
+      <feOffset in="red" dx="-5" dy="0" result="red"/>
+      <feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 1 0" result="cyan"/>
+      <feOffset in="cyan" dx="5" dy="0" result="cyan"/>
+      <feBlend in="red" in2="cyan" mode="screen"/>
+    </filter>
+  </svg>
 
-      <nav class="main-nav" id="main-nav">
-        <ul class="nav-links">
-          <li><a href="#noticias">Noticias</a></li>
-          <li><a href="#reglas">Reglas</a></li>
-          <li><a href="#galeria">Galería</a></li>
-          <li><a href="#lore">Lore</a></li>
-          <li><a href="#creditos">Créditos</a></li>
-        </ul>
-        <div class="nav-actions">
+  <!-- ==================== INTRO ==================== -->
+  <section class="intro-hero" id="top">
+    <div class="intro-hero-inner">
+      <div class="intro-static" aria-hidden="true"></div>
+      <div class="intro-glitch-bars" aria-hidden="true"></div>
+
+      <!-- Texto de sintonización tipo terminal, parpadea antes de que se asiente el título -->
+      <div class="boot-log" aria-hidden="true">
+        <span class="boot-line boot-line-1">SEÑAL PERDIDA...</span>
+        <span class="boot-line boot-line-2">RECONECTANDO...</span>
+        <span class="boot-line boot-line-3">SINTONIZANDO...</span>
+        <span class="boot-line boot-line-4 boot-line-creepy" id="boot-line-4"></span>
+      </div>
+
+      <div class="intro-content">
+        <h1 class="intro-title glitch" data-text="NOVA 2">NOVA 2</h1>
+        <div class="intro-actions">
           <!--
             ENLACE DEL MODPACK:
             Sustituye el href de abajo por el enlace directo de descarga de tu .zip
@@ -50,204 +61,24 @@
             un Release de GitHub, etc.). Los enlaces de carpeta de Google Drive no siempre
             descargan directo, así que en cuanto tengas un link definitivo, reemplázalo aquí.
           -->
-          <a class="btn btn-primary" id="download-modpack"
+          <a class="btn btn-primary btn-lg" id="download-modpack"
              href="https://drive.google.com/drive/u/1/folders/1d6L9iJC7T4NUyx9x8YVAl2wPVo0LmIGE"
              target="_blank" rel="noopener">
             Descargar Modpack
           </a>
-          <!--
-            ENLACE DE DISCORD:
-            Sustituye la URL de abajo por tu invitación real de Discord.
-          -->
-          <a class="btn btn-ghost" id="discord-link"
-             href="https://discord.gg/PLACEHOLDER" target="_blank" rel="noopener">
-            Unirse a Discord
-          </a>
         </div>
-      </nav>
-
-      <button class="hamburger" id="hamburger" aria-label="Abrir menú" aria-expanded="false" aria-controls="main-nav">
-        <span></span><span></span><span></span>
-      </button>
-    </div>
-  </header>
-
-  <!-- ==================== HERO ==================== -->
-  <section class="hero">
-    <!--
-      FONDO DEL HERO:
-      La imagen de fondo se define en style.css en la regla ".hero".
-      Reemplaza el gradiente / la variable --hero-image por una captura real
-      del servidor, por ejemplo: background-image: url('images/hero-bg.jpg');
-    -->
-    <div class="hero-overlay"></div>
-    <div class="hero-glitch-bar" aria-hidden="true"></div>
-    <div class="hero-content reveal">
-      <p class="hero-kicker">Temporada II del SMP de rol</p>
-      <h1 class="hero-title glitch" data-text="NOVA 2">NOVA 2</h1>
-      <p class="hero-subtitle">Segunda temporada del SMP modeado de rol. Nuevas tierras, nueva historia, las mismas leyendas.</p>
-      <div class="hero-actions">
-        <a href="#noticias" class="btn btn-primary btn-lg">Ver noticias</a>
-        <a href="#lore" class="btn btn-outline btn-lg">Descubrir el lore</a>
+        <p class="intro-countdown" id="day-counter"></p>
       </div>
-      <p class="hero-daycount" id="day-counter"></p>
     </div>
-    <div class="scroll-indicator" aria-hidden="true">▼</div>
-  </section>
 
-  <!-- ==================== NOTICIAS ==================== -->
-  <section class="section" id="noticias">
-    <div class="container reveal">
-      <h2 class="section-title"><span class="title-mark">01</span> Noticias</h2>
-      <p class="section-lead">Últimas novedades del mundo de NOVA 2.</p>
-      <!-- Las tarjetas de noticias se generan dinámicamente desde el array `newsItems` en script.js -->
-      <div class="news-grid" id="news-grid"></div>
-    </div>
-  </section>
-
-  <!-- ==================== REGLAS ==================== -->
-  <section class="section section-alt" id="reglas">
-    <div class="container reveal">
-      <h2 class="section-title"><span class="title-mark">02</span> Reglas del Servidor</h2>
-      <p class="section-lead">Para que la convivencia y el rol funcionen, todos seguimos estas normas.</p>
-
-      <div class="rules-grid">
-        <div class="rules-card">
-          <h3 class="rules-category">Reglas generales</h3>
-          <ol class="rules-list">
-            <li>Respeta a todos los jugadores dentro y fuera del rol.</li>
-            <li>Prohibido el griefing, robo o PvP sin consentimiento fuera de zonas de guerra.</li>
-            <li>No se permite el uso de hacks, x-ray ni clientes modificados con ventaja injusta.</li>
-          </ol>
-        </div>
-
-        <div class="rules-card">
-          <h3 class="rules-category">Reglas de RP</h3>
-          <ol class="rules-list">
-            <li>Mantén el personaje (IC) dentro de las zonas de rol; usa el chat OOC para hablar fuera de personaje.</li>
-            <li>Ninguna facción o personaje puede ser todopoderoso: el "metagaming" y el "powergaming" están prohibidos.</li>
-            <li>Las guerras y conflictos de rol deben coordinarse con el staff antes de ejecutarse.</li>
-          </ol>
-        </div>
-
-        <div class="rules-card">
-          <h3 class="rules-category">Reglas de construcción</h3>
-          <ol class="rules-list">
-            <li>Respeta el estilo visual de tu región asignada; consulta a Build antes de construir fuera de ella.</li>
-            <li>No se permiten construcciones ofensivas, farms de lag ni granjas automáticas sin aprobación.</li>
-          </ol>
-        </div>
+    <!-- Pantalla de entrada: el boot (estática + glitches + sonido) no arranca hasta que se pulsa -->
+    <div class="enter-gate" id="enter-gate" role="button" tabindex="0" aria-label="Tocar para entrar">
+      <div class="enter-inner">
+        <p class="enter-text glitch" data-text="TOCA PARA ENTRAR">TOCA PARA ENTRAR</p>
+        <p class="enter-hint">Activa el sonido</p>
       </div>
     </div>
   </section>
-
-  <!-- ==================== GALERÍA ==================== -->
-  <section class="section" id="galeria">
-    <div class="container reveal">
-      <h2 class="section-title"><span class="title-mark">03</span> Galería</h2>
-      <p class="section-lead">Capturas del mundo de NOVA 2.</p>
-
-      <!--
-        GALERÍA DE IMÁGENES:
-        Cada ".gallery-item" es un placeholder. Para usar tus propias capturas:
-        1) Coloca tus imágenes en la carpeta /images/gallery/ (por ejemplo: images/gallery/01.jpg)
-        2) Dentro de cada .gallery-item, sustituye el <div class="gallery-placeholder">...</div>
-           por: <img src="images/gallery/01.jpg" alt="Descripción de la captura">
-      -->
-      <div class="gallery-grid" id="gallery-grid">
-        <button class="gallery-item" data-caption="Vista general del spawn de NOVA 2">
-          <div class="gallery-placeholder"><span>🖼️</span><p>images/gallery/01.jpg</p></div>
-        </button>
-        <button class="gallery-item" data-caption="Construcción destacada de la comunidad">
-          <div class="gallery-placeholder"><span>🖼️</span><p>images/gallery/02.jpg</p></div>
-        </button>
-        <button class="gallery-item" data-caption="Evento de rol en directo">
-          <div class="gallery-placeholder"><span>🖼️</span><p>images/gallery/03.jpg</p></div>
-        </button>
-        <button class="gallery-item" data-caption="Paisaje modeado del mundo">
-          <div class="gallery-placeholder"><span>🖼️</span><p>images/gallery/04.jpg</p></div>
-        </button>
-        <button class="gallery-item" data-caption="Base de una de las facciones">
-          <div class="gallery-placeholder"><span>🖼️</span><p>images/gallery/05.jpg</p></div>
-        </button>
-        <button class="gallery-item" data-caption="Atardecer sobre NOVA 2">
-          <div class="gallery-placeholder"><span>🖼️</span><p>images/gallery/06.jpg</p></div>
-        </button>
-      </div>
-    </div>
-  </section>
-
-  <!-- ==================== LORE ==================== -->
-  <section class="section section-alt" id="lore">
-    <div class="container reveal">
-      <h2 class="section-title"><span class="title-mark">04</span> La Historia de NOVA</h2>
-      <!--
-        LORE:
-        Sustituye el texto de ejemplo por la historia real de tu servidor.
-        Puedes añadir tantos <p> como necesites.
-      -->
-      <div class="lore-content">
-        <p>Tras la caída del primer asentamiento, los supervivientes de <strong>NOVA</strong> cruzaron el Vacío en busca de tierras nuevas. Lo que encontraron no fue un mundo vacío, sino uno despierto: bosques que recuerdan, montañas modeadas por fuerzas antiguas y ruinas que hablan de quienes vivieron aquí antes.</p>
-        <p>Así nació <strong>NOVA 2</strong>: una segunda oportunidad para construir un reino, una historia y una leyenda propias. Cada facción, cada aldea y cada jugador escribe un capítulo de esta crónica colectiva, donde el rol y la construcción se entrelazan tanto como la magia y la tecnología modeada.</p>
-        <p>El destino de este mundo aún no está escrito. Se decide en cada decisión, cada alianza y cada guerra que los propios jugadores eligen vivir.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- ==================== CRÉDITOS ==================== -->
-  <section class="section" id="creditos">
-    <div class="container reveal">
-      <h2 class="section-title"><span class="title-mark">05</span> Créditos</h2>
-      <p class="section-lead">El equipo detrás de NOVA 2.</p>
-
-      <!--
-        CRÉDITOS / STAFF:
-        Sustituye los nombres y roles de ejemplo por tu equipo real.
-      -->
-      <div class="credits-grid">
-        <div class="credit-card">
-          <div class="credit-avatar">👑</div>
-          <h3 class="credit-name">Steve_Owner</h3>
-          <p class="credit-role">Admin</p>
-        </div>
-        <div class="credit-card">
-          <div class="credit-avatar">🛠️</div>
-          <h3 class="credit-name">AlexBuilds</h3>
-          <p class="credit-role">Builder</p>
-        </div>
-        <div class="credit-card">
-          <div class="credit-avatar">🛡️</div>
-          <h3 class="credit-name">Nyx_Mod</h3>
-          <p class="credit-role">Moderador</p>
-        </div>
-        <div class="credit-card">
-          <div class="credit-avatar">⚙️</div>
-          <h3 class="credit-name">ForgeMaster</h3>
-          <p class="credit-role">Diseñador de mods</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ==================== FOOTER ==================== -->
-  <footer class="site-footer">
-    <div class="container footer-inner">
-      <div class="footer-brand">
-        <img class="logo-img logo-img-small" src="images/logo.webp" alt="NOVA 2 SMP">
-      </div>
-      <p class="footer-copy">© <span id="current-year"></span> NOVA 2. Todos los derechos reservados. Servidor comunitario sin fines de lucro.</p>
-      <a class="btn btn-ghost btn-small" href="https://discord.gg/PLACEHOLDER" target="_blank" rel="noopener">Unirse a Discord</a>
-    </div>
-  </footer>
-
-  <!-- ==================== LIGHTBOX (GALERÍA) ==================== -->
-  <div class="lightbox" id="lightbox" aria-hidden="true">
-    <button class="lightbox-close" id="lightbox-close" aria-label="Cerrar">✕</button>
-    <div class="lightbox-content">
-      <div class="lightbox-placeholder">🖼️</div>
-      <p class="lightbox-caption" id="lightbox-caption"></p>
-    </div>
-  </div>
 
   <script src="script.js"></script>
 </body>
