@@ -43,12 +43,26 @@
       <div class="intro-static" aria-hidden="true"></div>
       <div class="intro-glitch-bars" aria-hidden="true"></div>
 
+      <!--
+        Variante "imagen" de la línea 4: cuando toca en el sorteo, la foto ocupa
+        toda la pantalla como fondo y el texto sale grande encima, en vez de la
+        frase pequeña de .boot-log. Se rellena desde script.js (BOOT_LINE_4_IMAGES).
+      -->
+      <div class="boot-fullscreen-image" id="boot-fullscreen-image" aria-hidden="true">
+        <span class="boot-fullscreen-caption" id="boot-fullscreen-caption"></span>
+      </div>
+
       <!-- Texto de sintonización tipo terminal, parpadea antes de que se asiente el título -->
       <div class="boot-log" aria-hidden="true">
         <span class="boot-line boot-line-1">SEÑAL PERDIDA...</span>
         <span class="boot-line boot-line-2">RECONECTANDO...</span>
         <span class="boot-line boot-line-3">SINTONIZANDO...</span>
-        <span class="boot-line boot-line-4 boot-line-creepy" id="boot-line-4"></span>
+        <!--
+          LÍNEA 4 (aleatoria): a veces es una frase, a veces una imagen "creepy"
+          con un texto rojo debajo. Amplía BOOT_LINE_4_VARIANTS en script.js
+          para añadir más frases o más imágenes al mismo sorteo.
+        -->
+        <div class="boot-line boot-line-4 boot-line-creepy" id="boot-line-4"></div>
       </div>
 
       <div class="intro-content">

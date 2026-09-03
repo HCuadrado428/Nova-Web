@@ -384,6 +384,42 @@ body.booted .intro-hero-inner {
   100% { opacity: 0; }
 }
 
+/* Variante "imagen" de la línea 4: en vez de la frase pequeña, la foto ocupa
+   toda la pantalla como fondo y el texto sale grande encima, centrado. */
+.boot-fullscreen-image {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  pointer-events: none;
+}
+.boot-fullscreen-image.active {
+  animation: boot-fullscreen-flicker 0.7s steps(1) 1 both 1.5s;
+}
+@keyframes boot-fullscreen-flicker {
+  0%   { opacity: 0; }
+  8%   { opacity: 1; }
+  13%  { opacity: 0.15; }
+  18%  { opacity: 1; }
+  75%  { opacity: 1; }
+  88%  { opacity: 0; }
+  100% { opacity: 0; }
+}
+.boot-fullscreen-caption {
+  position: relative;
+  white-space: nowrap;
+  font-family: var(--font-display);
+  font-size: clamp(1.4rem, 6vw, 3.2rem);
+  letter-spacing: 3px;
+  color: var(--glitch-red);
+  text-shadow: 0 0 12px #000, 0 0 24px #000, 0 0 20px rgba(255, 46, 99, 0.8);
+}
+
 .intro-content {
   position: relative;
   z-index: 3;
@@ -498,6 +534,7 @@ body.booted .intro-hero-inner {
   .intro-content::after { display: none; }
   .enter-text { animation: none; opacity: 1; }
   .boot-log { display: none; }
+  .boot-fullscreen-image { display: none; }
   .intro-hero-inner { animation: none; }
   .btn-primary::after { display: none; }
 }

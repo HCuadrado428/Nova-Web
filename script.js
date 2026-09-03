@@ -22,15 +22,22 @@ const BOOT_LINE_4_PHRASES = [
   '⟒⌇⏁⟒ ⋏⍜ ⟒⌇ ⟒⌰ ⋔⎍⋏⎅⍜ ☌⎍⟒ ⍀⟒☊⎍⟒⍀⎅⍜',
   '⏃⌿⍜☊⏃⌰⟟⌿⌇⟟⌇ 1:3',
   '☊⍀⟒⟒⎅ ⊬ ⌿⟒⍀⟒☊⟒⎅',
-  '⟟ ⌇⟒⟒ ⊬⍜⎍',
   '☊⎍⏃⋏⏁⏃ ☌⟒⋏⏁⟒ ⊑⏃⏚⌰⏃ ⌿⍜⍀ ⏃☌⎍⟟?',
   '⊬⍜⎍ ⌰⍜⌇⏁ ⏁⊑⟒ ☌⏃⋔⟒',
   '⏁⟒⌇⏁⟟☊⎍⌰⏃⍀ ⏁⍜⍀⌇⟟⍜⋏',
 ];
 
+// Variante "imagen" de la línea 4: en vez de frase, aparece esta imagen con un
+// texto rojo debajo. Añade más objetos aquí para tener más imágenes en el sorteo
+// (guarda cada archivo en images/creepy/).
+const BOOT_LINE_4_IMAGES = [
+  { src: 'images/creepy/eyes-1.jpg', caption: '⟟ ⌇⟒⟒ ⊬⍜⎍' },
+];
+
 function initEnterGate() {
   const gate = document.getElementById('enter-gate');
   const bootLine4 = document.getElementById('boot-line-4');
+  const fullscreenImage = document.getElementById('boot-fullscreen-image');
   if (!gate) return;
 
   let entered = false;
@@ -39,8 +46,7 @@ function initEnterGate() {
     entered = true;
 
     if (bootLine4) {
-      const phrase = BOOT_LINE_4_PHRASES[Math.floor(Math.random() * BOOT_LINE_4_PHRASES.length)];
-      bootLine4.textContent = phrase;
+      setBootLine4Variant(bootLine4, fullscreenImage);
     }
 
     gate.classList.add('hidden');
@@ -64,6 +70,28 @@ function initEnterGate() {
     if (document.hidden) audioCtx.suspend();
     else audioCtx.resume();
   });
+}
+
+/* Sortea entre las frases (texto pequeño) y las imágenes creepy (foto a pantalla
+   completa con texto grande) para la línea 4, todas con el mismo peso. */
+function setBootLine4Variant(lineEl, fullscreenEl) {
+  const totalVariants = BOOT_LINE_4_PHRASES.length + BOOT_LINE_4_IMAGES.length;
+  const pick = Math.floor(Math.random() * totalVariants);
+
+  lineEl.textContent = '';
+
+  if (pick < BOOT_LINE_4_PHRASES.length) {
+    lineEl.textContent = BOOT_LINE_4_PHRASES[pick];
+    return;
+  }
+
+  if (!fullscreenEl) return;
+  const variant = BOOT_LINE_4_IMAGES[pick - BOOT_LINE_4_PHRASES.length];
+  const caption = fullscreenEl.querySelector('.boot-fullscreen-caption');
+
+  fullscreenEl.style.backgroundImage = `url("${variant.src}")`;
+  if (caption) caption.textContent = variant.caption;
+  fullscreenEl.classList.add('active');
 }
 
 /* ---------------------------------------------------
