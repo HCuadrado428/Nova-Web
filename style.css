@@ -133,13 +133,20 @@ a { color: inherit; text-decoration: none; }
 
 /* ---------- Intro / Hero: arranque con estática y glitches ---------- */
 .intro-hero {
-  position: relative;
-  min-height: 100vh;
+  position: fixed;
+  inset: 0;
   overflow: hidden;
   background:
     radial-gradient(ellipse at 20% 15%, rgba(55, 240, 224, 0.07), transparent 55%),
     radial-gradient(ellipse at 80% 85%, rgba(255, 46, 99, 0.07), transparent 55%),
     radial-gradient(ellipse at 50% 50%, #0c0c0c, #000 70%);
+}
+
+/* Al ir a Lore, se oculta con "visibility" (nunca "display") para que sus
+   animaciones no se reinicien al volver a mostrarla */
+body.view-lore .intro-hero {
+  visibility: hidden;
+  pointer-events: none;
 }
 
 /* Rejilla apenas visible para que se intuya algo detrás de la estática */
@@ -178,14 +185,15 @@ body:not(.booted) .intro-content::after {
   animation-play-state: paused;
 }
 
-/* La pestaña en segundo plano pausa toda la animación en curso (ahorro de batería/CPU) */
-body.tab-hidden .intro-static,
-body.tab-hidden .intro-glitch-bars::before,
-body.tab-hidden .intro-glitch-bars::after,
-body.tab-hidden .boot-line,
-body.tab-hidden .intro-content,
-body.tab-hidden .intro-content::after,
-body.tab-hidden .intro-hero-inner,
+/* La pestaña en segundo plano, o estar viendo Lore, pausa la animación en
+   curso del intro (ahorro de batería/CPU); al volver, sigue donde se quedó */
+:is(body.tab-hidden, body.view-lore) .intro-static,
+:is(body.tab-hidden, body.view-lore) .intro-glitch-bars::before,
+:is(body.tab-hidden, body.view-lore) .intro-glitch-bars::after,
+:is(body.tab-hidden, body.view-lore) .boot-line,
+:is(body.tab-hidden, body.view-lore) .intro-content,
+:is(body.tab-hidden, body.view-lore) .intro-content::after,
+:is(body.tab-hidden, body.view-lore) .intro-hero-inner,
 body.tab-hidden .enter-text {
   animation-play-state: paused;
 }
@@ -526,6 +534,337 @@ body.booted .intro-hero-inner {
   text-shadow: 0 0 10px rgba(255, 46, 99, 0.6);
 }
 
+/* ---------- Botón Lore / Volver ---------- */
+.lore-triggers {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.lore-btn,
+.lore-back-btn {
+  background: transparent;
+  border: 1px solid var(--glitch-cyan);
+  color: var(--glitch-cyan);
+  font-family: var(--font-display);
+  font-size: 0.65rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 9px 16px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+.lore-btn:hover,
+.lore-back-btn:hover {
+  background: rgba(55, 240, 224, 0.12);
+  color: #fff;
+}
+.lore-btn {
+  opacity: 0;
+  pointer-events: none;
+}
+body.booted .lore-btn {
+  pointer-events: auto;
+  animation: intro-reveal 1s ease 2.15s 1 both;
+}
+/* Se oculta con "visibility" mientras se ve Lore, no con display, para no
+   reiniciar la animación de aparición la próxima vez que vuelva a mostrarse */
+body.view-lore .lore-btn {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.lore-back-btn {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 6;
+  visibility: hidden;
+  pointer-events: none;
+}
+body.view-lore .lore-back-btn {
+  visibility: visible;
+  pointer-events: auto;
+}
+
+/* ---------- Transición de canal: estática de pantalla completa entre secciones ---------- */
+.channel-transition {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+.channel-transition.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+.channel-transition-static {
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  background-size: 140px 140px;
+}
+.channel-transition.active .channel-transition-static {
+  animation: intro-static-jitter 0.15s steps(1) infinite, channel-static-pulse 1.4s steps(2, end) infinite;
+}
+@keyframes channel-static-pulse {
+  0%, 100% { opacity: 0.9; }
+  50% { opacity: 0.6; }
+}
+.channel-transition-text {
+  position: relative;
+  z-index: 1;
+  font-family: var(--font-display);
+  font-size: clamp(0.85rem, 3vw, 1.25rem);
+  letter-spacing: 3px;
+  color: var(--glitch-cyan);
+  text-shadow: 0 0 12px rgba(55, 240, 224, 0.6);
+}
+
+/* ---------- Página de Lore ---------- */
+.lore-page {
+  position: fixed;
+  inset: 0;
+  overflow-y: auto;
+  background:
+    radial-gradient(ellipse at 15% 10%, rgba(55, 240, 224, 0.05), transparent 55%),
+    radial-gradient(ellipse at 85% 90%, rgba(255, 46, 99, 0.05), transparent 55%),
+    #050505;
+  padding: 110px 24px 100px;
+  visibility: hidden;
+  pointer-events: none;
+}
+/* Igual que .intro-hero: se alterna con "visibility", nunca "display", para
+   que sus animaciones (barras de glitch) no se reinicien al volver a Lore */
+body.view-lore .lore-page {
+  visibility: visible;
+  pointer-events: auto;
+}
+/* Barras de glitch ambientales, de vez en cuando, mientras se lee */
+.lore-page::before,
+.lore-page::after {
+  content: '';
+  position: fixed;
+  left: 0;
+  right: 0;
+  height: 2px;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0;
+  mix-blend-mode: screen;
+}
+.lore-page::before {
+  background: linear-gradient(90deg, transparent, var(--glitch-cyan), transparent);
+  animation: intro-bar-sweep-ambient 8s steps(1) infinite;
+}
+.lore-page::after {
+  background: linear-gradient(90deg, transparent, var(--glitch-red), transparent);
+  animation: intro-bar-sweep-ambient 8s steps(1) infinite 4s;
+}
+
+.lore-viewer {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.lore-slides {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+}
+
+/* Cada pase es un elemento nuevo (se reconstruye al navegar), así que esta
+   animación de aparición se repite siempre al cambiar de pase, a propósito */
+.lore-slide {
+  width: 100%;
+  animation: lore-slide-in 0.5s ease both;
+}
+@keyframes lore-slide-in {
+  0%   { opacity: 0; transform: translateY(10px); filter: blur(4px); }
+  100% { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+
+.lore-slide-title {
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: clamp(1.3rem, 5vw, 2.2rem);
+  color: var(--text-main);
+  text-shadow: 0 0 20px rgba(55, 240, 224, 0.3);
+}
+
+/* Cabecera de capítulo (I., II., III.…) al principio de un pase de texto */
+.lore-chapter-heading {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  text-align: center;
+  color: var(--glitch-cyan);
+  text-shadow: 0 0 10px rgba(55, 240, 224, 0.4);
+  margin: 0 0 30px;
+}
+
+.lore-slide-text .lore-paragraph {
+  font-family: var(--font-body);
+  font-size: 1.02rem;
+  line-height: 1.85;
+  color: rgba(234, 230, 218, 0.78);
+  margin: 0 0 22px;
+}
+.lore-slide-text .lore-paragraph:last-child { margin-bottom: 0; }
+
+/* Modificador: capítulos tipo "manifiesto" con líneas cortas centradas */
+.lore-slide-text.is-centered .lore-paragraph {
+  text-align: center;
+  margin: 0 0 14px;
+}
+
+/* Párrafo destacado dentro de un pase de texto (momentos dramáticos) */
+.lore-paragraph-emphasis {
+  margin-top: 36px !important;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: clamp(0.95rem, 2.6vw, 1.3rem);
+  letter-spacing: 1px;
+  color: var(--glitch-red);
+  text-shadow: 0 0 12px rgba(255, 46, 99, 0.6);
+}
+.lore-slide-text.is-centered .lore-paragraph-emphasis {
+  margin-top: 8px !important;
+}
+
+.lore-slide-image {
+  width: 100%;
+  border-radius: var(--radius);
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+}
+
+.lore-slide-video-el {
+  display: block;
+  width: 100%;
+  border-radius: var(--radius);
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
+  background: #000;
+}
+.lore-slide-img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* Pase final: la foto entera (proporción natural) con el texto enorme,
+   temblando y glitcheado, superpuesto encima */
+.lore-slide-reveal {
+  position: relative;
+  width: 100%;
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
+}
+.lore-reveal-img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.lore-slide-reveal::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+}
+.lore-reveal-text {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  margin: 0;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: clamp(1.3rem, 6vw, 3.2rem);
+  line-height: 1.35;
+  color: var(--glitch-red);
+  text-shadow: 0 0 20px rgba(255, 46, 99, 0.9), 0 0 45px #000;
+  animation:
+    lore-reveal-shake 0.22s infinite,
+    lore-reveal-glitch-cut 1.8s steps(1) infinite;
+}
+@keyframes lore-reveal-shake {
+  0%   { transform: translate(0, 0) rotate(0deg); }
+  20%  { transform: translate(-4px, 3px) rotate(-0.7deg); }
+  40%  { transform: translate(4px, -3px) rotate(0.6deg); }
+  60%  { transform: translate(-3px, -4px) rotate(-0.5deg); }
+  80%  { transform: translate(3px, 4px) rotate(0.7deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+@keyframes lore-reveal-glitch-cut {
+  0%, 85%, 100% { clip-path: inset(0 0 0 0); }
+  86% { clip-path: inset(10% 0 60% 0); }
+  87% { clip-path: inset(60% 0 5% 0); }
+  88% { clip-path: inset(0 0 0 0); }
+  92% { clip-path: inset(40% 0 30% 0); }
+  93% { clip-path: inset(0 0 0 0); }
+}
+
+.lore-nav {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 40px;
+  padding: 26px 0 20px;
+  background: linear-gradient(180deg, transparent, #050505 35%);
+}
+.lore-nav-btn {
+  background: transparent;
+  border: 1px solid var(--glitch-cyan);
+  color: var(--glitch-cyan);
+  font-family: var(--font-display);
+  font-size: 0.65rem;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 9px 16px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+.lore-nav-btn:hover {
+  background: rgba(55, 240, 224, 0.12);
+  color: #fff;
+}
+.lore-prev-btn.is-hidden {
+  visibility: hidden;
+  pointer-events: none;
+}
+.lore-progress {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 0.65rem;
+  letter-spacing: 1.5px;
+  color: rgba(234, 230, 218, 0.5);
+}
+
 /* ---------- Accesibilidad: respeta "reducir movimiento" ---------- */
 @media (prefers-reduced-motion: reduce) {
   .noise-overlay, .scanline-overlay, .intro-static, .intro-glitch-bars { display: none; }
@@ -536,5 +875,10 @@ body.booted .intro-hero-inner {
   .boot-log { display: none; }
   .boot-fullscreen-image { display: none; }
   .intro-hero-inner { animation: none; }
+  .lore-btn { animation: none; opacity: 1; }
+  .channel-transition-static { animation: none; }
+  .lore-page::before, .lore-page::after { animation: none; }
+  .lore-slide { animation: none; opacity: 1; }
+  .lore-reveal-text { animation: none; }
   .btn-primary::after { display: none; }
 }

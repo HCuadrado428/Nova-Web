@@ -94,6 +94,38 @@
     </div>
   </section>
 
+  <!-- Botones de Lore: arriba a la izquierda, aparecen junto al resto del contenido tras el boot -->
+  <div class="lore-triggers">
+    <button class="lore-btn" id="lore-antes-btn" type="button">Antes del Nova</button>
+    <button class="lore-btn" id="lore-nova-btn" type="button">Nova</button>
+  </div>
+
+  <!-- ==================== TRANSICIÓN DE CANAL ==================== -->
+  <div class="channel-transition" id="channel-transition" aria-hidden="true">
+    <div class="channel-transition-static"></div>
+    <p class="channel-transition-text">SINTONIZANDO CANAL...</p>
+  </div>
+
+  <!-- ==================== LORE (pases: imagen o texto) ==================== -->
+  <section class="lore-page" id="lore-page">
+    <button class="lore-back-btn" id="lore-back-btn" type="button">← Volver</button>
+
+    <!--
+      LORE:
+      Todo el contenido (título, imágenes, texto) se genera desde el array
+      LORE_SLIDES en script.js. No hace falta tocar este HTML para añadir,
+      quitar o reordenar pases.
+    -->
+    <div class="lore-viewer">
+      <div class="lore-slides" id="lore-slides"></div>
+      <div class="lore-nav">
+        <button class="lore-nav-btn lore-prev-btn" id="lore-prev-btn" type="button">← Anterior</button>
+        <p class="lore-progress" id="lore-progress"></p>
+        <button class="lore-nav-btn lore-next-btn" id="lore-next-btn" type="button">Siguiente →</button>
+      </div>
+    </div>
+  </section>
+
   <script src="script.js"></script>
 </body>
 </html>
