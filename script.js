@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initEnterGate();
   initLore();
   initFinaleSequence();
+  initPasswordScreen();
 });
 
 /* 06/09/2026 22:00, hora de España peninsular (CEST, UTC+2 en esa fecha) = 20:00 UTC.
@@ -736,8 +737,7 @@ function initFinaleSequence() {
   const revealHintEl = document.getElementById('finale-reveal-hint');
   if (!titleEl || !overlay || !staticEl || !terminalEl || !revealEl || !revealIpEl) return;
 
-  // TODO: sustituir por la IP/dominio real del server cuando esté listo.
-  const SERVER_IP = 'Ketchup';
+  const SERVER_IP = 'xray.dathost.net:17487';
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   let triggered = false;
@@ -916,4 +916,110 @@ function initFinaleSequence() {
       });
     }
   }
+}
+
+/* ---------------------------------------------------
+   Buscador "Inserta la contraseña"
+   Pantalla aparte, deliberadamente limpia (sin estática ni glitches): solo
+   una barra de búsqueda y un botón "Buscar". Cada palabra que hace algo se
+   define en SEARCH_ACTIONS: la clave es la palabra en minúsculas y sin
+   tildes, el valor es la función que se ejecuta al encontrarla (recibe un
+   objeto con setFeedback para escribir un mensaje bajo el buscador).
+   Ejemplo:
+     'iris': ({ setFeedback }) => setFeedback('IRIS está despierta.', 'ok'),
+
+   Cada 3 búsquedas fallidas seguidas aparece el botón "Una ayudita?", que
+   rellena el buscador con una palabra al azar de entre las que hay en
+   SEARCH_ACTIONS (no hace falta mantener una lista aparte). En cuanto se
+   acierta una palabra (a mano o con la ayudita) o se manda una búsqueda,
+   el contador de fallos vuelve a 0 y el botón desaparece.
+--------------------------------------------------- */
+const SEARCH_ACTIONS = {
+  cucaracha: () => window.open('https://www.youtube.com/watch?v=tCHYrpiqDxI', '_blank', 'noopener'),
+  shrimp: () => window.open('https://www.youtube.com/watch?v=u4ecB57jFhI', '_blank', 'noopener'),
+  house: () => window.open('images/gallery/646390b727116f4c2c5eee161238ff86.jpg', '_blank', 'noopener'),
+  jojos: () => window.open('images/gallery/c2d391b2b3f1142f75c555aca8808667.jpg', '_blank', 'noopener'),
+  tuff: () => window.open('images/gallery/f9aeebe83fee27a41c31c3ebdaa7793f.jpg', '_blank', 'noopener'),
+  timmy: () => window.open('images/gallery/f4459e76f2b07d164440989aed18bd4d.jpg', '_blank', 'noopener'),
+};
+
+function normalizeSearchTerm(raw) {
+  return raw
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '');
+}
+
+function initPasswordScreen() {
+  const triggerBtn = document.getElementById('password-trigger-btn');
+  const page = document.getElementById('password-page');
+  const backBtn = document.getElementById('password-back-btn');
+  const form = document.getElementById('password-form');
+  const input = document.getElementById('password-input');
+  const feedback = document.getElementById('password-feedback');
+  const hintBtn = document.getElementById('password-hint-btn');
+  if (!triggerBtn || !page || !backBtn || !form || !input || !feedback || !hintBtn) return;
+
+  let failStreak = 0;
+
+  const setFeedback = (text, tone) => {
+    feedback.textContent = text;
+    feedback.classList.remove('is-fail', 'is-ok');
+    if (tone === 'ok') feedback.classList.add('is-ok');
+    if (tone === 'fail') feedback.classList.add('is-fail');
+  };
+
+  const runSearch = (rawValue) => {
+    const term = normalizeSearchTerm(rawValue);
+    if (!term) return;
+
+    const action = SEARCH_ACTIONS[term];
+    if (action) {
+      failStreak = 0;
+      hintBtn.classList.remove('is-visible');
+      action({ setFeedback });
+      return;
+    }
+
+    failStreak += 1;
+    setFeedback('Nada por aquí.', 'fail');
+    if (failStreak % 3 === 0) {
+      hintBtn.classList.add('is-visible');
+    }
+  };
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    runSearch(input.value);
+  });
+
+  hintBtn.addEventListener('click', () => {
+    const words = Object.keys(SEARCH_ACTIONS);
+    if (!words.length) return;
+    const word = words[Math.floor(Math.random() * words.length)];
+    input.value = word;
+    input.focus();
+  });
+
+  const open = () => {
+    page.classList.add('active');
+    page.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('view-password');
+    input.value = '';
+    setFeedback('', null);
+    setTimeout(() => input.focus(), 50);
+  };
+
+  const close = () => {
+    page.classList.remove('active');
+    page.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('view-password');
+  };
+
+  triggerBtn.addEventListener('click', open);
+  backBtn.addEventListener('click', close);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && document.body.classList.contains('view-password')) close();
+  });
 }

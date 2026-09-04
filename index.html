@@ -81,6 +81,7 @@
             Descargar Modpack
           </a>
         </div>
+        <p class="modpack-version">Forge 1.20.1</p>
         <p class="intro-countdown" id="day-counter"></p>
       </div>
     </div>
@@ -99,6 +100,9 @@
     <button class="lore-btn" id="lore-antes-btn" type="button">Antes del Nova</button>
     <button class="lore-btn" id="lore-nova-btn" type="button">Nova</button>
   </div>
+
+  <!-- Botón "Inserta la contraseña": abajo a la derecha, aparece junto al resto del contenido tras el boot -->
+  <button class="password-trigger-btn" id="password-trigger-btn" type="button">Inserta la contraseña</button>
 
   <!-- ==================== TRANSICIÓN DE CANAL ==================== -->
   <div class="channel-transition" id="channel-transition" aria-hidden="true">
@@ -143,6 +147,34 @@
       <p class="finale-reveal-hint" id="finale-reveal-hint"></p>
     </div>
   </div>
+
+  <!-- ====================================================================
+       BUSCADOR "INSERTA LA CONTRASEÑA": pantalla aparte, deliberadamente
+       limpia (sin estática ni glitches) con un buscador. Las palabras que
+       hacen algo se definen en SEARCH_ACTIONS (script.js); cada 3 fallos
+       seguidos aparece el botón "Una ayudita?", que rellena el buscador
+       con una palabra al azar de entre las de SEARCH_ACTIONS.
+       ==================================================================== -->
+  <section class="password-page" id="password-page" aria-hidden="true">
+    <button class="password-back-btn" id="password-back-btn" type="button">← Volver</button>
+
+    <div class="password-inner">
+      <form class="password-form" id="password-form">
+        <input
+          class="password-input"
+          id="password-input"
+          type="text"
+          autocomplete="off"
+          spellcheck="false"
+          placeholder="Inserta la contraseña"
+          aria-label="Inserta la contraseña">
+        <button class="password-search-btn" type="submit">Buscar</button>
+      </form>
+      <p class="password-feedback" id="password-feedback" aria-live="polite"></p>
+    </div>
+
+    <button class="password-hint-btn" id="password-hint-btn" type="button">Una ayudita?</button>
+  </section>
 
   <script src="script.js"></script>
 </body>

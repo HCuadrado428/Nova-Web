@@ -565,6 +565,16 @@ body.booted .intro-hero-inner {
   flex-wrap: wrap;
 }
 
+.modpack-version {
+  margin-top: 8px;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: clamp(0.6rem, 1.3vw, 0.75rem);
+  letter-spacing: 0.5px;
+  color: var(--text-dim, #8a8a8a);
+  opacity: 0.7;
+}
+
 .intro-countdown {
   margin-top: 32px;
   font-family: var(--font-display);
@@ -641,6 +651,185 @@ body.view-lore .lore-btn {
 body.view-lore .lore-back-btn {
   visibility: visible;
   pointer-events: auto;
+}
+
+/* ---------- Botón "Inserta la contraseña": abajo a la derecha ---------- */
+.password-trigger-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 6;
+  background: transparent;
+  border: 1px solid var(--glitch-cyan);
+  color: var(--glitch-cyan);
+  font-family: var(--font-display);
+  font-size: 0.65rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 9px 16px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+  opacity: 0;
+  pointer-events: none;
+}
+.password-trigger-btn:hover {
+  background: rgba(55, 240, 224, 0.12);
+  color: #fff;
+}
+body.booted .password-trigger-btn {
+  pointer-events: auto;
+  animation: intro-reveal 1s ease 2.15s 1 both;
+}
+body.view-lore .password-trigger-btn,
+body.view-password .password-trigger-btn {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* ---------- Pantalla "Inserta la contraseña": buscador minimalista, sin estática ni glitches ---------- */
+.password-page {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  background: #000;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+.password-page.active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+/* El grano/escaneo ambiental de toda la página también se apaga aquí: esta
+   pantalla debe verse limpia, sin ningún resto de la estática del resto del sitio. */
+body.view-password .noise-overlay,
+body.view-password .scanline-overlay {
+  opacity: 0;
+}
+
+.password-back-btn {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 6;
+  background: transparent;
+  border: 1px solid var(--glitch-cyan);
+  color: var(--glitch-cyan);
+  font-family: var(--font-display);
+  font-size: 0.65rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 9px 16px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+.password-back-btn:hover {
+  background: rgba(55, 240, 224, 0.12);
+  color: #fff;
+}
+
+.password-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  width: min(90vw, 420px);
+}
+
+.password-form {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+.password-input {
+  flex: 1;
+  background: transparent;
+  border: 1px solid rgba(234, 230, 218, 0.35);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  color: var(--text-main);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+.password-input:focus {
+  border-color: var(--glitch-cyan);
+}
+.password-input::placeholder {
+  color: rgba(234, 230, 218, 0.35);
+}
+
+.password-search-btn {
+  background: transparent;
+  border: 1px solid var(--glitch-cyan);
+  color: var(--glitch-cyan);
+  font-family: var(--font-display);
+  font-size: 0.65rem;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 0 18px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+.password-search-btn:hover {
+  background: rgba(55, 240, 224, 0.12);
+  color: #fff;
+}
+
+.password-feedback {
+  min-height: 1.2em;
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 0.65rem;
+  letter-spacing: 1px;
+  color: rgba(234, 230, 218, 0.5);
+}
+.password-feedback.is-fail {
+  color: var(--glitch-red);
+}
+.password-feedback.is-ok {
+  color: var(--emerald);
+}
+
+.password-hint-btn {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translate(-50%, 12px);
+  background: transparent;
+  border: 1px solid rgba(234, 230, 218, 0.35);
+  color: rgba(234, 230, 218, 0.7);
+  font-family: var(--font-display);
+  font-size: 0.6rem;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 9px 16px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.3s ease, border-color 0.15s ease, color 0.15s ease;
+}
+.password-hint-btn.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(-50%, 0);
+}
+.password-hint-btn:hover {
+  border-color: var(--glitch-cyan);
+  color: var(--glitch-cyan);
 }
 
 /* ---------- Transición de canal: estática de pantalla completa entre secciones ---------- */
@@ -1059,6 +1248,7 @@ body.view-lore .lore-page {
   .boot-fullscreen-image { display: none; }
   .intro-hero-inner { animation: none; }
   .lore-btn { animation: none; opacity: 1; }
+  .password-trigger-btn { animation: none; opacity: 1; }
   .channel-transition-static { animation: none; }
   .lore-page::before, .lore-page::after { animation: none; }
   .lore-slide { animation: none; opacity: 1; }
