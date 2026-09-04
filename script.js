@@ -34,6 +34,7 @@ const BOOT_LINE_4_PHRASES = [
   '☊⎍⏃⋏⏁⏃ ☌⟒⋏⏁⟒ ⊑⏃⏚⌰⏃ ⌿⍜⍀ ⏃☌⎍⟟?',
   '⊬⍜⎍ ⌰⍜⌇⏁ ⏁⊑⟒ ☌⏃⋔⟒',
   '⏁⟒⌇⏁⟟☊⎍⌰⏃⍀ ⏁⍜⍀⌇⟟⍜⋏',
+  '⌿⍜⍀☌⎍⟒ ⍜⌇ ⊑⏃☊⟒⟟⌇ ⟒⌇⏁⍜',
 ];
 
 // Variante "imagen" de la línea 4: en vez de frase, aparece esta imagen con un
