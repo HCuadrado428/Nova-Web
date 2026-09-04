@@ -545,6 +545,12 @@ body.booted .intro-hero-inner {
   align-items: flex-start;
   gap: 10px;
 }
+/* El contenedor ocupa la misma esquina que el botón "Volver" de Lore; aunque
+   sus botones se oculten con "visibility", el propio div seguía interceptando
+   los clics y bloqueaba el botón "← Volver" que está debajo. */
+body.view-lore .lore-triggers {
+  pointer-events: none;
+}
 
 .lore-btn,
 .lore-back-btn {
@@ -825,8 +831,7 @@ body.view-lore .lore-page {
 }
 
 .lore-nav {
-  position: sticky;
-  bottom: 0;
+  position: relative;
   z-index: 2;
   display: flex;
   align-items: center;
@@ -834,7 +839,6 @@ body.view-lore .lore-page {
   gap: 16px;
   margin-top: 40px;
   padding: 26px 0 20px;
-  background: linear-gradient(180deg, transparent, #050505 35%);
 }
 .lore-nav-btn {
   background: transparent;

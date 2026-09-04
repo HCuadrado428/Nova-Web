@@ -112,6 +112,34 @@ function getAudioContext() {
   return audioCtx;
 }
 
+/* Bus único por el que pasa todo el audio generado (estática, glitches,
+   stinger): así se puede bajar a 0 de golpe mientras se reproduce un vídeo
+   del Lore, en vez de tener que silenciar cada sonido por separado. */
+let staticBus = null;
+
+function getStaticBus(ctx) {
+  if (!staticBus) {
+    staticBus = ctx.createGain();
+    staticBus.gain.value = 1;
+    staticBus.connect(ctx.destination);
+  }
+  return staticBus;
+}
+
+function duckStaticAudio() {
+  if (!audioCtx || !staticBus) return;
+  const now = audioCtx.currentTime;
+  staticBus.gain.cancelScheduledValues(now);
+  staticBus.gain.setTargetAtTime(0, now, 0.08);
+}
+
+function restoreStaticAudio() {
+  if (!audioCtx || !staticBus) return;
+  const now = audioCtx.currentTime;
+  staticBus.gain.cancelScheduledValues(now);
+  staticBus.gain.setTargetAtTime(1, now, 0.2);
+}
+
 function createNoiseBuffer(ctx, duration) {
   const length = Math.max(1, Math.floor(ctx.sampleRate * duration));
   const buffer = ctx.createBuffer(1, length, ctx.sampleRate);
@@ -135,7 +163,7 @@ function playGlitchBlip(ctx, when, volume = 0.18) {
   gain.gain.exponentialRampToValueAtTime(volume, when + 0.01);
   gain.gain.exponentialRampToValueAtTime(0.0001, when + 0.12);
 
-  noise.connect(filter).connect(gain).connect(ctx.destination);
+  noise.connect(filter).connect(gain).connect(getStaticBus(ctx));
   noise.start(when);
   noise.stop(when + 0.13);
 }
@@ -170,7 +198,7 @@ function playStinger(ctx, when, volume = 0.14) {
   gain.gain.exponentialRampToValueAtTime(volume, when + 0.02);
   gain.gain.exponentialRampToValueAtTime(0.0001, when + 0.3);
 
-  noise.connect(filter).connect(gain).connect(ctx.destination);
+  noise.connect(filter).connect(gain).connect(getStaticBus(ctx));
   noise.start(when);
   noise.stop(when + 0.32);
 }
@@ -202,7 +230,7 @@ function playBootAudio() {
   bootGain.gain.linearRampToValueAtTime(peak * 0.45, now + 1.87);
   bootGain.gain.linearRampToValueAtTime(0.01, now + 2.2);
 
-  bootNoise.connect(bootFilter).connect(bootGain).connect(ctx.destination);
+  bootNoise.connect(bootFilter).connect(bootGain).connect(getStaticBus(ctx));
   bootNoise.start(now);
   bootNoise.stop(now + 2.2);
 
@@ -226,7 +254,7 @@ function playBootAudio() {
   ambientGain.gain.setValueAtTime(0, now);
   ambientGain.gain.linearRampToValueAtTime(0.025, now + 2.2);
 
-  ambientNoise.connect(ambientFilter).connect(ambientGain).connect(ctx.destination);
+  ambientNoise.connect(ambientFilter).connect(ambientGain).connect(getStaticBus(ctx));
   ambientNoise.start(now + 2.0);
 
   scheduleAmbientGlitches(ctx, ambientGain);
@@ -455,6 +483,21 @@ function buildLoreSlideElement(slide) {
     video.src = slide.src;
     video.controls = true;
     video.playsInline = true;
+    // Mientras el vídeo suena o está en pantalla completa, se baja a 0 la
+    // estática/glitches de fondo para que se oiga mejor; al pausarlo o
+    // salir de pantalla completa, vuelve a subir.
+    const syncStaticWithVideo = () => {
+      if (!video.paused || document.fullscreenElement === video) {
+        duckStaticAudio();
+      } else {
+        restoreStaticAudio();
+      }
+    };
+    video.addEventListener('play', syncStaticWithVideo);
+    video.addEventListener('pause', syncStaticWithVideo);
+    video.addEventListener('ended', syncStaticWithVideo);
+    video.addEventListener('fullscreenchange', syncStaticWithVideo);
+    video.addEventListener('webkitfullscreenchange', syncStaticWithVideo);
     el.appendChild(video);
   } else if (slide.type === 'reveal') {
     el.classList.add('lore-slide-reveal');
@@ -501,6 +544,7 @@ function initLore() {
   let currentSlide = 0;
 
   const renderSlide = (index) => {
+    restoreStaticAudio(); // por si se cambia de pase con un vídeo aún sonando
     loreSlidesEl.innerHTML = '';
     loreSlidesEl.appendChild(buildLoreSlideElement(currentTrack[index]));
 
@@ -592,7 +636,7 @@ function playChannelChangeAudio() {
   gain.gain.setValueAtTime(0.14, now + 0.7);
   gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.1);
 
-  noise.connect(filter).connect(gain).connect(ctx.destination);
+  noise.connect(filter).connect(gain).connect(getStaticBus(ctx));
   noise.start(now);
   noise.stop(now + 1.15);
 
