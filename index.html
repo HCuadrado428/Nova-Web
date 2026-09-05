@@ -96,10 +96,24 @@
     </div>
   </section>
 
-  <!-- Botones de Lore: arriba a la izquierda, aparecen junto al resto del contenido tras el boot -->
+  <!-- Botón Lore: arriba a la izquierda, aparece junto al resto del contenido tras el boot.
+       Al pulsarlo despliega el submenú con las dos pistas (Antes del Nova / Nova). -->
   <div class="lore-triggers">
-    <button class="lore-btn" id="lore-antes-btn" type="button">Antes del Nova</button>
-    <button class="lore-btn" id="lore-nova-btn" type="button">Nova</button>
+    <button class="menu-toggle-btn" id="lore-menu-btn" type="button" aria-expanded="false" aria-controls="lore-submenu">Lore</button>
+    <div class="submenu" id="lore-submenu">
+      <button class="lore-btn" id="lore-antes-btn" type="button">Antes del Nova</button>
+      <button class="lore-btn" id="lore-nova-btn" type="button">Nova</button>
+    </div>
+  </div>
+
+  <!-- Botón Normas: arriba a la derecha, mismo patrón que el botón Lore.
+       Al pulsarlo despliega el submenú con las dos normativas (Discord / Minecraft). -->
+  <div class="rules-triggers" id="rules-triggers">
+    <button class="menu-toggle-btn" id="rules-menu-btn" type="button" aria-expanded="false" aria-controls="rules-submenu">Normas</button>
+    <div class="submenu" id="rules-submenu">
+      <button class="lore-btn" id="rules-discord-btn" type="button">Discord</button>
+      <button class="lore-btn" id="rules-minecraft-btn" type="button">Minecraft</button>
+    </div>
   </div>
 
   <!-- Botón "Inserta la contraseña": abajo a la derecha, aparece junto al resto del contenido tras el boot -->
@@ -127,6 +141,55 @@
         <button class="lore-nav-btn lore-prev-btn" id="lore-prev-btn" type="button">← Anterior</button>
         <p class="lore-progress" id="lore-progress"></p>
         <button class="lore-nav-btn lore-next-btn" id="lore-next-btn" type="button">Siguiente →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== NORMAS (Discord / Minecraft) ====================
+       Mismo patrón visual que la página de Lore. El contenido de las dos
+       normativas vive directamente aquí (es texto estático, no hace falta
+       generarlo desde script.js). Los botones "rules-switch-btn" cambian
+       entre paneles sin salir de la página. -->
+  <section class="rules-page" id="rules-page">
+    <button class="rules-back-btn" id="rules-back-btn" type="button">← Volver</button>
+
+    <div class="rules-viewer">
+      <div class="rules-switch" id="rules-switch">
+        <button class="rules-switch-btn is-active" id="rules-switch-discord" data-rules-target="discord" type="button">Discord</button>
+        <button class="rules-switch-btn" id="rules-switch-minecraft" data-rules-target="minecraft" type="button">Minecraft</button>
+      </div>
+
+      <div class="rules-panel is-active" id="rules-panel-discord">
+        <h1 class="rules-title glitch" data-text="NORMAS · DISCORD">NORMAS · DISCORD</h1>
+        <p class="rules-intro">Estas reglas son para el servidor de Discord.</p>
+
+        <p class="rules-item"><strong>Edad:</strong> +17.</p>
+        <p class="rules-item"><strong>Ficha:</strong> Tendrán todo el tiempo que necesiten para hacer la ficha, incluso solo con poner info básica será válida.</p>
+        <p class="rules-item"><strong>Canales:</strong> Respeten la función de cada canal, estos fueron creados con un propósito específico.</p>
+        <p class="rules-item"><strong>Spam:</strong> Existe el canal correspondiente para compartir enlaces u otro tipo de mensajes repetitivos.</p>
+        <p class="rules-item"><strong>Comunicación:</strong> Si surge algún problema, incomodidad o malentendido con otro integrante, comunícate de manera respetuosa, preferiblemente que se resuelva en privado y no en medio del chat general. En caso de que la discusión vaya a peor, por favor comunicarse con un admin para resolver la situación de manera adecuada.</p>
+        <p class="rules-item"><strong>Incumplimiento:</strong> Dada la situación que algún miembro esté rompiendo alguna de las reglas, avisar a los administradores de inmediato.</p>
+        <p class="rules-item"><strong>Contenido sensible:</strong> Contenido +18, gore o similares, está prohibido. Se prohíbe todo contenido visual o textual que pueda resultar incómodo a otros integrantes. En caso de que sea algo relacionado con lore pedimos usar spoilers, o si es una imagen/dibujo enviarlo como spoiler y avisar del contenido (ej: Twt: sangre).</p>
+        <p class="rules-item"><strong>Relaciones:</strong> Es importante recordar que el rol se trata de interpretar personajes ficticios, no refleja la realidad ni las opiniones personales de los integrantes. Por lo tanto, se insta a los miembros a no tomarse personal el rol de alguien. Los conflictos o interacciones dentro del rol no deben afectar las relaciones personales.</p>
+        <p class="rules-item"><strong>Respeto:</strong> Se pide respeto a los demás, ya sea por gustos o por trastornos. Si alguno sufre de un trastorno y quiere que se comparta como un anuncio para que los demás puedan comprenderlo, hablarlo con un admin; si por el contrario prefiere decirlo por su cuenta a personas con quien interactúe, entonces pedimos respeto y comprensión de los demás integrantes. En caso de faltas de respeto (burlas, insultos, desprecio, aislamiento social, ignorar por su trastorno) será un baneo directo.</p>
+        <p class="rules-item"><strong>Inactividad:</strong> Si tienen algún problema personal y no pueden estar muy activos, pedimos decir su razón de inactividad en el canal correspondiente. También, si es posible, den un aproximado de su tiempo de inactividad para así tener en cuenta su justificación.</p>
+      </div>
+
+      <div class="rules-panel" id="rules-panel-minecraft">
+        <h1 class="rules-title glitch" data-text="NORMAS · MINECRAFT">NORMAS · MINECRAFT</h1>
+        <p class="rules-intro">Estas reglas son para el servidor de Minecraft.</p>
+
+        <p class="rules-item"><strong>Off rol:</strong> Dentro del servidor, cuando son interacciones con otros integrantes, la mayoría son on rol; en caso contrario por favor utilicen "//" para diferenciarlo. Respeten esto para poder distinguir.</p>
+        <p class="rules-item"><strong>Colaboración y respeto:</strong> Respeta las decisiones y acciones de otros personajes en la historia y colabora de manera constructiva para mantener la coherencia y el flujo narrativo. La comunicación abierta y el respeto mutuo son clave para una experiencia de rol positiva.</p>
+        <p class="rules-item"><strong>Portales:</strong> Se puede ir al Twilight Forest, al Nether y al End.</p>
+        <p class="rules-item"><strong>Spawn:</strong> En cuanto al spawn queda totalmente prohibido el uso de minas / robos de bloques o objetos en el lugar. Si el daño al spawn llega a ser por un creeper o algún mob, pedimos llamen a un admin para que este lo pueda arreglar.</p>
+        <p class="rules-item"><strong>Límite de adopciones:</strong> Si van a adoptar a otros cubitos el límite es de 4 adopciones (los huevitos también cuentan). Esto para evitar que los roles no se puedan realizar debido a que son familiares.</p>
+        <p class="rules-item"><strong>Borde del mundo:</strong> El límite de bloques es de 14000, esto para mantener el servidor optimizado y enfocado en el roleplay. Habrá un borde el cual, en caso de morir por cruzarlo, no se devolverán las cosas perdidas. El límite para hacer vuestra casa será hasta 5000.</p>
+      </div>
+
+      <div class="rules-footer">
+        <p class="rules-item rules-footer-item">Gracias por leer y formar parte de este servidor, queremos darte una buena experiencia.</p>
+        <p class="rules-item rules-footer-item">Es importante recordar que estas medidas se implementan para mantener un ambiente de rol seguro y respetuoso para todos los participantes. ¡Gracias por su comprensión y colaboración!</p>
       </div>
     </div>
   </section>

@@ -142,9 +142,10 @@ a { color: inherit; text-decoration: none; }
     radial-gradient(ellipse at 50% 50%, #0c0c0c, #000 70%);
 }
 
-/* Al ir a Lore, se oculta con "visibility" (nunca "display") para que sus
+/* Al ir a Lore o Normas, se oculta con "visibility" (nunca "display") para que sus
    animaciones no se reinicien al volver a mostrarla */
-body.view-lore .intro-hero {
+body.view-lore .intro-hero,
+body.view-rules .intro-hero {
   visibility: hidden;
   pointer-events: none;
 }
@@ -185,15 +186,15 @@ body:not(.booted) .intro-content::after {
   animation-play-state: paused;
 }
 
-/* La pestaña en segundo plano, o estar viendo Lore, pausa la animación en
+/* La pestaña en segundo plano, o estar viendo Lore/Normas, pausa la animación en
    curso del intro (ahorro de batería/CPU); al volver, sigue donde se quedó */
-:is(body.tab-hidden, body.view-lore) .intro-static,
-:is(body.tab-hidden, body.view-lore) .intro-glitch-bars::before,
-:is(body.tab-hidden, body.view-lore) .intro-glitch-bars::after,
-:is(body.tab-hidden, body.view-lore) .boot-line,
-:is(body.tab-hidden, body.view-lore) .intro-content,
-:is(body.tab-hidden, body.view-lore) .intro-content::after,
-:is(body.tab-hidden, body.view-lore) .intro-hero-inner,
+:is(body.tab-hidden, body.view-lore, body.view-rules) .intro-static,
+:is(body.tab-hidden, body.view-lore, body.view-rules) .intro-glitch-bars::before,
+:is(body.tab-hidden, body.view-lore, body.view-rules) .intro-glitch-bars::after,
+:is(body.tab-hidden, body.view-lore, body.view-rules) .boot-line,
+:is(body.tab-hidden, body.view-lore, body.view-rules) .intro-content,
+:is(body.tab-hidden, body.view-lore, body.view-rules) .intro-content::after,
+:is(body.tab-hidden, body.view-lore, body.view-rules) .intro-hero-inner,
 body.tab-hidden .enter-text {
   animation-play-state: paused;
 }
@@ -588,7 +589,7 @@ body.booted .intro-hero-inner {
   text-shadow: 0 0 10px rgba(255, 46, 99, 0.6);
 }
 
-/* ---------- Botón Lore / Volver ---------- */
+/* ---------- Botones Lore / Normas (toggle + submenú) / Volver ---------- */
 .lore-triggers {
   position: fixed;
   top: 20px;
@@ -599,15 +600,35 @@ body.booted .intro-hero-inner {
   align-items: flex-start;
   gap: 10px;
 }
-/* El contenedor ocupa la misma esquina que el botón "Volver" de Lore; aunque
+.rules-triggers {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+/* Los contenedores ocupan la misma esquina que los botones "Volver"; aunque
    sus botones se oculten con "visibility", el propio div seguía interceptando
-   los clics y bloqueaba el botón "← Volver" que está debajo. */
-body.view-lore .lore-triggers {
+   los clics y bloqueaba el botón "← Volver" que está debajo. Se ocultan
+   enteros (submenú incluido, esté abierto o no) al entrar en cualquier
+   pantalla a página completa. */
+body.view-lore .lore-triggers,
+body.view-rules .lore-triggers,
+body.view-password .lore-triggers,
+body.view-lore .rules-triggers,
+body.view-rules .rules-triggers,
+body.view-password .rules-triggers {
+  visibility: hidden;
   pointer-events: none;
 }
 
+.menu-toggle-btn,
 .lore-btn,
-.lore-back-btn {
+.lore-back-btn,
+.rules-back-btn {
   background: transparent;
   border: 1px solid var(--glitch-cyan);
   color: var(--glitch-cyan);
@@ -620,27 +641,64 @@ body.view-lore .lore-triggers {
   cursor: pointer;
   transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
 }
+.menu-toggle-btn:hover,
 .lore-btn:hover,
-.lore-back-btn:hover {
+.lore-back-btn:hover,
+.rules-back-btn:hover {
   background: rgba(55, 240, 224, 0.12);
   color: #fff;
 }
-.lore-btn {
+
+/* Botón principal ("Lore" / "Normas"): aparece tras el boot, igual que antes */
+.menu-toggle-btn {
   opacity: 0;
   pointer-events: none;
 }
-body.booted .lore-btn {
+body.booted .menu-toggle-btn {
   pointer-events: auto;
   animation: intro-reveal 1s ease 2.15s 1 both;
 }
-/* Se oculta con "visibility" mientras se ve Lore, no con display, para no
-   reiniciar la animación de aparición la próxima vez que vuelva a mostrarse */
-body.view-lore .lore-btn {
+/* Se oculta con "visibility" mientras se ve Lore/Normas/contraseña, no con
+   display, para no reiniciar la animación de aparición al volver a mostrarse */
+body.view-lore .menu-toggle-btn,
+body.view-rules .menu-toggle-btn,
+body.view-password .menu-toggle-btn {
   visibility: hidden;
   pointer-events: none;
 }
+.menu-toggle-btn[aria-expanded="true"] {
+  background: rgba(55, 240, 224, 0.12);
+  color: #fff;
+}
 
-.lore-back-btn {
+/* Submenú que despliega el botón principal: los dos botones (Antes del Nova/
+   Nova, o Discord/Minecraft) quedan colapsados hasta que se pulsa el toggle */
+.submenu {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(-6px);
+  pointer-events: none;
+  transition: max-height 0.3s ease, opacity 0.25s ease, transform 0.25s ease;
+}
+.lore-triggers .submenu {
+  align-items: flex-start;
+}
+.rules-triggers .submenu {
+  align-items: flex-end;
+}
+.submenu.is-open {
+  max-height: 160px;
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.lore-back-btn,
+.rules-back-btn {
   position: fixed;
   top: 20px;
   left: 20px;
@@ -649,6 +707,10 @@ body.view-lore .lore-btn {
   pointer-events: none;
 }
 body.view-lore .lore-back-btn {
+  visibility: visible;
+  pointer-events: auto;
+}
+body.view-rules .rules-back-btn {
   visibility: visible;
   pointer-events: auto;
 }
@@ -682,6 +744,7 @@ body.booted .password-trigger-btn {
   animation: intro-reveal 1s ease 2.15s 1 both;
 }
 body.view-lore .password-trigger-btn,
+body.view-rules .password-trigger-btn,
 body.view-password .password-trigger-btn {
   visibility: hidden;
   pointer-events: none;
@@ -1102,6 +1165,111 @@ body.view-lore .lore-page {
   color: rgba(234, 230, 218, 0.5);
 }
 
+/* ---------- Página de Normas: mismo tratamiento visual que la de Lore ---------- */
+.rules-page {
+  position: fixed;
+  inset: 0;
+  overflow-y: auto;
+  background:
+    radial-gradient(ellipse at 15% 10%, rgba(55, 240, 224, 0.05), transparent 55%),
+    radial-gradient(ellipse at 85% 90%, rgba(255, 46, 99, 0.05), transparent 55%),
+    #050505;
+  padding: 110px 24px 100px;
+  visibility: hidden;
+  pointer-events: none;
+}
+body.view-rules .rules-page {
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.rules-viewer {
+  position: relative;
+  z-index: 2;
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+/* Botones para cambiar de panel (Discord/Minecraft) sin salir de la página */
+.rules-switch {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 44px;
+}
+.rules-switch-btn {
+  background: transparent;
+  border: 1px solid var(--glitch-cyan);
+  color: var(--glitch-cyan);
+  font-family: var(--font-display);
+  font-size: 0.65rem;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 9px 16px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+.rules-switch-btn:hover {
+  background: rgba(55, 240, 224, 0.12);
+  color: #fff;
+}
+.rules-switch-btn.is-active {
+  background: rgba(55, 240, 224, 0.16);
+  color: #fff;
+}
+
+.rules-panel {
+  display: none;
+  animation: lore-slide-in 0.5s ease both;
+}
+.rules-panel.is-active {
+  display: block;
+}
+
+.rules-title {
+  position: relative;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: clamp(1.1rem, 4vw, 1.7rem);
+  color: var(--text-main);
+  text-shadow: 0 0 20px rgba(55, 240, 224, 0.3);
+  margin: 0 0 18px;
+}
+
+.rules-intro {
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  color: rgba(234, 230, 218, 0.55);
+  margin: 0 0 34px;
+}
+
+.rules-item {
+  font-family: var(--font-body);
+  font-size: 1.02rem;
+  line-height: 1.85;
+  color: rgba(234, 230, 218, 0.78);
+  margin: 0 0 22px;
+}
+.rules-item strong {
+  color: var(--glitch-cyan);
+}
+.rules-item:last-child {
+  margin-bottom: 0;
+}
+
+.rules-footer {
+  margin-top: 50px;
+  padding-top: 30px;
+  border-top: 1px solid rgba(55, 240, 224, 0.15);
+}
+.rules-footer-item {
+  text-align: center;
+  font-size: 0.9rem;
+  color: rgba(234, 230, 218, 0.5);
+}
+
 /* ---------- Secuencia final: pantalla negra, conexión fallida, IP en verde ---------- */
 .finale-overlay {
   position: fixed;
@@ -1247,10 +1415,11 @@ body.view-lore .lore-page {
   .boot-log { display: none; }
   .boot-fullscreen-image { display: none; }
   .intro-hero-inner { animation: none; }
-  .lore-btn { animation: none; opacity: 1; }
+  .menu-toggle-btn { animation: none; opacity: 1; }
   .password-trigger-btn { animation: none; opacity: 1; }
   .channel-transition-static { animation: none; }
   .lore-page::before, .lore-page::after { animation: none; }
+  .rules-panel { animation: none; }
   .lore-slide { animation: none; opacity: 1; }
   .lore-reveal-text { animation: none; }
   .btn-primary::after { display: none; }

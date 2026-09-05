@@ -5,10 +5,38 @@
 document.addEventListener('DOMContentLoaded', () => {
   initDayCounter();
   initEnterGate();
+  initMenuToggle('lore-menu-btn', 'lore-submenu');
+  initMenuToggle('rules-menu-btn', 'rules-submenu');
   initLore();
+  initRules();
   initFinaleSequence();
   initPasswordScreen();
 });
+
+/* ---------------------------------------------------
+   Botones "Lore" / "Normas": despliegan su submenú (las dos pistas de Lore,
+   o las dos normativas) al pulsarlos, en vez de mostrar siempre los botones
+   sueltos. El propio submenú se cierra desde initLore/initRules cuando se
+   elige una opción.
+--------------------------------------------------- */
+function initMenuToggle(toggleId, submenuId) {
+  const toggle = document.getElementById(toggleId);
+  const submenu = document.getElementById(submenuId);
+  if (!toggle || !submenu) return;
+
+  toggle.addEventListener('click', () => {
+    const isOpen = submenu.classList.toggle('is-open');
+    toggle.setAttribute('aria-expanded', String(isOpen));
+  });
+}
+
+function closeMenuToggle(toggleId, submenuId) {
+  const toggle = document.getElementById(toggleId);
+  const submenu = document.getElementById(submenuId);
+  if (!toggle || !submenu) return;
+  submenu.classList.remove('is-open');
+  toggle.setAttribute('aria-expanded', 'false');
+}
 
 /* 06/09/2026 22:00, hora de España peninsular (CEST, UTC+2 en esa fecha) = 20:00 UTC.
    Se fija como instante UTC para que el evento empiece a la vez para todo el mundo
@@ -627,8 +655,14 @@ function initLore() {
     renderSlide(currentSlide);
   };
 
-  antesBtn.addEventListener('click', () => switchTo(true, 'antes'));
-  novaBtn.addEventListener('click', () => switchTo(true, 'nova'));
+  antesBtn.addEventListener('click', () => {
+    closeMenuToggle('lore-menu-btn', 'lore-submenu');
+    switchTo(true, 'antes');
+  });
+  novaBtn.addEventListener('click', () => {
+    closeMenuToggle('lore-menu-btn', 'lore-submenu');
+    switchTo(true, 'nova');
+  });
   loreBackBtn.addEventListener('click', () => switchTo(false));
   nextBtn.addEventListener('click', goNext);
   prevBtn.addEventListener('click', goPrev);
@@ -668,6 +702,75 @@ function playChannelChangeAudio() {
 
   playGlitchBlip(ctx, now + 0.08);
   playGlitchBlip(ctx, now + 0.55, 0.12);
+}
+
+/* ---------------------------------------------------
+   Normas (Discord / Minecraft)
+   El texto de cada normativa vive directamente en el HTML (rules-panel-discord
+   / rules-panel-minecraft), no hay que generarlo desde aquí. Este bloque solo
+   controla la transición de página (igual que el Lore) y el cambio entre
+   paneles una vez dentro, con los botones rules-switch-btn.
+--------------------------------------------------- */
+function initRules() {
+  const discordBtn = document.getElementById('rules-discord-btn');
+  const minecraftBtn = document.getElementById('rules-minecraft-btn');
+  const backBtn = document.getElementById('rules-back-btn');
+  const rulesPage = document.getElementById('rules-page');
+  const panels = {
+    discord: document.getElementById('rules-panel-discord'),
+    minecraft: document.getElementById('rules-panel-minecraft'),
+  };
+  const switchBtns = {
+    discord: document.getElementById('rules-switch-discord'),
+    minecraft: document.getElementById('rules-switch-minecraft'),
+  };
+  const transition = document.getElementById('channel-transition');
+  if (!discordBtn || !minecraftBtn || !backBtn || !rulesPage || !panels.discord || !panels.minecraft || !transition) return;
+
+  const showPanel = (key) => {
+    Object.entries(panels).forEach(([k, el]) => el.classList.toggle('is-active', k === key));
+    Object.entries(switchBtns).forEach(([k, btn]) => {
+      if (btn) btn.classList.toggle('is-active', k === key);
+    });
+    rulesPage.scrollTop = 0;
+  };
+
+  let switching = false;
+  const switchTo = (showRules, panelKey) => {
+    if (switching) return;
+    switching = true;
+
+    transition.classList.add('active');
+    playChannelChangeAudio();
+
+    setTimeout(() => {
+      document.body.classList.toggle('view-rules', showRules);
+      if (showRules) showPanel(panelKey);
+    }, 750);
+
+    setTimeout(() => {
+      transition.classList.remove('active');
+      switching = false;
+    }, 1300);
+  };
+
+  const openPanel = (key) => {
+    closeMenuToggle('rules-menu-btn', 'rules-submenu');
+    switchTo(true, key);
+  };
+
+  discordBtn.addEventListener('click', () => openPanel('discord'));
+  minecraftBtn.addEventListener('click', () => openPanel('minecraft'));
+  backBtn.addEventListener('click', () => switchTo(false));
+
+  Object.entries(switchBtns).forEach(([key, btn]) => {
+    if (btn) btn.addEventListener('click', () => showPanel(key));
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (!document.body.classList.contains('view-rules')) return;
+    if (e.key === 'Escape') switchTo(false);
+  });
 }
 
 /* ---------------------------------------------------
