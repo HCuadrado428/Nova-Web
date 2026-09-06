@@ -11,7 +11,6 @@ document.addEventListener('DOMContentLoaded', () => {
   initRules();
   initFinaleSequence();
   initPasswordScreen();
-  initCameraEasterEgg();
 });
 
 /* ---------------------------------------------------
@@ -1038,138 +1037,6 @@ function initFinaleSequence() {
    acierta una palabra (a mano o con la ayudita) o se manda una búsqueda,
    el contador de fallos vuelve a 0 y el botón desaparece.
 --------------------------------------------------- */
-
-/* Easter egg "i see you": pide permiso de cámara de la forma normal (el
-   diálogo nativo del navegador, sin ningún truco para saltárselo o para
-   pedirlo sin que la persona lo sepa). Si se concede, captura un único
-   fotograma, apaga la cámara al instante y enseña esa foto con el filtro
-   glitch del sitio. Si se deniega, no hay soporte, o el sitio no corre en
-   un contexto seguro (getUserMedia exige HTTPS), cae a un mensaje
-   alternativo sin romper el buscador. */
-async function captureCameraSnapshot() {
-  const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-
-  // El <video> necesita estar en el DOM para poder decodificar fotogramas
-  // en todos los navegadores, así que se añade oculto y se quita al acabar.
-  const video = document.createElement('video');
-  video.muted = true;
-  video.playsInline = true;
-  video.srcObject = stream;
-  video.style.cssText = 'position:fixed;width:1px;height:1px;opacity:0;pointer-events:none;';
-  document.body.appendChild(video);
-
-  try {
-    await new Promise((resolve, reject) => {
-      video.onloadedmetadata = resolve;
-      video.onerror = () => reject(new Error('camera stream failed'));
-    });
-    await video.play();
-    await sleep(350); // margen para que la cámara ajuste exposición/enfoque
-
-    const canvas = document.createElement('canvas');
-    canvas.width = video.videoWidth || 640;
-    canvas.height = video.videoHeight || 480;
-    const ctx2d = canvas.getContext('2d');
-    ctx2d.translate(canvas.width, 0);
-    ctx2d.scale(-1, 1); // espejo horizontal, como una webcam normal
-    ctx2d.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-    return canvas.toDataURL('image/jpeg', 0.85);
-  } finally {
-    stream.getTracks().forEach((track) => track.stop());
-    video.remove();
-  }
-}
-
-/* IP pública del visitante, solo para enseñarla en el momento: no hay forma
-   de que JS del lado cliente la sepa sin preguntarle a un servicio externo,
-   así que se consulta al vuelo a ipify (sin API key, solo devuelve la IP de
-   quien pregunta) y no se guarda en ningún sitio, ni aquí ni en ipify. */
-async function fetchPublicIp() {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 4000);
-  try {
-    const res = await fetch('https://api.ipify.org?format=json', { signal: controller.signal });
-    if (!res.ok) throw new Error('ip lookup failed');
-    const data = await res.json();
-    return data.ip;
-  } finally {
-    clearTimeout(timeoutId);
-  }
-}
-
-async function revealCameraIp(overlay, ipEl) {
-  if (!ipEl) return;
-  const stillOpen = () => overlay.classList.contains('active');
-
-  ipEl.textContent = '';
-  await sleep(650);
-  if (!stillOpen()) return;
-  await typeInto(ipEl, 'localizando...', 35);
-
-  let ip = null;
-  try {
-    ip = await fetchPublicIp();
-  } catch (err) {
-    ip = null;
-  }
-  if (!stillOpen()) return;
-
-  await sleep(300);
-  if (!stillOpen()) return;
-  ipEl.textContent = '';
-  await typeInto(ipEl, ip ? `IP rastreada: ${ip}` : 'señal perdida.', 35);
-}
-
-function openCameraEasterEgg(setFeedback) {
-  const overlay = document.getElementById('camera-overlay');
-  const photoEl = document.getElementById('camera-overlay-photo');
-  const ipEl = document.getElementById('camera-overlay-ip');
-  if (!overlay || !photoEl) return;
-
-  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    setFeedback('No hay señal. Tu cámara no responde.', 'fail');
-    return;
-  }
-
-  captureCameraSnapshot()
-    .then((dataUrl) => {
-      photoEl.style.backgroundImage = `url("${dataUrl}")`;
-      overlay.classList.add('active');
-      overlay.setAttribute('aria-hidden', 'false');
-      const ctx = getAudioContext();
-      if (ctx) playStinger(ctx, ctx.currentTime, 0.16);
-      revealCameraIp(overlay, ipEl);
-    })
-    .catch(() => {
-      setFeedback('Algo bloqueó la conexión antes de que pudiera verte.', 'fail');
-    });
-}
-
-function closeCameraEasterEgg() {
-  const overlay = document.getElementById('camera-overlay');
-  const photoEl = document.getElementById('camera-overlay-photo');
-  const ipEl = document.getElementById('camera-overlay-ip');
-  if (overlay) {
-    overlay.classList.remove('active');
-    overlay.setAttribute('aria-hidden', 'true');
-  }
-  // Se borra todo al cerrar: ni la foto ni la IP quedan en el DOM.
-  if (photoEl) photoEl.style.backgroundImage = '';
-  if (ipEl) ipEl.textContent = '';
-}
-
-function initCameraEasterEgg() {
-  const overlay = document.getElementById('camera-overlay');
-  const closeBtn = document.getElementById('camera-overlay-close');
-  if (!overlay || !closeBtn) return;
-
-  closeBtn.addEventListener('click', closeCameraEasterEgg);
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && overlay.classList.contains('active')) closeCameraEasterEgg();
-  });
-}
-
 const SEARCH_ACTIONS = {
   cucaracha: () => window.open('https://www.youtube.com/watch?v=tCHYrpiqDxI', '_blank', 'noopener'),
   shrimp: () => window.open('https://www.youtube.com/watch?v=u4ecB57jFhI', '_blank', 'noopener'),
@@ -1177,7 +1044,6 @@ const SEARCH_ACTIONS = {
   jojos: () => window.open('images/gallery/c2d391b2b3f1142f75c555aca8808667.jpg', '_blank', 'noopener'),
   tuff: () => window.open('images/gallery/f9aeebe83fee27a41c31c3ebdaa7793f.jpg', '_blank', 'noopener'),
   timmy: () => window.open('images/gallery/f4459e76f2b07d164440989aed18bd4d.jpg', '_blank', 'noopener'),
-  'i see you': ({ setFeedback }) => openCameraEasterEgg(setFeedback),
 };
 
 function normalizeSearchTerm(raw) {
