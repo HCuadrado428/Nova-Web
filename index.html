@@ -255,6 +255,27 @@
     <button class="password-hint-btn" id="password-hint-btn" type="button">Una ayudita?</button>
   </section>
 
+  <!-- ====================================================================
+       EASTER EGG "I SEE YOU": si se busca esa palabra exacta en el buscador
+       de arriba, el navegador pide permiso de cámara de forma normal (el
+       diálogo nativo, sin ningún truco para saltárselo). Si se concede, se
+       captura un único fotograma, se apaga la cámara al instante y se
+       enseña esa foto con el filtro glitch del sitio, junto a la IP pública
+       del visitante (consultada al vuelo a un servicio externo tipo "cuál
+       es mi IP" — es la única forma de que JS del lado cliente la sepa).
+       Ni la foto ni la IP se guardan en ningún sitio: no hay backend, ni
+       localStorage, ni cookies; viven solo en memoria mientras el overlay
+       está abierto y se descartan al cerrarlo. Si se deniega el permiso o
+       no hay soporte, no pasa nada: cae a un mensaje alternativo desde
+       SEARCH_ACTIONS (script.js) sin tocar este bloque.
+       ==================================================================== -->
+  <div class="camera-overlay" id="camera-overlay" aria-hidden="true">
+    <div class="camera-overlay-photo" id="camera-overlay-photo"></div>
+    <div class="camera-overlay-static" aria-hidden="true"></div>
+    <p class="camera-overlay-ip" id="camera-overlay-ip" aria-live="polite"></p>
+    <button class="camera-overlay-close" id="camera-overlay-close" type="button" aria-label="Cerrar">✕</button>
+  </div>
+
   <script src="script.js"></script>
 </body>
 </html>
