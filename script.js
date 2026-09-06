@@ -458,7 +458,6 @@ const LORE_TRACK_ANTES = [
       '¿la humanidad puede hacerlo mejor?',
       'El experimento sigue en marcha.',
       { text: 'Este mundo va a dar la respuesta', emphasis: true },
-      { text: 'Este mundo va a dar la respuesta', emphasis: true },
     ],
   },
   { type: 'video', src: 'images/lv_0_20260207170013.mp4' },
@@ -466,7 +465,7 @@ const LORE_TRACK_ANTES = [
 
 const LORE_TRACK_NOVA = [
   { type: 'title' },
-  { type: 'image', src: 'images/Lore-1.png' },
+  { type: 'image', src: 'images/Lore-1.webp', alt: 'Dos figuras humanoides con capucha blanca en una sala oscura: una con ojos brillantes en cian, la otra con ojos rojos sosteniendo un arma.' },
   {
     // Lore-1
     type: 'text',
@@ -475,7 +474,7 @@ const LORE_TRACK_NOVA = [
       'La Federación lo tenía claro, solo aquellos que actuaron bajo el propósito, para lo que fueron creados, un experimento lleno de memorias, matanzas que llegaron a consecuencias atroces, hijos - si es que se les podía llamar así- llevados al límite en donde el amor paternal llegaba a corromperse, eso era algo sentimental, los sentimientos aquí eran cruciales para que todo estuviera controlado, humanos, solo la mente humana es débil ante lo que se desconoce y te produce miedo, pero.. ¿Qué ocurriría si algo que no era humano llegara a suceder en esa mente?',
     ],
   },
-  { type: 'image', src: 'images/Lore-2.png' },
+  { type: 'image', src: 'images/Lore-2.webp', alt: 'Tres personajes sentados en el borde de un acantilado, mirando la puesta de sol sobre el océano.' },
   {
     // Lore-2
     type: 'text',
@@ -494,7 +493,7 @@ const LORE_TRACK_NOVA = [
       'Los minutos pasaban y esas cuatro llaves no aparecían por ningún lado, los puntos ciegos de esas entidades fueron revisadas, pero nada, lo que llevaba a pensar, no solo eso, estar seguro de que ellos ya se habían adelantado, lo que en resumen era un enfrentamiento que no sabían como terminaria, pensaban en no unir fuerzas por tantas diferencias dadas pero, los habitantes y la Federación de alguna manera sabían que si no se unían, ambos morirían, eso era lo que tenían en común, querer seguir vivos a toda costa, si eso involucra el que olvidan por completo, aunque sea por este momento, todo el sufrimiento que se dieron mutuamente, eso en momentos como este, ya no importaba las diferencias, si la vida de los dos estaban en riesgo lo último que se les pasó por la mente fue algunas de esas escenas que aunque no serían borradas, la adrenalina los cegó.',
     ],
   },
-  { type: 'image', src: 'images/lore-4.png' },
+  { type: 'image', src: 'images/lore-4.webp', alt: 'Tres figuras pálidas y encapuchadas de pie, muy juntas entre sí.' },
   {
     // Lore-4
     type: 'text',
@@ -507,7 +506,8 @@ const LORE_TRACK_NOVA = [
   {
     // Lore-5: la revelación final, sobre la foto de lore-5
     type: 'reveal',
-    src: 'images/lore-5.png',
+    src: 'images/lore-5.webp',
+    alt: 'Interior de un templo submarino en ruinas, con enredaderas y bloques cubiertos de musgo.',
     text: 'Pero tú no eres de este lugar.',
   },
 ];
@@ -528,7 +528,7 @@ function buildLoreSlideElement(slide) {
     const img = document.createElement('img');
     img.className = 'lore-slide-img';
     img.src = slide.src;
-    img.alt = '';
+    img.alt = slide.alt || '';
     el.appendChild(img);
   } else if (slide.type === 'video') {
     el.classList.add('lore-slide-video');
@@ -558,7 +558,7 @@ function buildLoreSlideElement(slide) {
     const img = document.createElement('img');
     img.className = 'lore-reveal-img';
     img.src = slide.src;
-    img.alt = '';
+    img.alt = slide.alt || '';
     const p = document.createElement('p');
     p.className = 'lore-reveal-text glitch';
     p.dataset.text = slide.text;
