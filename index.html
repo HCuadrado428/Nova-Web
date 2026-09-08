@@ -98,7 +98,7 @@
           </a>
         </div>
         <p class="modpack-version">Forge 1.20.1</p>
-        <p class="intro-countdown" id="day-counter"></p>
+        <button class="btn btn-ghost intro-copy-ip" id="copy-ip-btn" type="button">Copiar IP</button>
       </div>
     </div>
 
@@ -122,12 +122,13 @@
   </div>
 
   <!-- Botón Normas: arriba a la derecha, mismo patrón que el botón Lore.
-       Al pulsarlo despliega el submenú con las dos normativas (Discord / Minecraft). -->
+       Al pulsarlo despliega el submenú con las normativas (Discord / Minecraft / Objetos). -->
   <div class="rules-triggers" id="rules-triggers">
     <button class="menu-toggle-btn" id="rules-menu-btn" type="button" aria-expanded="false" aria-controls="rules-submenu">Normas</button>
     <div class="submenu" id="rules-submenu">
       <button class="lore-btn" id="rules-discord-btn" type="button">Discord</button>
       <button class="lore-btn" id="rules-minecraft-btn" type="button">Minecraft</button>
+      <button class="lore-btn" id="rules-objetos-btn" type="button">Objetos</button>
     </div>
   </div>
 
@@ -172,6 +173,7 @@
       <div class="rules-switch" id="rules-switch">
         <button class="rules-switch-btn is-active" id="rules-switch-discord" data-rules-target="discord" type="button">Discord</button>
         <button class="rules-switch-btn" id="rules-switch-minecraft" data-rules-target="minecraft" type="button">Minecraft</button>
+        <button class="rules-switch-btn" id="rules-switch-objetos" data-rules-target="objetos" type="button">Objetos</button>
       </div>
 
       <div class="rules-panel is-active" id="rules-panel-discord">
@@ -202,30 +204,19 @@
         <p class="rules-item"><strong>Borde del mundo:</strong> El límite de bloques es de 14000, esto para mantener el servidor optimizado y enfocado en el roleplay. Habrá un borde el cual, en caso de morir por cruzarlo, no se devolverán las cosas perdidas. El límite para hacer vuestra casa será hasta 5000.</p>
       </div>
 
+      <div class="rules-panel" id="rules-panel-objetos">
+        <h1 class="rules-title glitch" data-text="NORMAS · OBJETOS">NORMAS · OBJETOS</h1>
+        <p class="rules-intro">Objetos cuyo uso u obtención está prohibido en el servidor.</p>
+
+        <p class="rules-item"><strong>Anillo de Odín:</strong> Prohibido.</p>
+      </div>
+
       <div class="rules-footer">
         <p class="rules-item rules-footer-item">Gracias por leer y formar parte de este servidor, queremos darte una buena experiencia.</p>
         <p class="rules-item rules-footer-item">Es importante recordar que estas medidas se implementan para mantener un ambiente de rol seguro y respetuoso para todos los participantes. ¡Gracias por su comprensión y colaboración!</p>
       </div>
     </div>
   </section>
-
-  <!-- ====================================================================
-       SECUENCIA FINAL: a los 25 min de empezar el evento, el título ("NOVA 2")
-       se glitchea y se convierte en el botón "No habrá marcha atrás". Al
-       pulsarlo, esta capa se lo traga todo: pantalla negra, comandos de
-       conexión fallando, un aviso de alguien, estática creciente y, al
-       final, la IP del server en verde. Todo el contenido se genera desde
-       initFinaleSequence() en script.js.
-       ==================================================================== -->
-  <div class="finale-overlay" id="finale-overlay" aria-hidden="true">
-    <div class="finale-static" id="finale-static"></div>
-    <div class="finale-terminal" id="finale-terminal"></div>
-    <div class="finale-reveal" id="finale-reveal">
-      <p class="finale-reveal-label">IP del servidor</p>
-      <p class="finale-reveal-ip" id="finale-reveal-ip"></p>
-      <p class="finale-reveal-hint" id="finale-reveal-hint"></p>
-    </div>
-  </div>
 
   <!-- ====================================================================
        BUSCADOR "INSERTA LA CONTRASEÑA": pantalla aparte, deliberadamente

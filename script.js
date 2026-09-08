@@ -3,13 +3,12 @@
 // ======================================================
 
 document.addEventListener('DOMContentLoaded', () => {
-  initDayCounter();
+  initCopyIpButton();
   initEnterGate();
   initMenuToggle('lore-menu-btn', 'lore-submenu');
   initMenuToggle('rules-menu-btn', 'rules-submenu');
   initLore();
   initRules();
-  initFinaleSequence();
   initPasswordScreen();
 });
 
@@ -38,12 +37,8 @@ function closeMenuToggle(toggleId, submenuId) {
   toggle.setAttribute('aria-expanded', 'false');
 }
 
-/* 06/09/2026 22:00, hora de España peninsular (CEST, UTC+2 en esa fecha) = 20:00 UTC.
-   Se fija como instante UTC para que el evento empiece a la vez para todo el mundo
-   (Argentina, México, etc.), cada uno lo ve a su hora local correspondiente. */
-const START_DATE = new Date('2026-09-06T20:00:00Z');
-// 25 min después de empezar el evento, el título se rompe y aparece el botón final.
-const EVENT_GLITCH_DATE = new Date(START_DATE.getTime() + 25 * 60 * 1000);
+// IP del server, usada por el botón "Copiar IP" de la intro.
+const SERVER_IP = 'xray.dathost.net:17487';
 
 /* ---------------------------------------------------
    Pantalla de entrada
@@ -241,27 +236,6 @@ function playStinger(ctx, when, volume = 0.14) {
   noise.stop(when + 0.32);
 }
 
-/* Tono limpio de "conexión establecida", para la revelación final de la IP:
-   deliberadamente sin ruido, para que contraste con toda la estática previa.
-   Va directo a ctx.destination (no pasa por el bus, que en ese momento está
-   silenciado) para asegurarnos de que suena pase lo que pase. */
-function playRevealTone(ctx) {
-  const now = ctx.currentTime;
-  const osc = ctx.createOscillator();
-  osc.type = 'sine';
-  osc.frequency.setValueAtTime(220, now);
-  osc.frequency.exponentialRampToValueAtTime(660, now + 0.5);
-
-  const gain = ctx.createGain();
-  gain.gain.setValueAtTime(0.0001, now);
-  gain.gain.exponentialRampToValueAtTime(0.1, now + 0.08);
-  gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.9);
-
-  osc.connect(gain).connect(ctx.destination);
-  osc.start(now);
-  osc.stop(now + 0.9);
-}
-
 function playBootAudio() {
   const ctx = getAudioContext();
   if (!ctx) return;
@@ -320,68 +294,23 @@ function playBootAudio() {
 }
 
 /* ---------------------------------------------------
-   Cuenta regresiva hasta el lanzamiento de NOVA 2
-   Cambia START_DATE por la fecha/hora real de inicio de la temporada.
-   Mientras falte, se actualiza en tiempo real (cada segundo). En cuanto
-   se cumpla, cambia automáticamente a contar los días ya transcurridos.
+   Botón "Copiar IP": copia la IP del server al portapapeles al pulsarlo.
 --------------------------------------------------- */
-function initDayCounter() {
-  const el = document.getElementById('day-counter');
-  if (!el) return;
+function initCopyIpButton() {
+  const btn = document.getElementById('copy-ip-btn');
+  if (!btn || !navigator.clipboard) return;
 
-  const pad = (n) => String(n).padStart(2, '0');
-  let currentText = '';
-
-  const render = () => {
-    const diff = START_DATE - new Date();
-
-    if (diff > 0) {
-      const totalSeconds = Math.floor(diff / 1000);
-      const days = Math.floor(totalSeconds / 86400);
-      const hours = Math.floor((totalSeconds % 86400) / 3600);
-      const minutes = Math.floor((totalSeconds % 3600) / 60);
-      const seconds = totalSeconds % 60;
-      currentText = `Faltan ${days}d ${pad(hours)}h ${pad(minutes)}m ${pad(seconds)}s para el lanzamiento de NOVA 2`;
-    } else {
-      currentText = 'Entren al evento en discord.';
-    }
-    el.textContent = currentText;
-  };
-
-  render();
-  setInterval(render, 1000);
-
-  // Tartamudeo ocasional: un dígito se corrompe un instante y se restaura
-  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (!reduceMotion) {
-    const scheduleStutter = () => {
+  const defaultLabel = btn.textContent;
+  btn.addEventListener('click', () => {
+    navigator.clipboard.writeText(SERVER_IP).then(() => {
+      btn.textContent = 'IP copiada';
+      btn.classList.add('is-copied');
       setTimeout(() => {
-        stutterDigit(el, () => currentText);
-        scheduleStutter();
-      }, 4000 + Math.random() * 6000);
-    };
-    scheduleStutter();
-  }
-}
-
-function stutterDigit(el, getText) {
-  const text = getText();
-  const digitIndexes = [];
-  for (let i = 0; i < text.length; i++) {
-    if (/[0-9]/.test(text[i])) digitIndexes.push(i);
-  }
-  if (!digitIndexes.length) return;
-
-  const idx = digitIndexes[Math.floor(Math.random() * digitIndexes.length)];
-  const glitchChar = Math.floor(Math.random() * 10);
-  const corrupted = text.slice(0, idx) + glitchChar + text.slice(idx + 1);
-
-  el.textContent = corrupted;
-  el.classList.add('glitching');
-  setTimeout(() => {
-    el.textContent = getText();
-    el.classList.remove('glitching');
-  }, 70 + Math.random() * 60);
+        btn.textContent = defaultLabel;
+        btn.classList.remove('is-copied');
+      }, 1600);
+    });
+  });
 }
 
 /* ---------------------------------------------------
@@ -705,27 +634,30 @@ function playChannelChangeAudio() {
 }
 
 /* ---------------------------------------------------
-   Normas (Discord / Minecraft)
+   Normas (Discord / Minecraft / Objetos)
    El texto de cada normativa vive directamente en el HTML (rules-panel-discord
-   / rules-panel-minecraft), no hay que generarlo desde aquí. Este bloque solo
-   controla la transición de página (igual que el Lore) y el cambio entre
-   paneles una vez dentro, con los botones rules-switch-btn.
+   / rules-panel-minecraft / rules-panel-objetos), no hay que generarlo desde
+   aquí. Este bloque solo controla la transición de página (igual que el Lore)
+   y el cambio entre paneles una vez dentro, con los botones rules-switch-btn.
 --------------------------------------------------- */
 function initRules() {
   const discordBtn = document.getElementById('rules-discord-btn');
   const minecraftBtn = document.getElementById('rules-minecraft-btn');
+  const objetosBtn = document.getElementById('rules-objetos-btn');
   const backBtn = document.getElementById('rules-back-btn');
   const rulesPage = document.getElementById('rules-page');
   const panels = {
     discord: document.getElementById('rules-panel-discord'),
     minecraft: document.getElementById('rules-panel-minecraft'),
+    objetos: document.getElementById('rules-panel-objetos'),
   };
   const switchBtns = {
     discord: document.getElementById('rules-switch-discord'),
     minecraft: document.getElementById('rules-switch-minecraft'),
+    objetos: document.getElementById('rules-switch-objetos'),
   };
   const transition = document.getElementById('channel-transition');
-  if (!discordBtn || !minecraftBtn || !backBtn || !rulesPage || !panels.discord || !panels.minecraft || !transition) return;
+  if (!discordBtn || !minecraftBtn || !objetosBtn || !backBtn || !rulesPage || !panels.discord || !panels.minecraft || !panels.objetos || !transition) return;
 
   const showPanel = (key) => {
     Object.entries(panels).forEach(([k, el]) => el.classList.toggle('is-active', k === key));
@@ -761,6 +693,7 @@ function initRules() {
 
   discordBtn.addEventListener('click', () => openPanel('discord'));
   minecraftBtn.addEventListener('click', () => openPanel('minecraft'));
+  objetosBtn.addEventListener('click', () => openPanel('objetos'));
   backBtn.addEventListener('click', () => switchTo(false));
 
   Object.entries(switchBtns).forEach(([key, btn]) => {
@@ -771,254 +704,6 @@ function initRules() {
     if (!document.body.classList.contains('view-rules')) return;
     if (e.key === 'Escape') switchTo(false);
   });
-}
-
-/* ---------------------------------------------------
-   Secuencia final (25 min después del lanzamiento, EVENT_GLITCH_DATE)
-   El título "NOVA 2" se rompe cada vez más fuerte hasta detenerse en
-   seco, convertido en el botón "No habrá marcha atrás". Al pulsarlo:
-   pantalla negra y en silencio -> intentos de conexión que fallan uno
-   tras otro, interrumpidos por un aviso de alguien -> mientras tanto la
-   pantalla se glitchea y la estática/ruido crecen poco a poco -> pico de
-   estática total -> corte seco a negro -> la IP del server, tecleada en
-   verde en el centro.
---------------------------------------------------- */
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
-// Escribe letra a letra el texto dentro de un elemento ya insertado en el DOM.
-function typeInto(el, text, speed = 30) {
-  return new Promise((resolve) => {
-    let i = 0;
-    const tick = () => {
-      el.textContent = text.slice(0, i);
-      i += 1;
-      if (i <= text.length) {
-        setTimeout(tick, speed);
-      } else {
-        resolve();
-      }
-    };
-    tick();
-  });
-}
-
-// Añade una línea nueva al terminal de la secuencia final y la escribe letra a letra.
-async function typeLine(container, text, className, speed) {
-  const p = document.createElement('p');
-  p.className = className ? `finale-line ${className}` : 'finale-line';
-  container.appendChild(p);
-  container.scrollTop = container.scrollHeight;
-  await typeInto(p, text, speed);
-  return p;
-}
-
-// Intentos de conexión mostrados durante la secuencia final. "warn" interrumpe
-// los intentos a mitad de la lista con el aviso de alguien que los ve conectarse.
-// Añade, quita o reordena líneas aquí; no hace falta tocar el HTML ni el CSS.
-const FINALE_LINES = [
-  { text: '> iniciando conexión con NOVA_NET...' },
-  { text: '> handshake — tiempo de espera agotado', fail: true },
-  { text: '> reintentando (1/6)...' },
-  { text: '> conexión rechazada por el host', fail: true },
-  { text: '> reintentando (2/6)...' },
-  { warn: '¿Qué hacéis? ¿Estáis locos? No sabéis dónde os estáis metiendo.' },
-  { text: '> reintentando (3/6)...' },
-  { text: '> algo está respondiendo al otro lado', fail: true },
-  { text: '> reintentando (4/6)...' },
-  { text: '> ESO no es un servidor', fail: true },
-  { text: '> reintentando (5/6)...' },
-  { text: '> conexión establecida' },
-];
-
-function initFinaleSequence() {
-  const titleEl = document.getElementById('intro-title');
-  const overlay = document.getElementById('finale-overlay');
-  const staticEl = document.getElementById('finale-static');
-  const terminalEl = document.getElementById('finale-terminal');
-  const revealEl = document.getElementById('finale-reveal');
-  const revealIpEl = document.getElementById('finale-reveal-ip');
-  const revealHintEl = document.getElementById('finale-reveal-hint');
-  if (!titleEl || !overlay || !staticEl || !terminalEl || !revealEl || !revealIpEl) return;
-
-  const SERVER_IP = 'xray.dathost.net:17487';
-  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  let triggered = false;
-  let flashTimer = null;
-
-  const armTitleButton = () => {
-    titleEl.classList.remove('intro-title--breakdown');
-    titleEl.classList.add('intro-title--armed');
-    titleEl.textContent = 'No habrá marcha atrás';
-    titleEl.dataset.text = 'No habrá marcha atrás';
-    titleEl.setAttribute('role', 'button');
-    titleEl.tabIndex = 0;
-    titleEl.setAttribute('aria-label', 'Entrar al evento — no habrá marcha atrás');
-
-    const activate = () => {
-      if (triggered) return;
-      triggered = true;
-      triggerFinale();
-    };
-    titleEl.addEventListener('click', activate);
-    titleEl.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activate(); }
-    });
-  };
-
-  const startTitleBreakdown = () => {
-    // Con "reducir movimiento" activado no hay animación que dispare
-    // "animationend", así que se salta directo al botón final.
-    if (reduceMotion) {
-      armTitleButton();
-      return;
-    }
-    titleEl.classList.add('intro-title--breakdown');
-    const ctx = getAudioContext();
-    if (ctx) {
-      playGlitchBlip(ctx, ctx.currentTime + 0.6, 0.1);
-      playGlitchBlip(ctx, ctx.currentTime + 2.1, 0.14);
-      playStinger(ctx, ctx.currentTime + 3.6, 0.12);
-    }
-    titleEl.addEventListener('animationend', armTitleButton, { once: true });
-  };
-
-  // Si se carga la página ya pasado el instante del glitch, se salta directo
-  // al botón final (sin repetir la animación de ruptura del título).
-  if (Date.now() >= EVENT_GLITCH_DATE) {
-    armTitleButton();
-  } else {
-    const checkGlitchTime = setInterval(() => {
-      if (Date.now() >= EVENT_GLITCH_DATE) {
-        clearInterval(checkGlitchTime);
-        startTitleBreakdown();
-      }
-    }, 1000);
-  }
-
-  // Micro-glitch de pantalla completa (sacudida + separación de canal),
-  // a ritmo cada vez más rápido durante `untilMs`.
-  const flashOnce = () => {
-    overlay.style.setProperty('--flash-x', `${(Math.random() * 16 - 8).toFixed(1)}px`);
-    overlay.style.setProperty('--flash-y', `${(Math.random() * 10 - 5).toFixed(1)}px`);
-    overlay.classList.add('is-flashing');
-    setTimeout(() => overlay.classList.remove('is-flashing'), 110);
-  };
-  const scheduleFlashes = (untilMs) => {
-    const start = Date.now();
-    const tick = () => {
-      const elapsed = Date.now() - start;
-      if (elapsed >= untilMs) { flashTimer = null; return; }
-      flashOnce();
-      const nextDelay = 1000 - (elapsed / untilMs) * 850; // ~1000ms -> ~150ms
-      flashTimer = setTimeout(tick, Math.max(120, nextDelay));
-    };
-    tick();
-  };
-
-  async function triggerFinale() {
-    const ctx = getAudioContext();
-    const bus = ctx ? getStaticBus(ctx) : null;
-
-    // Silencio total y pantalla negra de golpe, tal cual estaba sonando la página
-    if (ctx && bus) {
-      bus.gain.cancelScheduledValues(ctx.currentTime);
-      bus.gain.setValueAtTime(0, ctx.currentTime);
-    }
-    overlay.setAttribute('aria-hidden', 'false');
-    overlay.classList.add('active');
-    staticEl.style.transition = 'opacity 1.1s linear';
-    terminalEl.style.opacity = '1';
-
-    await sleep(1300);
-
-    // Ruido dedicado que irá creciendo con los intentos de conexión
-    let escalationNoise = null;
-    let escalationGain = null;
-    if (ctx && bus) {
-      bus.gain.setValueAtTime(1, ctx.currentTime);
-      escalationNoise = ctx.createBufferSource();
-      escalationNoise.buffer = createNoiseBuffer(ctx, 18);
-      escalationNoise.loop = true;
-      const escalationFilter = ctx.createBiquadFilter();
-      escalationFilter.type = 'bandpass';
-      escalationFilter.frequency.value = 2000;
-      escalationFilter.Q.value = 0.4;
-      escalationGain = ctx.createGain();
-      escalationGain.gain.setValueAtTime(0, ctx.currentTime);
-      escalationNoise.connect(escalationFilter).connect(escalationGain).connect(bus);
-      escalationNoise.start(ctx.currentTime);
-    }
-
-    // ---- Intentos de conexión fallidos, con el aviso interrumpiéndolos ----
-    for (let i = 0; i < FINALE_LINES.length; i += 1) {
-      const item = FINALE_LINES[i];
-      if (item.warn) {
-        await typeLine(terminalEl, item.warn, 'finale-line-warn', 20);
-      } else {
-        await typeLine(terminalEl, item.text, item.fail ? 'finale-line-fail' : '', 24);
-        if (ctx && Math.random() < 0.5) playGlitchBlip(ctx, ctx.currentTime, 0.05);
-      }
-
-      // A partir de un tercio de la secuencia, todo empieza a romperse poco a poco
-      const progress = (i + 1) / FINALE_LINES.length;
-      if (progress > 0.3) {
-        const growth = Math.min(1, (progress - 0.3) / 0.7);
-        staticEl.style.opacity = (growth * 0.85).toFixed(2);
-        if (escalationGain) {
-          escalationGain.gain.cancelScheduledValues(ctx.currentTime);
-          escalationGain.gain.linearRampToValueAtTime(growth * 0.35, ctx.currentTime + 0.5);
-        }
-        if (!reduceMotion && !flashTimer && growth > 0.1) scheduleFlashes(7000);
-      }
-
-      await sleep(260 + Math.random() * 260);
-    }
-
-    // ---- Clímax: la estática y el ruido se lo comen todo ----
-    staticEl.style.transition = 'opacity 0.6s ease';
-    staticEl.style.opacity = '1';
-    terminalEl.style.transition = 'opacity 0.5s ease';
-    terminalEl.style.opacity = '0';
-    if (escalationGain) {
-      escalationGain.gain.cancelScheduledValues(ctx.currentTime);
-      escalationGain.gain.linearRampToValueAtTime(0.6, ctx.currentTime + 0.6);
-    }
-    if (!reduceMotion) scheduleFlashes(1800);
-    await sleep(2000);
-
-    // ---- Corte seco: negro y silencio absolutos ----
-    if (flashTimer) { clearTimeout(flashTimer); flashTimer = null; }
-    overlay.classList.remove('is-flashing');
-    staticEl.style.transition = 'opacity 0.06s linear';
-    staticEl.style.opacity = '0';
-    if (ctx && bus) {
-      if (escalationGain) escalationGain.gain.setValueAtTime(0, ctx.currentTime);
-      if (escalationNoise) { try { escalationNoise.stop(); } catch (err) { /* ya parado */ } }
-      bus.gain.cancelScheduledValues(ctx.currentTime);
-      bus.gain.setValueAtTime(0, ctx.currentTime);
-    }
-
-    await sleep(900);
-
-    // ---- Revelación: la IP del server, tecleada en verde ----
-    revealEl.classList.add('active');
-    if (ctx) playRevealTone(ctx);
-    await typeInto(revealIpEl, SERVER_IP, 110);
-    revealIpEl.classList.add('finale-line-cursor');
-
-    if (revealHintEl) {
-      revealHintEl.textContent = 'Toca para copiar';
-      revealHintEl.classList.add('active');
-      revealIpEl.addEventListener('click', () => {
-        if (!navigator.clipboard) return;
-        navigator.clipboard.writeText(SERVER_IP).then(() => {
-          revealHintEl.textContent = 'Copiado';
-          setTimeout(() => { revealHintEl.textContent = 'Toca para copiar'; }, 1600);
-        });
-      });
-    }
-  }
 }
 
 /* ---------------------------------------------------
