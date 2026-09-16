@@ -1,0 +1,27 @@
+rules_version = '2';
+
+// Reglas de Firestore para "Personajes" (Lore).
+// Cómo aplicarlas: consola de Firebase -> Firestore Database -> Rules ->
+// pegar esto -> Publish. Este archivo es solo una copia de referencia
+// versionada en el repo; Firebase no lo lee directamente desde aquí.
+//
+// Lectura pública (cualquiera puede ver los personajes), escritura solo si
+// el usuario autenticado es el dueño del documento (uid del documento ==
+// uid de Firebase Auth). Esto es lo que de verdad impide que alguien edite
+// el personaje de otra persona -- no los botones de la interfaz, que solo
+// ocultan la opción por comodidad visual.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /personajes/{uid} {
+      allow read: if true;
+      allow create, update: if request.auth != null
+                    && request.auth.uid == uid
+                    && request.resource.data.nombre is string
+                    && request.resource.data.nombre.size() > 0
+                    && request.resource.data.nombre.size() <= 60
+                    && request.resource.data.bloques is list
+                    && request.resource.data.bloques.size() <= 30;
+      allow delete: if request.auth != null && request.auth.uid == uid;
+    }
+  }
+}

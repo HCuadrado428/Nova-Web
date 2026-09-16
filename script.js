@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initMenuToggle('rules-menu-btn', 'rules-submenu');
   initLore();
   initRules();
+  initPersonajes();
   initPasswordScreen();
 });
 
@@ -707,6 +708,413 @@ function initRules() {
 }
 
 /* ---------------------------------------------------
+   Personajes (dentro de Lore)
+   Directorio + perfil de personaje respaldado por Firebase (Auth +
+   Firestore — ver firebase-config.js). Cualquiera puede ver los perfiles
+   sin iniciar sesión; solo quien entra con su cuenta de Google puede
+   crear/editar el suyo (un documento por cuenta, id = uid). El control de
+   quién puede escribir de verdad lo hacen las reglas de Firestore
+   (firestore.rules), no los botones de aquí — estos solo ocultan la
+   opción por comodidad visual.
+   Sigue el mismo patrón de página que initRules(): transición de canal +
+   vistas conmutadas por .is-active.
+--------------------------------------------------- */
+function spotifyUrlToEmbed(url) {
+  const match = /open\.spotify\.com\/(track|album|playlist|episode|show)\/([a-zA-Z0-9]+)/.exec(url || '');
+  if (!match) return null;
+  return `https://open.spotify.com/embed/${match[1]}/${match[2]}`;
+}
+
+// Pinta un bloque de personaje (texto/imagen/spotify). La misma función
+// sirve para la vista de perfil (solo lectura) y como base de cada fila
+// del editor.
+function buildPersonajeBlockElement(bloque) {
+  const wrap = document.createElement('div');
+  wrap.className = `personaje-block personaje-block-${bloque.tipo}`;
+
+  if (bloque.tipo === 'texto') {
+    const p = document.createElement('p');
+    p.className = 'personaje-block-texto-text';
+    p.textContent = bloque.contenido;
+    wrap.appendChild(p);
+  } else if (bloque.tipo === 'imagen') {
+    const img = document.createElement('img');
+    img.className = 'personaje-block-imagen-img';
+    img.src = bloque.contenido;
+    img.alt = '';
+    img.loading = 'lazy';
+    img.addEventListener('error', () => { wrap.hidden = true; });
+    wrap.appendChild(img);
+  } else if (bloque.tipo === 'spotify') {
+    const embedUrl = spotifyUrlToEmbed(bloque.contenido);
+    if (!embedUrl) {
+      wrap.hidden = true;
+    } else {
+      const iframe = document.createElement('iframe');
+      iframe.className = 'personaje-block-spotify-frame';
+      iframe.src = embedUrl;
+      iframe.width = '100%';
+      iframe.height = '152';
+      iframe.allow = 'autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture';
+      iframe.loading = 'lazy';
+      wrap.appendChild(iframe);
+    }
+  }
+
+  return wrap;
+}
+
+function initPersonajes() {
+  const menuBtn = document.getElementById('lore-personajes-btn');
+  const backBtn = document.getElementById('personajes-back-btn');
+  const page = document.getElementById('personajes-page');
+  const transition = document.getElementById('channel-transition');
+
+  const signinBtn = document.getElementById('personajes-signin-btn');
+  const sessionActive = document.getElementById('personajes-session-active');
+  const sessionName = document.getElementById('personajes-session-name');
+  const mineBtn = document.getElementById('personajes-mine-btn');
+  const signoutBtn = document.getElementById('personajes-signout-btn');
+
+  const views = {
+    directory: document.getElementById('personajes-view-directory'),
+    profile: document.getElementById('personajes-view-profile'),
+    editor: document.getElementById('personajes-view-editor'),
+  };
+  const grid = document.getElementById('personajes-grid');
+
+  const profileBackBtn = document.getElementById('personajes-profile-back-btn');
+  const editBtn = document.getElementById('personajes-edit-btn');
+  const profileNameEl = document.getElementById('personajes-profile-name');
+  const profileBlocksEl = document.getElementById('personajes-profile-blocks');
+
+  const editorCancelBtn = document.getElementById('personajes-editor-cancel-btn');
+  const nombreInput = document.getElementById('personajes-input-nombre');
+  const fotoInput = document.getElementById('personajes-input-foto');
+  const editorBlocksEl = document.getElementById('personajes-editor-blocks');
+  const addTextoBtn = document.getElementById('personajes-add-texto-btn');
+  const addImagenBtn = document.getElementById('personajes-add-imagen-btn');
+  const addSpotifyBtn = document.getElementById('personajes-add-spotify-btn');
+  const feedbackEl = document.getElementById('personajes-feedback');
+  const saveBtn = document.getElementById('personajes-save-btn');
+
+  if (!menuBtn || !backBtn || !page || !transition || !signinBtn || !sessionActive || !sessionName
+    || !mineBtn || !signoutBtn || !views.directory || !views.profile || !views.editor || !grid
+    || !profileBackBtn || !editBtn || !profileNameEl || !profileBlocksEl || !editorCancelBtn
+    || !nombreInput || !fotoInput || !editorBlocksEl || !addTextoBtn || !addImagenBtn
+    || !addSpotifyBtn || !feedbackEl || !saveBtn) return;
+
+  // Mientras firebase-config.js siga con los valores de ejemplo (o el SDK no
+  // haya cargado), se desactiva el botón "Personajes" en vez de intentar
+  // conectar con Firebase y romper el resto de la página.
+  if (typeof firebase === 'undefined' || !window.FIREBASE_CONFIG || window.FIREBASE_CONFIG.apiKey === 'TU_API_KEY') {
+    menuBtn.disabled = true;
+    menuBtn.title = 'Personajes: falta configurar Firebase (ver firebase-config.js)';
+    return;
+  }
+
+  let auth;
+  let db;
+  try {
+    if (!firebase.apps.length) firebase.initializeApp(window.FIREBASE_CONFIG);
+    auth = firebase.auth();
+    db = firebase.firestore();
+  } catch (err) {
+    console.error('No se pudo inicializar Firebase:', err);
+    menuBtn.disabled = true;
+    return;
+  }
+  const personajesRef = db.collection('personajes');
+
+  let switching = false;
+  let currentUser = null;
+  let currentProfileUid = null;
+  let editorBloques = [];
+  let editingExisting = false;
+
+  const showView = (key) => {
+    Object.entries(views).forEach(([k, el]) => el.classList.toggle('is-active', k === key));
+    page.scrollTop = 0;
+  };
+
+  const setFeedback = (text, tone) => {
+    feedbackEl.textContent = text || '';
+    feedbackEl.classList.remove('is-fail', 'is-ok');
+    if (tone) feedbackEl.classList.add(tone === 'ok' ? 'is-ok' : 'is-fail');
+  };
+
+  const switchTo = (showPersonajes) => {
+    if (switching) return;
+    switching = true;
+
+    transition.classList.add('active');
+    playChannelChangeAudio();
+
+    setTimeout(() => {
+      document.body.classList.toggle('view-personajes', showPersonajes);
+      if (showPersonajes) {
+        showView('directory');
+        renderDirectory();
+      }
+    }, 750);
+
+    setTimeout(() => {
+      transition.classList.remove('active');
+      switching = false;
+    }, 1300);
+  };
+
+  // ---- Directorio ----
+  function renderDirectory() {
+    personajesRef.get().then((snapshot) => {
+      grid.innerHTML = '';
+      if (snapshot.empty) {
+        const empty = document.createElement('p');
+        empty.className = 'personajes-empty';
+        empty.textContent = 'Todavía no hay personajes. ¡Sé el primero!';
+        grid.appendChild(empty);
+        return;
+      }
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        const card = document.createElement('button');
+        card.type = 'button';
+        card.className = 'personajes-card';
+        if (data.fotoUrl) {
+          const img = document.createElement('img');
+          img.className = 'personajes-card-photo';
+          img.src = data.fotoUrl;
+          img.alt = '';
+          img.loading = 'lazy';
+          img.addEventListener('error', () => {
+            img.remove();
+            card.classList.add('is-photoless');
+          });
+          card.appendChild(img);
+        } else {
+          card.classList.add('is-photoless');
+        }
+        const name = document.createElement('span');
+        name.className = 'personajes-card-name';
+        name.textContent = data.nombre || 'Sin nombre';
+        card.appendChild(name);
+        card.addEventListener('click', () => openProfile(doc.id, data));
+        grid.appendChild(card);
+      });
+    }).catch((err) => {
+      console.error('No se pudieron cargar los personajes:', err);
+    });
+  }
+
+  // ---- Perfil (solo lectura) ----
+  function openProfile(uid, data) {
+    currentProfileUid = uid;
+    profileNameEl.textContent = data.nombre || 'Sin nombre';
+    profileNameEl.dataset.text = data.nombre || '';
+    profileBlocksEl.innerHTML = '';
+    (data.bloques || []).forEach((bloque) => {
+      profileBlocksEl.appendChild(buildPersonajeBlockElement(bloque));
+    });
+    editBtn.hidden = !(currentUser && currentUser.uid === uid);
+    showView('profile');
+  }
+
+  profileBackBtn.addEventListener('click', () => {
+    showView('directory');
+    renderDirectory();
+  });
+
+  editBtn.addEventListener('click', () => {
+    if (!currentUser || currentProfileUid !== currentUser.uid) return;
+    personajesRef.doc(currentUser.uid).get().then((doc) => {
+      openEditor(doc.exists ? doc.data() : null);
+    });
+  });
+
+  // ---- Editor ----
+  function renderEditorBlocks() {
+    editorBlocksEl.innerHTML = '';
+    editorBloques.forEach((bloque, index) => {
+      const row = document.createElement('div');
+      row.className = 'personajes-editor-block';
+
+      const controls = document.createElement('div');
+      controls.className = 'personajes-editor-block-controls';
+
+      const upBtn = document.createElement('button');
+      upBtn.type = 'button';
+      upBtn.className = 'personajes-block-move-btn';
+      upBtn.textContent = '▲';
+      upBtn.disabled = index === 0;
+      upBtn.addEventListener('click', () => {
+        [editorBloques[index - 1], editorBloques[index]] = [editorBloques[index], editorBloques[index - 1]];
+        renderEditorBlocks();
+      });
+
+      const downBtn = document.createElement('button');
+      downBtn.type = 'button';
+      downBtn.className = 'personajes-block-move-btn';
+      downBtn.textContent = '▼';
+      downBtn.disabled = index === editorBloques.length - 1;
+      downBtn.addEventListener('click', () => {
+        [editorBloques[index + 1], editorBloques[index]] = [editorBloques[index], editorBloques[index + 1]];
+        renderEditorBlocks();
+      });
+
+      const removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className = 'personajes-block-remove-btn';
+      removeBtn.textContent = '✕';
+      removeBtn.addEventListener('click', () => {
+        editorBloques.splice(index, 1);
+        renderEditorBlocks();
+      });
+
+      controls.append(upBtn, downBtn, removeBtn);
+      row.appendChild(controls);
+
+      let field;
+      if (bloque.tipo === 'texto') {
+        field = document.createElement('textarea');
+        field.className = 'personajes-input personajes-block-textarea';
+        field.rows = 3;
+        field.placeholder = 'Escribe aquí...';
+      } else {
+        field = document.createElement('input');
+        field.className = 'personajes-input';
+        field.type = 'url';
+        field.placeholder = bloque.tipo === 'imagen'
+          ? 'Link de imagen (https://...)'
+          : 'Link de Spotify (https://open.spotify.com/...)';
+      }
+      field.value = bloque.contenido || '';
+      field.addEventListener('input', () => { bloque.contenido = field.value; });
+      row.appendChild(field);
+
+      editorBlocksEl.appendChild(row);
+    });
+  }
+
+  function addBlock(tipo) {
+    editorBloques.push({ id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, tipo, contenido: '' });
+    renderEditorBlocks();
+  }
+  addTextoBtn.addEventListener('click', () => addBlock('texto'));
+  addImagenBtn.addEventListener('click', () => addBlock('imagen'));
+  addSpotifyBtn.addEventListener('click', () => addBlock('spotify'));
+
+  function openEditor(data) {
+    editingExisting = !!data;
+    nombreInput.value = data ? (data.nombre || '') : '';
+    fotoInput.value = data ? (data.fotoUrl || '') : '';
+    editorBloques = data && Array.isArray(data.bloques) ? data.bloques.map((b) => ({ ...b })) : [];
+    renderEditorBlocks();
+    setFeedback('', null);
+    showView('editor');
+  }
+
+  editorCancelBtn.addEventListener('click', () => {
+    if (currentUser && currentProfileUid === currentUser.uid) {
+      showView('profile');
+    } else {
+      showView('directory');
+      renderDirectory();
+    }
+  });
+
+  saveBtn.addEventListener('click', () => {
+    if (!currentUser) return;
+    const nombre = nombreInput.value.trim();
+    if (!nombre) {
+      setFeedback('Ponle un nombre a tu personaje.', 'fail');
+      return;
+    }
+    if (nombre.length > 60) {
+      setFeedback('El nombre es demasiado largo (máx. 60 caracteres).', 'fail');
+      return;
+    }
+    const fotoUrl = fotoInput.value.trim();
+    if (fotoUrl && !/^https?:\/\//i.test(fotoUrl)) {
+      setFeedback('El link de la foto debe empezar por http:// o https://', 'fail');
+      return;
+    }
+
+    const bloques = editorBloques
+      .map((b) => ({ id: b.id, tipo: b.tipo, contenido: (b.contenido || '').trim() }))
+      .filter((b) => b.contenido);
+
+    saveBtn.disabled = true;
+    setFeedback('Guardando...', null);
+
+    const payload = {
+      nombre,
+      fotoUrl: fotoUrl || null,
+      bloques,
+      actualizadoEn: firebase.firestore.FieldValue.serverTimestamp(),
+    };
+    const docRef = personajesRef.doc(currentUser.uid);
+    const write = editingExisting
+      ? docRef.update(payload)
+      : docRef.set({ ...payload, creadoEn: firebase.firestore.FieldValue.serverTimestamp() });
+
+    write.then(() => {
+      editingExisting = true;
+      mineBtn.textContent = 'Mi personaje';
+      currentProfileUid = currentUser.uid;
+      openProfile(currentUser.uid, { nombre, fotoUrl: fotoUrl || null, bloques });
+    }).catch((err) => {
+      console.error('No se pudo guardar el personaje:', err);
+      setFeedback('No se pudo guardar. Inténtalo de nuevo.', 'fail');
+    }).finally(() => {
+      saveBtn.disabled = false;
+    });
+  });
+
+  // ---- Sesión ----
+  auth.onAuthStateChanged((user) => {
+    currentUser = user;
+    signinBtn.hidden = !!user;
+    sessionActive.hidden = !user;
+    mineBtn.hidden = true;
+    if (user) {
+      sessionName.textContent = user.displayName || user.email || 'Cuenta de Google';
+      personajesRef.doc(user.uid).get().then((doc) => {
+        mineBtn.hidden = false;
+        mineBtn.textContent = doc.exists ? 'Mi personaje' : 'Crear personaje';
+      });
+    }
+    if (views.profile.classList.contains('is-active')) {
+      editBtn.hidden = !(user && currentProfileUid === user.uid);
+    }
+  });
+
+  signinBtn.addEventListener('click', () => {
+    auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch((err) => {
+      console.error('Fallo el login con Google:', err);
+    });
+  });
+  signoutBtn.addEventListener('click', () => auth.signOut());
+  mineBtn.addEventListener('click', () => {
+    if (!currentUser) return;
+    personajesRef.doc(currentUser.uid).get().then((doc) => {
+      openEditor(doc.exists ? doc.data() : null);
+    });
+  });
+
+  // ---- Entrada / salida de la página ----
+  menuBtn.addEventListener('click', () => {
+    closeMenuToggle('lore-menu-btn', 'lore-submenu');
+    switchTo(true);
+  });
+  backBtn.addEventListener('click', () => switchTo(false));
+
+  document.addEventListener('keydown', (e) => {
+    if (!document.body.classList.contains('view-personajes')) return;
+    if (e.key === 'Escape') switchTo(false);
+  });
+}
+
+/* ---------------------------------------------------
    Buscador "Inserta la contraseña"
    Pantalla aparte, deliberadamente limpia (sin estática ni glitches): solo
    una barra de búsqueda y un botón "Buscar". Cada palabra que hace algo se
@@ -724,6 +1132,9 @@ function initRules() {
 --------------------------------------------------- */
 const SEARCH_ACTIONS = {
   rick: () => window.open('https://www.youtube.com/watch?v=dQw4w9WgXcQ', '_blank', 'noopener'),
+  amogus: () => window.open('https://www.youtube.com/watch?v=gVylTS6Y1Bs', '_blank', 'noopener'),
+  sus: () => window.open('https://www.youtube.com/watch?v=gVylTS6Y1Bs', '_blank', 'noopener'),
+  creeper: () => window.open('https://www.youtube.com/watch?v=8n0iZgLDCSg', '_blank', 'noopener'),
   cucaracha: () => window.open('https://www.youtube.com/watch?v=tCHYrpiqDxI', '_blank', 'noopener'),
   shrimp: () => window.open('https://www.youtube.com/watch?v=u4ecB57jFhI', '_blank', 'noopener'),
   house: () => window.open('images/gallery/646390b727116f4c2c5eee161238ff86.jpg', '_blank', 'noopener'),

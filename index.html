@@ -112,12 +112,13 @@
   </section>
 
   <!-- Botón Lore: arriba a la izquierda, aparece junto al resto del contenido tras el boot.
-       Al pulsarlo despliega el submenú con las dos pistas (Antes del Nova / Nova). -->
+       Al pulsarlo despliega el submenú con las pistas (Antes del Nova / Nova / Personajes). -->
   <div class="lore-triggers">
     <button class="menu-toggle-btn" id="lore-menu-btn" type="button" aria-expanded="false" aria-controls="lore-submenu">Lore</button>
     <div class="submenu" id="lore-submenu">
       <button class="lore-btn" id="lore-antes-btn" type="button">Antes del Nova</button>
       <button class="lore-btn" id="lore-nova-btn" type="button">Nova</button>
+      <button class="lore-btn" id="lore-personajes-btn" type="button">Personajes</button>
     </div>
   </div>
 
@@ -219,6 +220,65 @@
   </section>
 
   <!-- ====================================================================
+       PERSONAJES: dentro de Lore. Cualquiera puede ver los perfiles ya
+       creados (directorio + vista de perfil, solo lectura). Quien inicia
+       sesión con Google puede crear/editar el suyo (nombre, foto y bloques
+       de texto/imagen/spotify reordenables). Todo lo dinámico lo genera
+       initPersonajes() en script.js contra Firebase (Auth + Firestore) —
+       ver firebase-config.js para la configuración del proyecto.
+       ==================================================================== -->
+  <section class="personajes-page" id="personajes-page">
+    <button class="personajes-back-btn" id="personajes-back-btn" type="button">← Volver</button>
+
+    <div class="personajes-viewer">
+      <div class="personajes-session" id="personajes-session">
+        <button class="lore-btn" id="personajes-signin-btn" type="button">Entrar con Google</button>
+        <div class="personajes-session-active" id="personajes-session-active" hidden>
+          <span class="personajes-session-name" id="personajes-session-name"></span>
+          <button class="lore-btn" id="personajes-mine-btn" type="button" hidden>Mi personaje</button>
+          <button class="lore-btn" id="personajes-signout-btn" type="button">Cerrar sesión</button>
+        </div>
+      </div>
+
+      <div class="personajes-view is-active" id="personajes-view-directory">
+        <h1 class="rules-title glitch" data-text="PERSONAJES">PERSONAJES</h1>
+        <div class="personajes-grid" id="personajes-grid"></div>
+      </div>
+
+      <div class="personajes-view" id="personajes-view-profile">
+        <button class="lore-nav-btn" id="personajes-profile-back-btn" type="button">← Directorio</button>
+        <button class="lore-btn personajes-edit-btn" id="personajes-edit-btn" type="button" hidden>Editar</button>
+        <h1 class="rules-title glitch" id="personajes-profile-name" data-text=""></h1>
+        <div class="personajes-blocks" id="personajes-profile-blocks"></div>
+      </div>
+
+      <div class="personajes-view" id="personajes-view-editor">
+        <button class="lore-nav-btn" id="personajes-editor-cancel-btn" type="button">← Cancelar</button>
+
+        <label class="personajes-field-label" for="personajes-input-nombre">Nombre del personaje</label>
+        <input class="personajes-input" id="personajes-input-nombre" type="text" maxlength="60" placeholder="Nombre">
+
+        <label class="personajes-field-label" for="personajes-input-foto">Link de foto de perfil (opcional)</label>
+        <input class="personajes-input" id="personajes-input-foto" type="url" placeholder="https://...">
+
+        <div class="personajes-editor-blocks" id="personajes-editor-blocks"></div>
+
+        <div class="personajes-add-block">
+          <button class="rules-switch-btn" id="personajes-add-texto-btn" type="button">+ Texto</button>
+          <button class="rules-switch-btn" id="personajes-add-imagen-btn" type="button">+ Imagen</button>
+          <button class="rules-switch-btn" id="personajes-add-spotify-btn" type="button">+ Spotify</button>
+        </div>
+
+        <p class="personajes-feedback" id="personajes-feedback" aria-live="polite"></p>
+
+        <div class="personajes-editor-actions">
+          <button class="btn btn-primary" id="personajes-save-btn" type="button">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================================================================
        BUSCADOR "INSERTA LA CONTRASEÑA": pantalla aparte, deliberadamente
        limpia (sin estática ni glitches) con un buscador. Las palabras que
        hacen algo se definen en SEARCH_ACTIONS (script.js); cada 3 fallos
@@ -246,6 +306,16 @@
     <button class="password-hint-btn" id="password-hint-btn" type="button">Una ayudita?</button>
   </section>
 
+  <!--
+    FIREBASE (Personajes):
+    Build "compat" para poder usar el global `firebase.*` desde script.js
+    tal cual, sin convertirlo a ES modules. Versión fijada a propósito
+    (ver firebase-config.js para la configuración real del proyecto).
+  -->
+  <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
