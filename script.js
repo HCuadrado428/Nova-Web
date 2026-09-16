@@ -797,12 +797,13 @@ function initPersonajes() {
   const addSpotifyBtn = document.getElementById('personajes-add-spotify-btn');
   const feedbackEl = document.getElementById('personajes-feedback');
   const saveBtn = document.getElementById('personajes-save-btn');
+  const deleteBtn = document.getElementById('personajes-delete-btn');
 
   if (!menuBtn || !backBtn || !page || !transition || !signinBtn || !sessionActive || !sessionName
     || !mineBtn || !signoutBtn || !views.directory || !views.profile || !views.editor || !grid
     || !profileBackBtn || !editBtn || !profileNameEl || !profileBlocksEl || !editorCancelBtn
     || !nombreInput || !fotoInput || !editorBlocksEl || !addTextoBtn || !addImagenBtn
-    || !addSpotifyBtn || !feedbackEl || !saveBtn) return;
+    || !addSpotifyBtn || !feedbackEl || !saveBtn || !deleteBtn) return;
 
   // Mientras firebase-config.js siga con los valores de ejemplo (o el SDK no
   // haya cargado), se desactiva el botón "Personajes" en vez de intentar
@@ -1010,6 +1011,7 @@ function initPersonajes() {
     editorBloques = data && Array.isArray(data.bloques) ? data.bloques.map((b) => ({ ...b })) : [];
     renderEditorBlocks();
     setFeedback('', null);
+    deleteBtn.hidden = !editingExisting;
     showView('editor');
   }
 
@@ -1067,6 +1069,27 @@ function initPersonajes() {
       setFeedback('No se pudo guardar. Inténtalo de nuevo.', 'fail');
     }).finally(() => {
       saveBtn.disabled = false;
+    });
+  });
+
+  deleteBtn.addEventListener('click', () => {
+    if (!currentUser || !editingExisting) return;
+    const ok = window.confirm('¿Seguro que quieres eliminar tu personaje? Esto no se puede deshacer.');
+    if (!ok) return;
+
+    deleteBtn.disabled = true;
+    setFeedback('Eliminando...', null);
+
+    personajesRef.doc(currentUser.uid).delete().then(() => {
+      editingExisting = false;
+      mineBtn.textContent = 'Crear personaje';
+      showView('directory');
+      renderDirectory();
+    }).catch((err) => {
+      console.error('No se pudo eliminar el personaje:', err);
+      setFeedback('No se pudo eliminar. Inténtalo de nuevo.', 'fail');
+    }).finally(() => {
+      deleteBtn.disabled = false;
     });
   });
 

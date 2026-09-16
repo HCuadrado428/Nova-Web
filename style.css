@@ -1493,6 +1493,28 @@ body.view-personajes .personajes-page {
 
 .personajes-editor-actions {
   margin-top: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.personajes-delete-btn {
+  background: transparent;
+  border: 1px solid rgba(255, 46, 99, 0.45);
+  color: var(--glitch-red);
+  font-family: var(--font-display);
+  font-size: 0.65rem;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 11px 20px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.personajes-delete-btn:hover {
+  background: rgba(255, 46, 99, 0.12);
+  color: #fff;
 }
 
 /* ---------- Accesibilidad: respeta "reducir movimiento" ---------- */
