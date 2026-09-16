@@ -723,6 +723,7 @@ function initRules() {
    el contador de fallos vuelve a 0 y el botón desaparece.
 --------------------------------------------------- */
 const SEARCH_ACTIONS = {
+  rick: () => window.open('https://www.youtube.com/watch?v=dQw4w9WgXcQ', '_blank', 'noopener'),
   cucaracha: () => window.open('https://www.youtube.com/watch?v=tCHYrpiqDxI', '_blank', 'noopener'),
   shrimp: () => window.open('https://www.youtube.com/watch?v=u4ecB57jFhI', '_blank', 'noopener'),
   house: () => window.open('images/gallery/646390b727116f4c2c5eee161238ff86.jpg', '_blank', 'noopener'),
