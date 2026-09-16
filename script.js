@@ -729,7 +729,6 @@ const SEARCH_ACTIONS = {
   house: () => window.open('images/gallery/646390b727116f4c2c5eee161238ff86.jpg', '_blank', 'noopener'),
   jojos: () => window.open('images/gallery/c2d391b2b3f1142f75c555aca8808667.jpg', '_blank', 'noopener'),
   tuff: () => window.open('images/gallery/f9aeebe83fee27a41c31c3ebdaa7793f.jpg', '_blank', 'noopener'),
-  timmy: () => window.open('images/gallery/f4459e76f2b07d164440989aed18bd4d.jpg', '_blank', 'noopener'),
 };
 
 function normalizeSearchTerm(raw) {
