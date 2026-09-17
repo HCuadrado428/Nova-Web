@@ -550,6 +550,22 @@ body.booted .intro-hero-inner {
   background: rgba(46, 204, 113, 0.14);
 }
 
+.server-status {
+  margin: 14px 0 0;
+  font-family: var(--font-display);
+  font-size: 0.65rem;
+  letter-spacing: 0.5px;
+  color: rgba(234, 230, 218, 0.4);
+}
+.server-status.is-online {
+  color: var(--emerald);
+  text-shadow: 0 0 10px rgba(46, 204, 113, 0.4);
+}
+.server-status.is-offline {
+  color: var(--glitch-red);
+  text-shadow: 0 0 10px rgba(255, 46, 99, 0.4);
+}
+
 /* ---------- Botones Lore / Normas (toggle + submenú) / Volver ---------- */
 .lore-triggers {
   position: fixed;

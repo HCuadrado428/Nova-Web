@@ -4,6 +4,7 @@
 
 document.addEventListener('DOMContentLoaded', () => {
   initCopyIpButton();
+  initServerStatus();
   initEnterGate();
   initMenuToggle('lore-menu-btn', 'lore-submenu');
   initMenuToggle('rules-menu-btn', 'rules-submenu');
@@ -323,6 +324,40 @@ function initCopyIpButton() {
       }, 1600);
     });
   });
+}
+
+/* ---------------------------------------------------
+   Estado del server: online/offline + jugadores conectados, vía la API
+   pública de mcsrvstat.us (sin clave, CORS abierto). Se refresca solo cada
+   minuto; si la API falla o tarda, se deja un mensaje neutro en vez de
+   quedarse en "comprobando..." para siempre.
+--------------------------------------------------- */
+function initServerStatus() {
+  const el = document.getElementById('server-status');
+  if (!el) return;
+
+  const render = () => {
+    fetch(`https://api.mcsrvstat.us/3/${SERVER_IP}`)
+      .then((res) => res.json())
+      .then((data) => {
+        el.classList.remove('is-online', 'is-offline');
+        if (data.online) {
+          const jugadores = data.players ? `${data.players.online}/${data.players.max}` : '?';
+          el.textContent = `● Server online — ${jugadores} jugadores`;
+          el.classList.add('is-online');
+        } else {
+          el.textContent = '● Server offline';
+          el.classList.add('is-offline');
+        }
+      })
+      .catch(() => {
+        el.textContent = 'Estado del server no disponible ahora mismo.';
+        el.classList.remove('is-online', 'is-offline');
+      });
+  };
+
+  render();
+  setInterval(render, 60000);
 }
 
 /* ---------------------------------------------------
