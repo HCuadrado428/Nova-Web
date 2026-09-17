@@ -34,6 +34,12 @@ service cloud.firestore {
                       && request.resource.data.texto is string
                       && request.resource.data.texto.size() > 0
                       && request.resource.data.texto.size() <= 500;
+        allow update: if request.auth != null
+                      && request.auth.uid == resource.data.autorUid
+                      && request.resource.data.autorUid == resource.data.autorUid
+                      && request.resource.data.texto is string
+                      && request.resource.data.texto.size() > 0
+                      && request.resource.data.texto.size() <= 500;
         allow delete: if request.auth != null
                       && (request.auth.uid == resource.data.autorUid || request.auth.uid == uid);
       }

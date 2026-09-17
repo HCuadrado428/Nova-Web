@@ -89,6 +89,17 @@ function initEnterGate() {
     document.body.classList.add('booted');
 
     playBootAudio();
+
+    // Link directo a un personaje (#personaje/<uid>): espera a que se haya
+    // revelado el botón de Lore (intro-reveal, ~3.15s) antes de saltar, para
+    // no interrumpir la propia animación de entrada.
+    const deepLinkMatch = /^#personaje\/(.+)$/.exec(location.hash);
+    if (deepLinkMatch) {
+      const uid = decodeURIComponent(deepLinkMatch[1]);
+      setTimeout(() => {
+        if (window.__openPersonajeFromHash) window.__openPersonajeFromHash(uid);
+      }, 3000);
+    }
   };
 
   gate.addEventListener('click', enter);
@@ -895,6 +906,14 @@ function initPersonajes() {
     if (tone) feedbackEl.classList.add(tone === 'ok' ? 'is-ok' : 'is-fail');
   };
 
+  // Link directo a un personaje: refleja/limpia #personaje/<uid> en la URL
+  // según la vista, sin tocar el historial (replaceState, no pushState).
+  const setProfileHash = (uid) => {
+    const hash = uid ? `#personaje/${uid}` : '';
+    if (location.hash === hash) return;
+    history.replaceState(null, '', hash || (location.pathname + location.search));
+  };
+
   const switchTo = (showPersonajes) => {
     if (switching) return;
     switching = true;
@@ -907,6 +926,8 @@ function initPersonajes() {
       if (showPersonajes) {
         showView('directory');
         renderDirectory();
+      } else {
+        setProfileHash(null);
       }
     }, 750);
 
@@ -961,6 +982,7 @@ function initPersonajes() {
   }
 
   function renderDirectory() {
+    setProfileHash(null);
     personajesRef.orderBy('actualizadoEn', 'desc').get().then((snapshot) => {
       allPersonajes = [];
       snapshot.forEach((doc) => allPersonajes.push({ id: doc.id, data: doc.data() }));
@@ -1014,12 +1036,51 @@ function initPersonajes() {
       }));
     });
     editBtn.hidden = !(currentUser && currentUser.uid === uid);
+    if (currentUser && currentUser.uid === uid) {
+      markCommentsSeen(uid);
+      mineBtn.classList.remove('personajes-has-badge');
+    }
     updateCommentFormVisibility();
     renderComments(uid);
     showView('profile');
+    setProfileHash(uid);
   }
 
   // ---- Comentarios ----
+  function toMillis(valor) {
+    if (valor && typeof valor.toMillis === 'function') return valor.toMillis();
+    if (valor) return new Date(valor).getTime();
+    return 0;
+  }
+
+  const commentsSeenKey = (uid) => `personajes_comentarios_vistos_${uid}`;
+
+  function markCommentsSeen(uid) {
+    try {
+      localStorage.setItem(commentsSeenKey(uid), String(Date.now()));
+    } catch (err) {
+      // localStorage no disponible (modo privado, etc.): no pasa nada, solo no se recuerda.
+    }
+  }
+
+  function checkUnreadComments(uid) {
+    let lastSeen = 0;
+    try {
+      lastSeen = Number(localStorage.getItem(commentsSeenKey(uid))) || 0;
+    } catch (err) {
+      // ignorar
+    }
+    personajesRef.doc(uid).collection('comentarios').get().then((snapshot) => {
+      let hayNuevos = false;
+      snapshot.forEach((doc) => {
+        if (toMillis(doc.data().creadoEn) > lastSeen) hayNuevos = true;
+      });
+      mineBtn.classList.toggle('personajes-has-badge', hayNuevos);
+    }).catch(() => {
+      // si falla (p.ej. las reglas de comentarios aún no están publicadas), simplemente no se muestra aviso
+    });
+  }
+
   function renderComments(uid) {
     commentsListEl.innerHTML = '';
     personajesRef.doc(uid).collection('comentarios').orderBy('creadoEn').get().then((snapshot) => {
@@ -1043,7 +1104,18 @@ function initPersonajes() {
         author.textContent = data.autorNombre || 'Alguien';
         header.appendChild(author);
 
-        if (currentUser && (currentUser.uid === data.autorUid || currentUser.uid === uid)) {
+        const isAuthor = currentUser && currentUser.uid === data.autorUid;
+
+        if (isAuthor) {
+          const editCommentBtn = document.createElement('button');
+          editCommentBtn.type = 'button';
+          editCommentBtn.className = 'personajes-comment-edit-btn';
+          editCommentBtn.textContent = 'Editar';
+          editCommentBtn.addEventListener('click', () => startEditingComment(uid, doc.id, text));
+          header.appendChild(editCommentBtn);
+        }
+
+        if (currentUser && (isAuthor || currentUser.uid === uid)) {
           const removeBtn = document.createElement('button');
           removeBtn.type = 'button';
           removeBtn.className = 'personajes-comment-remove-btn';
@@ -1057,7 +1129,13 @@ function initPersonajes() {
         item.appendChild(header);
         const text = document.createElement('p');
         text.className = 'personajes-comment-text';
-        text.textContent = data.texto;
+        text.textContent = data.texto + (data.editadoEn ? ' ' : '');
+        if (data.editadoEn) {
+          const editedTag = document.createElement('span');
+          editedTag.className = 'personajes-comment-edited-tag';
+          editedTag.textContent = '(editado)';
+          text.appendChild(editedTag);
+        }
         item.appendChild(text);
 
         commentsListEl.appendChild(item);
@@ -1065,6 +1143,49 @@ function initPersonajes() {
     }).catch((err) => {
       console.error('No se pudieron cargar los comentarios:', err);
     });
+  }
+
+  // Sustituye el <p> de un comentario por un textarea + Guardar/Cancelar,
+  // in situ, sin reordenar la lista. Solo lo llama el propio autor (ver
+  // renderComments) -- las reglas de Firestore son las que de verdad lo
+  // impiden para cualquier otra persona.
+  function startEditingComment(uid, commentId, textEl) {
+    const original = textEl.textContent.replace(/\s*\(editado\)\s*$/, '');
+
+    const textarea = document.createElement('textarea');
+    textarea.className = 'personajes-input personajes-block-textarea';
+    textarea.maxLength = 500;
+    textarea.value = original;
+
+    const actions = document.createElement('div');
+    actions.className = 'personajes-comment-edit-actions';
+    const saveBtnEl = document.createElement('button');
+    saveBtnEl.type = 'button';
+    saveBtnEl.className = 'rules-switch-btn';
+    saveBtnEl.textContent = 'Guardar';
+    const cancelBtnEl = document.createElement('button');
+    cancelBtnEl.type = 'button';
+    cancelBtnEl.className = 'personajes-comment-edit-btn';
+    cancelBtnEl.textContent = 'Cancelar';
+
+    saveBtnEl.addEventListener('click', () => {
+      const nuevo = textarea.value.trim();
+      if (!nuevo) return;
+      saveBtnEl.disabled = true;
+      personajesRef.doc(uid).collection('comentarios').doc(commentId).update({
+        texto: nuevo,
+        editadoEn: firebase.firestore.FieldValue.serverTimestamp(),
+      }).then(() => {
+        renderComments(uid);
+      }).catch((err) => {
+        console.error('No se pudo editar el comentario:', err);
+        saveBtnEl.disabled = false;
+      });
+    });
+    cancelBtnEl.addEventListener('click', () => renderComments(uid));
+
+    actions.append(saveBtnEl, cancelBtnEl);
+    textEl.replaceWith(textarea, actions);
   }
 
   commentForm.addEventListener('submit', (e) => {
@@ -1212,6 +1333,7 @@ function initPersonajes() {
   addRelacionBtn.addEventListener('click', () => addBlock('relacion'));
 
   function openEditor(data) {
+    setProfileHash(null);
     editingExisting = !!data;
     nombreInput.value = data ? (data.nombre || '') : '';
     fotoInput.value = data ? (data.fotoUrl || '') : '';
@@ -1320,11 +1442,13 @@ function initPersonajes() {
     signinBtn.hidden = !!user;
     sessionActive.hidden = !user;
     mineBtn.hidden = true;
+    mineBtn.classList.remove('personajes-has-badge');
     if (user) {
       sessionName.textContent = user.displayName || user.email || 'Cuenta de Google';
       personajesRef.doc(user.uid).get().then((doc) => {
         mineBtn.hidden = false;
         mineBtn.textContent = doc.exists ? 'Mi personaje' : 'Crear personaje';
+        if (doc.exists) checkUnreadComments(user.uid);
       });
     }
     if (views.profile.classList.contains('is-active')) {
@@ -1372,6 +1496,14 @@ function initPersonajes() {
     if (!document.body.classList.contains('view-personajes')) return;
     if (e.key === 'Escape') switchTo(false);
   });
+
+  // Enganche para el link directo a un personaje -- lo llama initEnterGate()
+  // tras revelarse la intro si la URL cargó con #personaje/<uid>.
+  window.__openPersonajeFromHash = (uid) => {
+    closeMenuToggle('lore-menu-btn', 'lore-submenu');
+    switchTo(true);
+    setTimeout(() => goToProfile(uid), 900);
+  };
 }
 
 /* ---------------------------------------------------

@@ -1315,6 +1315,22 @@ body.view-personajes .personajes-page {
   background: rgba(55, 240, 224, 0.12);
 }
 
+/* Aviso de comentarios nuevos en tu propio personaje: puntito en "Mi personaje" */
+.personajes-has-badge {
+  position: relative;
+}
+.personajes-has-badge::after {
+  content: '';
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--glitch-red);
+  box-shadow: 0 0 6px rgba(255, 46, 99, 0.8);
+}
+
 .personajes-view {
   display: none;
   animation: lore-slide-in 0.5s ease both;
@@ -1649,6 +1665,27 @@ body.view-personajes .personajes-page {
 .personajes-comment-remove-btn:hover {
   background: rgba(255, 46, 99, 0.12);
 }
+.personajes-comment-edit-btn {
+  background: transparent;
+  border: 1px solid rgba(55, 240, 224, 0.35);
+  color: var(--glitch-cyan);
+  border-radius: 6px;
+  padding: 3px 10px;
+  line-height: 1.4;
+  cursor: pointer;
+  font-family: var(--font-display);
+  font-size: 0.6rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.personajes-comment-edit-btn:hover {
+  background: rgba(55, 240, 224, 0.12);
+}
+.personajes-comment-edit-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
 .personajes-comment-text {
   margin: 4px 0 0;
   font-family: var(--font-body);
@@ -1656,6 +1693,11 @@ body.view-personajes .personajes-page {
   line-height: 1.6;
   color: rgba(234, 230, 218, 0.78);
   white-space: pre-wrap;
+}
+.personajes-comment-edited-tag {
+  font-size: 0.78rem;
+  color: rgba(234, 230, 218, 0.4);
+  font-style: italic;
 }
 .personajes-comment-form {
   display: flex;
