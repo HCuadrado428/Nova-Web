@@ -812,6 +812,7 @@ function initPersonajes() {
   const signinBtn = document.getElementById('personajes-signin-btn');
   const sessionActive = document.getElementById('personajes-session-active');
   const sessionName = document.getElementById('personajes-session-name');
+  const editNameBtn = document.getElementById('personajes-edit-name-btn');
   const mineBtn = document.getElementById('personajes-mine-btn');
   const signoutBtn = document.getElementById('personajes-signout-btn');
 
@@ -831,6 +832,7 @@ function initPersonajes() {
   const commentForm = document.getElementById('personajes-comment-form');
   const commentInput = document.getElementById('personajes-comment-input');
   const commentSigninHint = document.getElementById('personajes-comment-signin-hint');
+  const commentFeedbackEl = document.getElementById('personajes-comment-feedback');
 
   const editorCancelBtn = document.getElementById('personajes-editor-cancel-btn');
   const nombreInput = document.getElementById('personajes-input-nombre');
@@ -846,11 +848,12 @@ function initPersonajes() {
   const deleteBtn = document.getElementById('personajes-delete-btn');
 
   if (!menuBtn || !backBtn || !page || !transition || !signinBtn || !sessionActive || !sessionName
-    || !mineBtn || !signoutBtn || !views.directory || !views.profile || !views.editor || !grid
-    || !searchInput || !profileBackBtn || !editBtn || !profileNameEl || !profileBlocksEl
-    || !commentsListEl || !commentForm || !commentInput || !commentSigninHint || !editorCancelBtn
-    || !nombreInput || !fotoInput || !editorBlocksEl || !nombresDatalist || !addTextoBtn
-    || !addImagenBtn || !addSpotifyBtn || !addRelacionBtn || !feedbackEl || !saveBtn || !deleteBtn) return;
+    || !editNameBtn || !mineBtn || !signoutBtn || !views.directory || !views.profile || !views.editor
+    || !grid || !searchInput || !profileBackBtn || !editBtn || !profileNameEl || !profileBlocksEl
+    || !commentsListEl || !commentForm || !commentInput || !commentSigninHint || !commentFeedbackEl
+    || !editorCancelBtn || !nombreInput || !fotoInput || !editorBlocksEl || !nombresDatalist
+    || !addTextoBtn || !addImagenBtn || !addSpotifyBtn || !addRelacionBtn || !feedbackEl || !saveBtn
+    || !deleteBtn) return;
 
   // Mientras firebase-config.js siga con los valores de ejemplo (o el SDK no
   // haya cargado), se desactiva el botón "Personajes" en vez de intentar
@@ -992,6 +995,8 @@ function initPersonajes() {
   function updateCommentFormVisibility() {
     commentForm.hidden = !currentUser;
     commentSigninHint.hidden = !!currentUser;
+    commentFeedbackEl.textContent = '';
+    commentFeedbackEl.classList.remove('is-fail');
   }
 
   function openProfile(uid, data) {
@@ -1068,6 +1073,8 @@ function initPersonajes() {
     const texto = commentInput.value.trim();
     if (!texto) return;
 
+    commentFeedbackEl.textContent = '';
+    commentFeedbackEl.classList.remove('is-fail');
     const submitBtn = commentForm.querySelector('button[type="submit"]');
     submitBtn.disabled = true;
     personajesRef.doc(currentProfileUid).collection('comentarios').add({
@@ -1080,6 +1087,8 @@ function initPersonajes() {
       renderComments(currentProfileUid);
     }).catch((err) => {
       console.error('No se pudo publicar el comentario:', err);
+      commentFeedbackEl.textContent = 'No se pudo publicar el comentario. Inténtalo de nuevo.';
+      commentFeedbackEl.classList.add('is-fail');
     }).finally(() => {
       submitBtn.disabled = false;
     });
@@ -1330,6 +1339,20 @@ function initPersonajes() {
     });
   });
   signoutBtn.addEventListener('click', () => auth.signOut());
+
+  editNameBtn.addEventListener('click', () => {
+    if (!currentUser) return;
+    const nuevo = window.prompt('¿Qué nombre quieres que vean los demás en Personajes?', currentUser.displayName || '');
+    if (nuevo === null) return;
+    const nombre = nuevo.trim();
+    if (!nombre) return;
+    currentUser.updateProfile({ displayName: nombre }).then(() => {
+      sessionName.textContent = nombre;
+    }).catch((err) => {
+      console.error('No se pudo cambiar el nombre:', err);
+    });
+  });
+
   mineBtn.addEventListener('click', () => {
     if (!currentUser) return;
     currentProfileUid = currentUser.uid;

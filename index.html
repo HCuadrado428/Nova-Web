@@ -236,6 +236,7 @@
         <button class="lore-btn" id="personajes-signin-btn" type="button">Entrar con Google</button>
         <div class="personajes-session-active" id="personajes-session-active" hidden>
           <span class="personajes-session-name" id="personajes-session-name"></span>
+          <button class="personajes-edit-name-btn" id="personajes-edit-name-btn" type="button" title="Cambiar el nombre que ven los demás">✎</button>
           <button class="lore-btn" id="personajes-mine-btn" type="button" hidden>Mi personaje</button>
           <button class="lore-btn" id="personajes-signout-btn" type="button">Cerrar sesión</button>
         </div>
@@ -259,6 +260,7 @@
           <form class="personajes-comment-form" id="personajes-comment-form">
             <textarea class="personajes-input personajes-block-textarea" id="personajes-comment-input" rows="2" maxlength="500" placeholder="Deja un comentario..."></textarea>
             <button class="rules-switch-btn" type="submit">Comentar</button>
+            <p class="personajes-comments-hint" id="personajes-comment-feedback" aria-live="polite"></p>
           </form>
           <p class="personajes-comments-hint" id="personajes-comment-signin-hint" hidden>Inicia sesión para comentar.</p>
         </div>

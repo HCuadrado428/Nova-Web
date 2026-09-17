@@ -1300,6 +1300,20 @@ body.view-personajes .personajes-page {
   font-size: 0.9rem;
   color: rgba(234, 230, 218, 0.7);
 }
+.personajes-edit-name-btn {
+  background: transparent;
+  border: 1px solid rgba(55, 240, 224, 0.35);
+  color: var(--glitch-cyan);
+  border-radius: 6px;
+  width: 26px;
+  height: 26px;
+  line-height: 1;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+.personajes-edit-name-btn:hover {
+  background: rgba(55, 240, 224, 0.12);
+}
 
 .personajes-view {
   display: none;
@@ -1601,6 +1615,9 @@ body.view-personajes .personajes-page {
   font-family: var(--font-body);
   font-size: 0.85rem;
   color: rgba(234, 230, 218, 0.45);
+}
+.personajes-comments-hint.is-fail {
+  color: var(--glitch-red);
 }
 .personajes-comment {
   border-left: 2px solid rgba(55, 240, 224, 0.3);
