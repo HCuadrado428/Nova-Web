@@ -223,7 +223,8 @@
        PERSONAJES: dentro de Lore. Cualquiera puede ver los perfiles ya
        creados (directorio + vista de perfil, solo lectura). Quien inicia
        sesión con Google puede crear/editar el suyo (nombre, foto y bloques
-       de texto/imagen/spotify reordenables). Todo lo dinámico lo genera
+       de texto/imagen/spotify/relación reordenables, más comentarios de
+       otros usuarios). Todo lo dinámico lo genera
        initPersonajes() en script.js contra Firebase (Auth + Firestore) —
        ver firebase-config.js para la configuración del proyecto.
        ==================================================================== -->
@@ -242,6 +243,7 @@
 
       <div class="personajes-view is-active" id="personajes-view-directory">
         <h1 class="rules-title glitch" data-text="PERSONAJES">PERSONAJES</h1>
+        <input class="personajes-input personajes-search-input" id="personajes-search-input" type="text" placeholder="Buscar personaje...">
         <div class="personajes-grid" id="personajes-grid"></div>
       </div>
 
@@ -250,6 +252,16 @@
         <button class="lore-btn personajes-edit-btn" id="personajes-edit-btn" type="button" hidden>Editar</button>
         <h1 class="rules-title glitch" id="personajes-profile-name" data-text=""></h1>
         <div class="personajes-blocks" id="personajes-profile-blocks"></div>
+
+        <div class="personajes-comments" id="personajes-comments">
+          <h2 class="personajes-comments-title">Comentarios</h2>
+          <div class="personajes-comments-list" id="personajes-comments-list"></div>
+          <form class="personajes-comment-form" id="personajes-comment-form">
+            <textarea class="personajes-input personajes-block-textarea" id="personajes-comment-input" rows="2" maxlength="500" placeholder="Deja un comentario..."></textarea>
+            <button class="rules-switch-btn" type="submit">Comentar</button>
+          </form>
+          <p class="personajes-comments-hint" id="personajes-comment-signin-hint" hidden>Inicia sesión para comentar.</p>
+        </div>
       </div>
 
       <div class="personajes-view" id="personajes-view-editor">
@@ -260,13 +272,16 @@
 
         <label class="personajes-field-label" for="personajes-input-foto">Link de foto de perfil (opcional)</label>
         <input class="personajes-input" id="personajes-input-foto" type="url" placeholder="https://...">
+        <p class="personajes-field-hint">También vale un link de Pinterest: clic derecho sobre la imagen → "copiar dirección de imagen".</p>
 
         <div class="personajes-editor-blocks" id="personajes-editor-blocks"></div>
+        <datalist id="personajes-nombres-datalist"></datalist>
 
         <div class="personajes-add-block">
           <button class="rules-switch-btn" id="personajes-add-texto-btn" type="button">+ Texto</button>
           <button class="rules-switch-btn" id="personajes-add-imagen-btn" type="button">+ Imagen</button>
           <button class="rules-switch-btn" id="personajes-add-spotify-btn" type="button">+ Spotify</button>
+          <button class="rules-switch-btn" id="personajes-add-relacion-btn" type="button">+ Relación</button>
         </div>
 
         <p class="personajes-feedback" id="personajes-feedback" aria-live="polite"></p>

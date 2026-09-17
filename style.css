@@ -1310,6 +1310,10 @@ body.view-personajes .personajes-page {
 }
 
 /* ---- Directorio ---- */
+.personajes-search-input {
+  max-width: 320px;
+  margin: 0 auto 24px;
+}
 .personajes-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
@@ -1393,6 +1397,44 @@ body.view-personajes .personajes-page {
   display: block;
   border: none;
 }
+.personaje-block-relacion-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: transparent;
+  border: 1px solid var(--glitch-cyan);
+  border-radius: var(--radius);
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.personaje-block-relacion-card:hover {
+  background: rgba(55, 240, 224, 0.1);
+}
+.personaje-block-relacion-photo {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.personaje-block-relacion-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  text-align: left;
+}
+.personaje-block-relacion-info strong {
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  color: var(--text-main);
+}
+.personaje-block-relacion-etiqueta {
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  color: rgba(234, 230, 218, 0.55);
+}
 
 /* ---- Editor ---- */
 .personajes-field-label {
@@ -1420,8 +1462,17 @@ body.view-personajes .personajes-page {
   outline: none;
   border-color: var(--glitch-cyan);
 }
+.personajes-input.is-invalid {
+  border-color: var(--glitch-red);
+}
 .personajes-block-textarea {
   resize: vertical;
+}
+.personajes-field-hint {
+  margin: 6px 0 0;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  color: rgba(234, 230, 218, 0.45);
 }
 
 .personajes-editor-blocks {
@@ -1434,6 +1485,16 @@ body.view-personajes .personajes-page {
   display: flex;
   gap: 10px;
   align-items: flex-start;
+}
+.personajes-editor-block-relacion {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  flex: 1;
+}
+.personajes-editor-block-relacion .personajes-input {
+  flex: 1;
+  min-width: 160px;
 }
 .personajes-editor-block-controls {
   display: flex;
@@ -1515,6 +1576,78 @@ body.view-personajes .personajes-page {
 .personajes-delete-btn:hover {
   background: rgba(255, 46, 99, 0.12);
   color: #fff;
+}
+
+/* ---- Comentarios ---- */
+.personajes-comments {
+  margin-top: 50px;
+  padding-top: 30px;
+  border-top: 1px solid rgba(55, 240, 224, 0.15);
+}
+.personajes-comments-title {
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  color: var(--text-main);
+  margin: 0 0 20px;
+}
+.personajes-comments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.personajes-comments-hint {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  color: rgba(234, 230, 218, 0.45);
+}
+.personajes-comment {
+  border-left: 2px solid rgba(55, 240, 224, 0.3);
+  padding-left: 14px;
+}
+.personajes-comment-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.personajes-comment-author {
+  font-family: var(--font-display);
+  font-size: 0.65rem;
+  letter-spacing: 1px;
+  color: var(--glitch-cyan);
+}
+.personajes-comment-remove-btn {
+  background: transparent;
+  border: 1px solid rgba(255, 46, 99, 0.45);
+  color: var(--glitch-red);
+  border-radius: 6px;
+  width: 22px;
+  height: 22px;
+  line-height: 1;
+  cursor: pointer;
+  font-size: 0.65rem;
+}
+.personajes-comment-remove-btn:hover {
+  background: rgba(255, 46, 99, 0.12);
+}
+.personajes-comment-text {
+  margin: 4px 0 0;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: rgba(234, 230, 218, 0.78);
+  white-space: pre-wrap;
+}
+.personajes-comment-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+}
+.personajes-comment-form[hidden] {
+  display: none;
 }
 
 /* ---------- Accesibilidad: respeta "reducir movimiento" ---------- */

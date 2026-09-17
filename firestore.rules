@@ -22,6 +22,21 @@ service cloud.firestore {
                     && request.resource.data.bloques is list
                     && request.resource.data.bloques.size() <= 30;
       allow delete: if request.auth != null && request.auth.uid == uid;
+
+      // Comentarios de texto en el perfil de un personaje. Lectura pública,
+      // escritura solo autenticado y siendo tú mismo el autor (evita postear
+      // en nombre de otro); borrar lo puede hacer el autor o el dueño del
+      // perfil (moderación básica sin tener que entrar a la consola).
+      match /comentarios/{comentarioId} {
+        allow read: if true;
+        allow create: if request.auth != null
+                      && request.auth.uid == request.resource.data.autorUid
+                      && request.resource.data.texto is string
+                      && request.resource.data.texto.size() > 0
+                      && request.resource.data.texto.size() <= 500;
+        allow delete: if request.auth != null
+                      && (request.auth.uid == resource.data.autorUid || request.auth.uid == uid);
+      }
     }
   }
 }

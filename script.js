@@ -725,10 +725,12 @@ function spotifyUrlToEmbed(url) {
   return `https://open.spotify.com/embed/${match[1]}/${match[2]}`;
 }
 
-// Pinta un bloque de personaje (texto/imagen/spotify). La misma función
-// sirve para la vista de perfil (solo lectura) y como base de cada fila
-// del editor.
-function buildPersonajeBlockElement(bloque) {
+// Pinta un bloque de personaje (texto/imagen/spotify/relación) para la
+// vista de perfil (solo lectura). `options.onRelacionClick(uid)` navega al
+// personaje enlazado; `options.lookupFoto(uid)` le da su foto si ya está en
+// el directorio cargado. Ninguna de las dos hace falta fuera de un bloque
+// de tipo relación.
+function buildPersonajeBlockElement(bloque, options = {}) {
   const wrap = document.createElement('div');
   wrap.className = `personaje-block personaje-block-${bloque.tipo}`;
 
@@ -759,6 +761,43 @@ function buildPersonajeBlockElement(bloque) {
       iframe.loading = 'lazy';
       wrap.appendChild(iframe);
     }
+  } else if (bloque.tipo === 'relacion') {
+    if (!bloque.uid || !bloque.nombre) {
+      wrap.hidden = true;
+    } else {
+      const card = document.createElement('button');
+      card.type = 'button';
+      card.className = 'personaje-block-relacion-card';
+
+      const foto = options.lookupFoto ? options.lookupFoto(bloque.uid) : null;
+      if (foto) {
+        const img = document.createElement('img');
+        img.className = 'personaje-block-relacion-photo';
+        img.src = foto;
+        img.alt = '';
+        img.loading = 'lazy';
+        img.addEventListener('error', () => img.remove());
+        card.appendChild(img);
+      }
+
+      const info = document.createElement('span');
+      info.className = 'personaje-block-relacion-info';
+      const nombreEl = document.createElement('strong');
+      nombreEl.textContent = bloque.nombre;
+      info.appendChild(nombreEl);
+      if (bloque.etiqueta) {
+        const etiquetaEl = document.createElement('span');
+        etiquetaEl.className = 'personaje-block-relacion-etiqueta';
+        etiquetaEl.textContent = bloque.etiqueta;
+        info.appendChild(etiquetaEl);
+      }
+      card.appendChild(info);
+
+      card.addEventListener('click', () => {
+        if (options.onRelacionClick) options.onRelacionClick(bloque.uid);
+      });
+      wrap.appendChild(card);
+    }
   }
 
   return wrap;
@@ -782,28 +821,36 @@ function initPersonajes() {
     editor: document.getElementById('personajes-view-editor'),
   };
   const grid = document.getElementById('personajes-grid');
+  const searchInput = document.getElementById('personajes-search-input');
 
   const profileBackBtn = document.getElementById('personajes-profile-back-btn');
   const editBtn = document.getElementById('personajes-edit-btn');
   const profileNameEl = document.getElementById('personajes-profile-name');
   const profileBlocksEl = document.getElementById('personajes-profile-blocks');
+  const commentsListEl = document.getElementById('personajes-comments-list');
+  const commentForm = document.getElementById('personajes-comment-form');
+  const commentInput = document.getElementById('personajes-comment-input');
+  const commentSigninHint = document.getElementById('personajes-comment-signin-hint');
 
   const editorCancelBtn = document.getElementById('personajes-editor-cancel-btn');
   const nombreInput = document.getElementById('personajes-input-nombre');
   const fotoInput = document.getElementById('personajes-input-foto');
   const editorBlocksEl = document.getElementById('personajes-editor-blocks');
+  const nombresDatalist = document.getElementById('personajes-nombres-datalist');
   const addTextoBtn = document.getElementById('personajes-add-texto-btn');
   const addImagenBtn = document.getElementById('personajes-add-imagen-btn');
   const addSpotifyBtn = document.getElementById('personajes-add-spotify-btn');
+  const addRelacionBtn = document.getElementById('personajes-add-relacion-btn');
   const feedbackEl = document.getElementById('personajes-feedback');
   const saveBtn = document.getElementById('personajes-save-btn');
   const deleteBtn = document.getElementById('personajes-delete-btn');
 
   if (!menuBtn || !backBtn || !page || !transition || !signinBtn || !sessionActive || !sessionName
     || !mineBtn || !signoutBtn || !views.directory || !views.profile || !views.editor || !grid
-    || !profileBackBtn || !editBtn || !profileNameEl || !profileBlocksEl || !editorCancelBtn
-    || !nombreInput || !fotoInput || !editorBlocksEl || !addTextoBtn || !addImagenBtn
-    || !addSpotifyBtn || !feedbackEl || !saveBtn || !deleteBtn) return;
+    || !searchInput || !profileBackBtn || !editBtn || !profileNameEl || !profileBlocksEl
+    || !commentsListEl || !commentForm || !commentInput || !commentSigninHint || !editorCancelBtn
+    || !nombreInput || !fotoInput || !editorBlocksEl || !nombresDatalist || !addTextoBtn
+    || !addImagenBtn || !addSpotifyBtn || !addRelacionBtn || !feedbackEl || !saveBtn || !deleteBtn) return;
 
   // Mientras firebase-config.js siga con los valores de ejemplo (o el SDK no
   // haya cargado), se desactiva el botón "Personajes" en vez de intentar
@@ -832,6 +879,7 @@ function initPersonajes() {
   let currentProfileUid = null;
   let editorBloques = [];
   let editingExisting = false;
+  let allPersonajes = []; // [{ id, data }], cache del directorio: alimenta el buscador y el autocompletado de relaciones
 
   const showView = (key) => {
     Object.entries(views).forEach(([k, el]) => el.classList.toggle('is-active', k === key));
@@ -866,59 +914,176 @@ function initPersonajes() {
   };
 
   // ---- Directorio ----
-  function renderDirectory() {
-    personajesRef.get().then((snapshot) => {
-      grid.innerHTML = '';
-      if (snapshot.empty) {
-        const empty = document.createElement('p');
-        empty.className = 'personajes-empty';
-        empty.textContent = 'Todavía no hay personajes. ¡Sé el primero!';
-        grid.appendChild(empty);
-        return;
-      }
-      snapshot.forEach((doc) => {
-        const data = doc.data();
-        const card = document.createElement('button');
-        card.type = 'button';
-        card.className = 'personajes-card';
-        if (data.fotoUrl) {
-          const img = document.createElement('img');
-          img.className = 'personajes-card-photo';
-          img.src = data.fotoUrl;
-          img.alt = '';
-          img.loading = 'lazy';
-          img.addEventListener('error', () => {
-            img.remove();
-            card.classList.add('is-photoless');
-          });
-          card.appendChild(img);
-        } else {
+  function renderGrid() {
+    const term = normalizeSearchTerm(searchInput.value);
+    const filtered = term
+      ? allPersonajes.filter(({ data }) => normalizeSearchTerm(data.nombre || '').includes(term))
+      : allPersonajes;
+
+    grid.innerHTML = '';
+    if (!filtered.length) {
+      const empty = document.createElement('p');
+      empty.className = 'personajes-empty';
+      empty.textContent = allPersonajes.length
+        ? 'Ningún personaje coincide con la búsqueda.'
+        : 'Todavía no hay personajes. ¡Sé el primero!';
+      grid.appendChild(empty);
+      return;
+    }
+    filtered.forEach(({ id, data }) => {
+      const card = document.createElement('button');
+      card.type = 'button';
+      card.className = 'personajes-card';
+      if (data.fotoUrl) {
+        const img = document.createElement('img');
+        img.className = 'personajes-card-photo';
+        img.src = data.fotoUrl;
+        img.alt = '';
+        img.loading = 'lazy';
+        img.addEventListener('error', () => {
+          img.remove();
           card.classList.add('is-photoless');
-        }
-        const name = document.createElement('span');
-        name.className = 'personajes-card-name';
-        name.textContent = data.nombre || 'Sin nombre';
-        card.appendChild(name);
-        card.addEventListener('click', () => openProfile(doc.id, data));
-        grid.appendChild(card);
+        });
+        card.appendChild(img);
+      } else {
+        card.classList.add('is-photoless');
+      }
+      const name = document.createElement('span');
+      name.className = 'personajes-card-name';
+      name.textContent = data.nombre || 'Sin nombre';
+      card.appendChild(name);
+      card.addEventListener('click', () => openProfile(id, data));
+      grid.appendChild(card);
+    });
+  }
+
+  function renderDirectory() {
+    personajesRef.orderBy('actualizadoEn', 'desc').get().then((snapshot) => {
+      allPersonajes = [];
+      snapshot.forEach((doc) => allPersonajes.push({ id: doc.id, data: doc.data() }));
+
+      nombresDatalist.innerHTML = '';
+      allPersonajes.forEach(({ data }) => {
+        const opt = document.createElement('option');
+        opt.value = data.nombre || '';
+        nombresDatalist.appendChild(opt);
       });
+
+      renderGrid();
     }).catch((err) => {
       console.error('No se pudieron cargar los personajes:', err);
     });
   }
 
+  searchInput.addEventListener('input', renderGrid);
+
+  function goToProfile(uid) {
+    const cached = allPersonajes.find((p) => p.id === uid);
+    if (cached) {
+      openProfile(uid, cached.data);
+      return;
+    }
+    personajesRef.doc(uid).get().then((doc) => {
+      if (doc.exists) openProfile(uid, doc.data());
+    });
+  }
+
   // ---- Perfil (solo lectura) ----
+  function updateCommentFormVisibility() {
+    commentForm.hidden = !currentUser;
+    commentSigninHint.hidden = !!currentUser;
+  }
+
   function openProfile(uid, data) {
     currentProfileUid = uid;
     profileNameEl.textContent = data.nombre || 'Sin nombre';
     profileNameEl.dataset.text = data.nombre || '';
     profileBlocksEl.innerHTML = '';
     (data.bloques || []).forEach((bloque) => {
-      profileBlocksEl.appendChild(buildPersonajeBlockElement(bloque));
+      profileBlocksEl.appendChild(buildPersonajeBlockElement(bloque, {
+        onRelacionClick: goToProfile,
+        lookupFoto: (relUid) => {
+          const found = allPersonajes.find((p) => p.id === relUid);
+          return found && found.data.fotoUrl;
+        },
+      }));
     });
     editBtn.hidden = !(currentUser && currentUser.uid === uid);
+    updateCommentFormVisibility();
+    renderComments(uid);
     showView('profile');
   }
+
+  // ---- Comentarios ----
+  function renderComments(uid) {
+    commentsListEl.innerHTML = '';
+    personajesRef.doc(uid).collection('comentarios').orderBy('creadoEn').get().then((snapshot) => {
+      commentsListEl.innerHTML = '';
+      if (snapshot.empty) {
+        const empty = document.createElement('p');
+        empty.className = 'personajes-comments-hint';
+        empty.textContent = 'Todavía no hay comentarios.';
+        commentsListEl.appendChild(empty);
+        return;
+      }
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        const item = document.createElement('div');
+        item.className = 'personajes-comment';
+
+        const header = document.createElement('div');
+        header.className = 'personajes-comment-header';
+        const author = document.createElement('span');
+        author.className = 'personajes-comment-author';
+        author.textContent = data.autorNombre || 'Alguien';
+        header.appendChild(author);
+
+        if (currentUser && (currentUser.uid === data.autorUid || currentUser.uid === uid)) {
+          const removeBtn = document.createElement('button');
+          removeBtn.type = 'button';
+          removeBtn.className = 'personajes-comment-remove-btn';
+          removeBtn.textContent = '✕';
+          removeBtn.addEventListener('click', () => {
+            personajesRef.doc(uid).collection('comentarios').doc(doc.id).delete().then(() => renderComments(uid));
+          });
+          header.appendChild(removeBtn);
+        }
+
+        item.appendChild(header);
+        const text = document.createElement('p');
+        text.className = 'personajes-comment-text';
+        text.textContent = data.texto;
+        item.appendChild(text);
+
+        commentsListEl.appendChild(item);
+      });
+    }).catch((err) => {
+      console.error('No se pudieron cargar los comentarios:', err);
+    });
+  }
+
+  commentForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (!currentUser || !currentProfileUid) return;
+    const texto = commentInput.value.trim();
+    if (!texto) return;
+
+    const submitBtn = commentForm.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    personajesRef.doc(currentProfileUid).collection('comentarios').add({
+      autorUid: currentUser.uid,
+      autorNombre: currentUser.displayName || currentUser.email || 'Alguien',
+      texto,
+      creadoEn: firebase.firestore.FieldValue.serverTimestamp(),
+    }).then(() => {
+      commentInput.value = '';
+      renderComments(currentProfileUid);
+    }).catch((err) => {
+      console.error('No se pudo publicar el comentario:', err);
+    }).finally(() => {
+      submitBtn.disabled = false;
+    });
+  });
 
   profileBackBtn.addEventListener('click', () => {
     showView('directory');
@@ -974,35 +1139,68 @@ function initPersonajes() {
       controls.append(upBtn, downBtn, removeBtn);
       row.appendChild(controls);
 
-      let field;
-      if (bloque.tipo === 'texto') {
-        field = document.createElement('textarea');
-        field.className = 'personajes-input personajes-block-textarea';
-        field.rows = 3;
-        field.placeholder = 'Escribe aquí...';
+      if (bloque.tipo === 'relacion') {
+        const relWrap = document.createElement('div');
+        relWrap.className = 'personajes-editor-block-relacion';
+
+        const nombreField = document.createElement('input');
+        nombreField.className = 'personajes-input';
+        nombreField.type = 'text';
+        nombreField.placeholder = 'Nombre del otro personaje';
+        nombreField.setAttribute('list', 'personajes-nombres-datalist');
+        nombreField.value = bloque.nombre || '';
+        const resolveUid = () => {
+          const match = allPersonajes.find((p) => normalizeSearchTerm(p.data.nombre || '') === normalizeSearchTerm(nombreField.value));
+          bloque.nombre = nombreField.value;
+          bloque.uid = match ? match.id : null;
+          nombreField.classList.toggle('is-invalid', !!nombreField.value.trim() && !match);
+        };
+        nombreField.addEventListener('input', resolveUid);
+        nombreField.addEventListener('blur', resolveUid);
+
+        const etiquetaField = document.createElement('input');
+        etiquetaField.className = 'personajes-input';
+        etiquetaField.type = 'text';
+        etiquetaField.maxLength = 40;
+        etiquetaField.placeholder = 'Relación (ej. hermano)';
+        etiquetaField.value = bloque.etiqueta || '';
+        etiquetaField.addEventListener('input', () => { bloque.etiqueta = etiquetaField.value; });
+
+        relWrap.append(nombreField, etiquetaField);
+        row.appendChild(relWrap);
       } else {
-        field = document.createElement('input');
-        field.className = 'personajes-input';
-        field.type = 'url';
-        field.placeholder = bloque.tipo === 'imagen'
-          ? 'Link de imagen (https://...)'
-          : 'Link de Spotify (https://open.spotify.com/...)';
+        let field;
+        if (bloque.tipo === 'texto') {
+          field = document.createElement('textarea');
+          field.className = 'personajes-input personajes-block-textarea';
+          field.rows = 3;
+          field.placeholder = 'Escribe aquí...';
+        } else {
+          field = document.createElement('input');
+          field.className = 'personajes-input';
+          field.type = 'url';
+          field.placeholder = bloque.tipo === 'imagen'
+            ? 'Link de imagen (https://...)'
+            : 'Link de Spotify (https://open.spotify.com/...)';
+        }
+        field.value = bloque.contenido || '';
+        field.addEventListener('input', () => { bloque.contenido = field.value; });
+        row.appendChild(field);
       }
-      field.value = bloque.contenido || '';
-      field.addEventListener('input', () => { bloque.contenido = field.value; });
-      row.appendChild(field);
 
       editorBlocksEl.appendChild(row);
     });
   }
 
   function addBlock(tipo) {
-    editorBloques.push({ id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, tipo, contenido: '' });
+    const base = { id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, tipo };
+    editorBloques.push(tipo === 'relacion' ? { ...base, uid: null, nombre: '', etiqueta: '' } : { ...base, contenido: '' });
     renderEditorBlocks();
   }
   addTextoBtn.addEventListener('click', () => addBlock('texto'));
   addImagenBtn.addEventListener('click', () => addBlock('imagen'));
   addSpotifyBtn.addEventListener('click', () => addBlock('spotify'));
+  addRelacionBtn.addEventListener('click', () => addBlock('relacion'));
 
   function openEditor(data) {
     editingExisting = !!data;
@@ -1017,7 +1215,14 @@ function initPersonajes() {
 
   editorCancelBtn.addEventListener('click', () => {
     if (currentUser && currentProfileUid === currentUser.uid) {
-      showView('profile');
+      personajesRef.doc(currentUser.uid).get().then((doc) => {
+        if (doc.exists) {
+          openProfile(currentUser.uid, doc.data());
+        } else {
+          showView('directory');
+          renderDirectory();
+        }
+      });
     } else {
       showView('directory');
       renderDirectory();
@@ -1040,10 +1245,17 @@ function initPersonajes() {
       setFeedback('El link de la foto debe empezar por http:// o https://', 'fail');
       return;
     }
+    const relacionInvalida = editorBloques.some((b) => b.tipo === 'relacion' && (b.nombre || '').trim() && !b.uid);
+    if (relacionInvalida) {
+      setFeedback('Alguna relación no coincide con ningún personaje existente. Revisa el nombre.', 'fail');
+      return;
+    }
 
     const bloques = editorBloques
-      .map((b) => ({ id: b.id, tipo: b.tipo, contenido: (b.contenido || '').trim() }))
-      .filter((b) => b.contenido);
+      .map((b) => (b.tipo === 'relacion'
+        ? { id: b.id, tipo: b.tipo, uid: b.uid, nombre: (b.nombre || '').trim(), etiqueta: (b.etiqueta || '').trim() }
+        : { id: b.id, tipo: b.tipo, contenido: (b.contenido || '').trim() }))
+      .filter((b) => (b.tipo === 'relacion' ? !!b.uid : !!b.contenido));
 
     saveBtn.disabled = true;
     setFeedback('Guardando...', null);
@@ -1108,6 +1320,7 @@ function initPersonajes() {
     }
     if (views.profile.classList.contains('is-active')) {
       editBtn.hidden = !(user && currentProfileUid === user.uid);
+      updateCommentFormVisibility();
     }
   });
 
@@ -1119,6 +1332,7 @@ function initPersonajes() {
   signoutBtn.addEventListener('click', () => auth.signOut());
   mineBtn.addEventListener('click', () => {
     if (!currentUser) return;
+    currentProfileUid = currentUser.uid;
     personajesRef.doc(currentUser.uid).get().then((doc) => {
       openEditor(doc.exists ? doc.data() : null);
     });
