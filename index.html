@@ -100,6 +100,7 @@
         <p class="modpack-version">Forge 1.20.1</p>
         <button class="btn btn-ghost intro-copy-ip" id="copy-ip-btn" type="button">Copiar IP</button>
         <p class="server-status" id="server-status">Comprobando estado del server...</p>
+        <div class="server-players" id="server-players"></div>
       </div>
     </div>
 
@@ -272,6 +273,10 @@
 
         <label class="personajes-field-label" for="personajes-input-nombre">Nombre del personaje</label>
         <input class="personajes-input" id="personajes-input-nombre" type="text" maxlength="60" placeholder="Nombre">
+
+        <label class="personajes-field-label" for="personajes-input-mcuser">Usuario de Minecraft (opcional)</label>
+        <input class="personajes-input" id="personajes-input-mcuser" type="text" maxlength="16" placeholder="TuUsuarioDeMinecraft">
+        <p class="personajes-field-hint">Si lo pones, cuando estés conectado al server aparecerás como este personaje en la lista de jugadores de la portada.</p>
 
         <label class="personajes-field-label" for="personajes-input-foto">Link de foto de perfil (opcional)</label>
         <input class="personajes-input" id="personajes-input-foto" type="url" placeholder="https://...">

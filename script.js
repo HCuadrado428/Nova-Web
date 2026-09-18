@@ -334,7 +334,86 @@ function initCopyIpButton() {
 --------------------------------------------------- */
 function initServerStatus() {
   const el = document.getElementById('server-status');
+  const listEl = document.getElementById('server-players');
   if (!el) return;
+
+  // Mismo criterio que initPersonajes() para saber si Firebase está de
+  // verdad configurado (si no, se listan los jugadores por su usuario real
+  // de Minecraft sin más, sin intentar cruzarlos con ningún personaje).
+  const firebaseReady = typeof firebase !== 'undefined' && window.FIREBASE_CONFIG
+    && window.FIREBASE_CONFIG.apiKey && window.FIREBASE_CONFIG.apiKey !== 'TU_API_KEY';
+
+  const renderPlainPlayers = (list) => {
+    if (!listEl) return;
+    listEl.innerHTML = '';
+    list.forEach((p) => {
+      const item = document.createElement('span');
+      item.className = 'server-player';
+      item.textContent = p.name;
+      listEl.appendChild(item);
+    });
+  };
+
+  const renderPlayers = (list) => {
+    if (!listEl) return;
+    listEl.innerHTML = '';
+    if (!list.length) return;
+    if (!firebaseReady) {
+      renderPlainPlayers(list);
+      return;
+    }
+
+    if (!firebase.apps.length) {
+      try { firebase.initializeApp(window.FIREBASE_CONFIG); } catch (err) { /* ya inicializado por initPersonajes() */ }
+    }
+
+    // Cruza cada usuario conectado contra personajes.minecraftUsername (si
+    // alguien lo puso en su ficha), para mostrar su personaje en vez de su
+    // usuario real. Lectura completa de la colección: igual de barato que
+    // el propio directorio de Personajes a esta escala.
+    firebase.firestore().collection('personajes').get().then((snapshot) => {
+      const porUsuario = {};
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        if (data.minecraftUsername) {
+          porUsuario[data.minecraftUsername.toLowerCase()] = { uid: doc.id, nombre: data.nombre, fotoUrl: data.fotoUrl };
+        }
+      });
+
+      listEl.innerHTML = '';
+      list.forEach((p) => {
+        const personaje = porUsuario[p.name.toLowerCase()];
+        if (!personaje) {
+          const item = document.createElement('span');
+          item.className = 'server-player';
+          item.textContent = p.name;
+          listEl.appendChild(item);
+          return;
+        }
+
+        const item = document.createElement('button');
+        item.type = 'button';
+        item.className = 'server-player server-player-linked';
+        if (personaje.fotoUrl) {
+          const img = document.createElement('img');
+          img.className = 'server-player-photo';
+          img.src = personaje.fotoUrl;
+          img.alt = '';
+          img.addEventListener('error', () => img.remove());
+          item.appendChild(img);
+        }
+        const nameSpan = document.createElement('span');
+        nameSpan.textContent = personaje.nombre;
+        item.appendChild(nameSpan);
+        item.addEventListener('click', () => {
+          if (window.__openPersonajeFromHash) window.__openPersonajeFromHash(personaje.uid);
+        });
+        listEl.appendChild(item);
+      });
+    }).catch(() => {
+      renderPlainPlayers(list);
+    });
+  };
 
   const render = () => {
     fetch(`https://api.mcsrvstat.us/3/${SERVER_IP}`)
@@ -345,14 +424,17 @@ function initServerStatus() {
           const jugadores = data.players ? `${data.players.online}/${data.players.max}` : '?';
           el.textContent = `● Server online — ${jugadores} jugadores`;
           el.classList.add('is-online');
+          renderPlayers((data.players && data.players.list) || []);
         } else {
           el.textContent = '● Server offline';
           el.classList.add('is-offline');
+          renderPlayers([]);
         }
       })
       .catch(() => {
         el.textContent = 'Estado del server no disponible ahora mismo.';
         el.classList.remove('is-online', 'is-offline');
+        renderPlayers([]);
       });
   };
 
@@ -882,6 +964,7 @@ function initPersonajes() {
 
   const editorCancelBtn = document.getElementById('personajes-editor-cancel-btn');
   const nombreInput = document.getElementById('personajes-input-nombre');
+  const mcUserInput = document.getElementById('personajes-input-mcuser');
   const fotoInput = document.getElementById('personajes-input-foto');
   const editorBlocksEl = document.getElementById('personajes-editor-blocks');
   const nombresDatalist = document.getElementById('personajes-nombres-datalist');
@@ -897,7 +980,7 @@ function initPersonajes() {
     || !editNameBtn || !mineBtn || !signoutBtn || !views.directory || !views.profile || !views.editor
     || !grid || !searchInput || !profileBackBtn || !editBtn || !profileNameEl || !profileBlocksEl
     || !commentsListEl || !commentForm || !commentInput || !commentSigninHint || !commentFeedbackEl
-    || !editorCancelBtn || !nombreInput || !fotoInput || !editorBlocksEl || !nombresDatalist
+    || !editorCancelBtn || !nombreInput || !mcUserInput || !fotoInput || !editorBlocksEl || !nombresDatalist
     || !addTextoBtn || !addImagenBtn || !addSpotifyBtn || !addRelacionBtn || !feedbackEl || !saveBtn
     || !deleteBtn) return;
 
@@ -1371,6 +1454,7 @@ function initPersonajes() {
     setProfileHash(null);
     editingExisting = !!data;
     nombreInput.value = data ? (data.nombre || '') : '';
+    mcUserInput.value = data ? (data.minecraftUsername || '') : '';
     fotoInput.value = data ? (data.fotoUrl || '') : '';
     editorBloques = data && Array.isArray(data.bloques) ? data.bloques.map((b) => ({ ...b })) : [];
     renderEditorBlocks();
@@ -1411,6 +1495,11 @@ function initPersonajes() {
       setFeedback('El link de la foto debe empezar por http:// o https://', 'fail');
       return;
     }
+    const minecraftUsername = mcUserInput.value.trim();
+    if (minecraftUsername && !/^\w{1,16}$/.test(minecraftUsername)) {
+      setFeedback('El usuario de Minecraft solo puede tener letras, números y "_" (máx. 16).', 'fail');
+      return;
+    }
     const relacionInvalida = editorBloques.some((b) => b.tipo === 'relacion' && (b.nombre || '').trim() && !b.uid);
     if (relacionInvalida) {
       setFeedback('Alguna relación no coincide con ningún personaje existente. Revisa el nombre.', 'fail');
@@ -1428,6 +1517,7 @@ function initPersonajes() {
 
     const payload = {
       nombre,
+      minecraftUsername: minecraftUsername || null,
       fotoUrl: fotoUrl || null,
       bloques,
       actualizadoEn: firebase.firestore.FieldValue.serverTimestamp(),
@@ -1441,7 +1531,7 @@ function initPersonajes() {
       editingExisting = true;
       mineBtn.textContent = 'Mi personaje';
       currentProfileUid = currentUser.uid;
-      openProfile(currentUser.uid, { nombre, fotoUrl: fotoUrl || null, bloques });
+      openProfile(currentUser.uid, { nombre, minecraftUsername: minecraftUsername || null, fotoUrl: fotoUrl || null, bloques });
     }).catch((err) => {
       console.error('No se pudo guardar el personaje:', err);
       setFeedback('No se pudo guardar. Inténtalo de nuevo.', 'fail');

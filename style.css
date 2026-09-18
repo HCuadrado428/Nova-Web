@@ -566,6 +566,43 @@ body.booted .intro-hero-inner {
   text-shadow: 0 0 10px rgba(255, 46, 99, 0.4);
 }
 
+.server-players {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 12px;
+  max-width: 340px;
+}
+.server-player {
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  color: rgba(234, 230, 218, 0.55);
+  padding: 4px 10px;
+  border: 1px solid rgba(234, 230, 218, 0.18);
+  border-radius: 999px;
+}
+.server-player-linked {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border-color: var(--glitch-cyan);
+  color: var(--glitch-cyan);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.server-player-linked:hover {
+  background: rgba(55, 240, 224, 0.12);
+  color: #fff;
+}
+.server-player-photo {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
 /* ---------- Botones Lore / Normas (toggle + submenú) / Volver ---------- */
 .lore-triggers {
   position: fixed;
