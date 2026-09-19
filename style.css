@@ -633,10 +633,12 @@ body.view-lore .lore-triggers,
 body.view-rules .lore-triggers,
 body.view-password .lore-triggers,
 body.view-personajes .lore-triggers,
+body.view-adan .lore-triggers,
 body.view-lore .rules-triggers,
 body.view-rules .rules-triggers,
 body.view-password .rules-triggers,
-body.view-personajes .rules-triggers {
+body.view-personajes .rules-triggers,
+body.view-adan .rules-triggers {
   visibility: hidden;
   pointer-events: none;
 }
@@ -691,7 +693,8 @@ body.booted .menu-toggle-btn {
 body.view-lore .menu-toggle-btn,
 body.view-rules .menu-toggle-btn,
 body.view-password .menu-toggle-btn,
-body.view-personajes .menu-toggle-btn {
+body.view-personajes .menu-toggle-btn,
+body.view-adan .menu-toggle-btn {
   visibility: hidden;
   pointer-events: none;
 }
@@ -779,7 +782,8 @@ body.booted .password-trigger-btn {
 }
 body.view-lore .password-trigger-btn,
 body.view-rules .password-trigger-btn,
-body.view-password .password-trigger-btn {
+body.view-password .password-trigger-btn,
+body.view-adan .password-trigger-btn {
   visibility: hidden;
   pointer-events: none;
 }
@@ -808,7 +812,9 @@ body.view-password .password-trigger-btn {
 /* El grano/escaneo ambiental de toda la página también se apaga aquí: esta
    pantalla debe verse limpia, sin ningún resto de la estática del resto del sitio. */
 body.view-password .noise-overlay,
-body.view-password .scanline-overlay {
+body.view-password .scanline-overlay,
+body.view-adan .noise-overlay,
+body.view-adan .scanline-overlay {
   opacity: 0;
 }
 
@@ -927,6 +933,105 @@ body.view-password .scanline-overlay {
 .password-hint-btn:hover {
   border-color: var(--glitch-cyan);
   color: var(--glitch-cyan);
+}
+
+/* ---------- Easter egg "4D4N": pantalla negra, diálogo tecleado, apagado final ---------- */
+.adan-scene {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  background: #000;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  /* Sin transition a propósito: el corte a negro debe ser instantáneo
+     ("de golpe"), no un fundido como el resto de overlays del sitio. */
+}
+.adan-scene.active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.adan-scene-static {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  background-size: 140px 140px;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+.adan-scene.active .adan-scene-static {
+  animation: intro-static-jitter 0.15s steps(1) infinite;
+}
+
+/* Panel de consola real: pegado a la esquina superior izquierda, texto
+   alineado a la izquierda y creciendo hacia abajo, no un mensaje flotando
+   centrado en medio de la pantalla. */
+.adan-scene-terminal {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 14px;
+  width: min(92vw, 720px);
+  padding: 48px;
+  text-align: left;
+  transition: opacity 0.4s ease;
+}
+
+/* Líneas de Adán (la pregunta y su respuesta final): morado. */
+.adan-scene-line {
+  margin: 0;
+  min-height: 1.4em;
+  font-family: var(--font-display);
+  font-size: clamp(0.7rem, 2.2vw, 0.95rem);
+  line-height: 1.7;
+  letter-spacing: 1px;
+  color: var(--end-purple);
+  text-shadow: 0 0 14px rgba(168, 85, 247, 0.55);
+  white-space: pre-wrap;
+}
+
+/* Línea del jugador (lo que "escribe" quien responde a Adán): rojo, para
+   distinguirla de las líneas de Adán en morado. */
+.adan-scene-input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+.adan-scene-caret {
+  font-family: var(--font-display);
+  color: var(--glitch-red);
+  text-shadow: 0 0 14px rgba(255, 46, 99, 0.55);
+}
+.adan-scene-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(255, 46, 99, 0.4);
+  outline: none;
+  padding: 4px 2px;
+  font-family: var(--font-display);
+  font-size: clamp(0.7rem, 2.2vw, 0.95rem);
+  letter-spacing: 1px;
+  color: var(--glitch-red);
+  caret-color: var(--glitch-red);
+}
+.adan-scene-input:disabled {
+  border-bottom-color: transparent;
+}
+
+/* Estado final: apagado permanente, sin estática ni texto, totalmente inerte */
+.adan-scene.is-dead .adan-scene-terminal,
+.adan-scene.is-dead .adan-scene-static {
+  display: none;
 }
 
 /* ---------- Transición de canal: estática de pantalla completa entre secciones ---------- */
@@ -1775,6 +1880,7 @@ body.view-personajes .personajes-page {
   .menu-toggle-btn { animation: none; opacity: 1; }
   .password-trigger-btn { animation: none; opacity: 1; }
   .channel-transition-static { animation: none; }
+  .adan-scene-static { display: none; }
   .lore-page::before, .lore-page::after { animation: none; }
   .rules-panel { animation: none; }
   .personajes-view { animation: none; }

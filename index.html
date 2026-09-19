@@ -330,6 +330,36 @@
     <button class="password-hint-btn" id="password-hint-btn" type="button">Una ayudita?</button>
   </section>
 
+  <!-- ====================================================================
+       EASTER EGG "4D4N" (código secreto en el buscador de arriba, ver
+       SEARCH_ACTIONS en script.js): pantalla negra de golpe, en silencio
+       total, con un diálogo tecleado en terminal. La frase con la que
+       "responde" el usuario se elige al azar entre 3 al empezar (lo que
+       teclee de verdad no importa, cada pulsación solo cuenta como
+       "avanzar" o "retroceder" la revelación, ver ADAN_PHRASES en
+       script.js) y cada frase tiene una respuesta fija emparejada.
+       Sin botón de volver ni de cerrar a propósito: una vez se acepta la
+       frase completa (Enter), no hay marcha atrás.
+       ==================================================================== -->
+  <div class="adan-scene" id="adan-scene" aria-hidden="true">
+    <div class="adan-scene-static" id="adan-scene-static" aria-hidden="true"></div>
+    <div class="adan-scene-terminal" id="adan-scene-terminal">
+      <p class="adan-scene-line" id="adan-scene-prompt" aria-live="polite"></p>
+      <div class="adan-scene-input-row" id="adan-scene-input-row" hidden>
+        <span class="adan-scene-caret" aria-hidden="true">&gt;</span>
+        <input
+          class="adan-scene-input"
+          id="adan-scene-input"
+          type="text"
+          autocomplete="off"
+          spellcheck="false"
+          aria-label="Responde"
+          disabled>
+      </div>
+      <p class="adan-scene-line" id="adan-scene-response" aria-live="polite"></p>
+    </div>
+  </div>
+
   <!--
     FIREBASE (Personajes):
     Build "compat" para poder usar el global `firebase.*` desde script.js

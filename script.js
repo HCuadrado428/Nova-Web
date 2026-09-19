@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initRules();
   initPersonajes();
   initPasswordScreen();
+  initAdanScene();
 });
 
 /* ---------------------------------------------------
@@ -1632,6 +1633,180 @@ function initPersonajes() {
 }
 
 /* ---------------------------------------------------
+   Easter egg "4D4N" (código secreto del buscador de abajo)
+   Pantalla negra de golpe, en silencio total, con un diálogo tecleado en
+   terminal. La frase con la que "responde" el usuario se sortea entre las
+   de ADAN_PHRASES al empezar; lo que teclee de verdad da igual, cada
+   pulsación solo cuenta como "avanzar" o "retroceder" la revelación de esa
+   frase (como en el juego SPLIT). Al completarla y pulsar Enter, se escribe
+   la respuesta fija emparejada, la pantalla se inunda de estática y la
+   página intenta cerrarse; si el navegador lo bloquea (lo normal, esta
+   pestaña no se abrió por script), se queda negra e inerte para siempre.
+--------------------------------------------------- */
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// Escribe letra a letra el texto dentro de un elemento ya insertado en el DOM.
+function typeInto(el, text, speed = 30) {
+  return new Promise((resolve) => {
+    let i = 0;
+    const tick = () => {
+      el.textContent = text.slice(0, i);
+      i += 1;
+      if (i <= text.length) {
+        setTimeout(tick, speed);
+      } else {
+        resolve();
+      }
+    };
+    tick();
+  });
+}
+
+// Cada frase que el usuario puede "escribir" (sin que importe lo que teclee
+// de verdad) y la respuesta fija que le corresponde. Añadir una cuarta solo
+// requiere añadir un objeto más aquí.
+const ADAN_PHRASES = [
+  { phrase: 'Quiero saber más', response: 'Nos arrepentimos de nuestro acto, ahora tenemos miedo.' },
+  { phrase: 'Cuál es la verdad', response: 'No estáis listos para la respuesta.' },
+  { phrase: 'Qué es el Hombre de Estática', response: 'Una víctima.' },
+];
+
+function initAdanScene() {
+  const scene = document.getElementById('adan-scene');
+  const staticEl = document.getElementById('adan-scene-static');
+  const terminalEl = document.getElementById('adan-scene-terminal');
+  const promptEl = document.getElementById('adan-scene-prompt');
+  const inputRow = document.getElementById('adan-scene-input-row');
+  const inputEl = document.getElementById('adan-scene-input');
+  const responseEl = document.getElementById('adan-scene-response');
+  if (!scene || !staticEl || !terminalEl || !promptEl || !inputRow || !inputEl || !responseEl) return;
+
+  // idle -> intro (escribiendo la pregunta) -> waiting (esperando la frase) ->
+  // locked (Enter aceptado, escribiendo la respuesta) -> ending (inundación) -> dead
+  let phase = 'idle';
+  let current = null;
+  let revealIndex = 0;
+
+  const isActive = () => scene.classList.contains('active');
+
+  const resetVisuals = () => {
+    promptEl.textContent = '';
+    responseEl.textContent = '';
+    inputEl.value = '';
+    inputEl.disabled = true;
+    inputRow.hidden = true;
+    staticEl.style.opacity = '0';
+    terminalEl.style.opacity = '1';
+  };
+
+  const cancel = () => {
+    if (phase !== 'intro' && phase !== 'waiting') return; // ya comprometido: no hay marcha atrás
+    phase = 'idle';
+    scene.classList.remove('active');
+    scene.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('view-adan');
+    resetVisuals();
+    restoreStaticAudio();
+  };
+
+  // Cada pulsación que modifica contenido cuenta como "avanzar" (insertar,
+  // pegar, IME) o "retroceder" (borrar); el texto real tecleado no se usa
+  // nunca. preventDefault() siempre, para que el <input> nunca muestre lo
+  // que la persona pulsó de verdad.
+  inputEl.addEventListener('beforeinput', (e) => {
+    e.preventDefault();
+    if (phase !== 'waiting') return;
+    if (e.inputType && e.inputType.indexOf('delete') === 0) {
+      revealIndex = Math.max(0, revealIndex - 1);
+    } else {
+      revealIndex = Math.min(current.phrase.length, revealIndex + 1);
+    }
+    inputEl.value = current.phrase.slice(0, revealIndex);
+    inputEl.setSelectionRange(inputEl.value.length, inputEl.value.length);
+  });
+
+  // Un <input type="text"> (no contenteditable) no genera beforeinput al
+  // pulsar Enter, así que Enter nunca cuenta como "avanzar" por accidente;
+  // se gestiona aparte, solo para comprobar si la frase ya está completa.
+  inputEl.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' || phase !== 'waiting') return;
+    e.preventDefault();
+    if (revealIndex < current.phrase.length) return; // frase incompleta: no pasa nada
+    phase = 'locked';
+    inputEl.disabled = true;
+    runResponsePhase();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape' || !isActive()) return;
+    if (phase === 'intro' || phase === 'waiting') {
+      cancel();
+    } else {
+      e.preventDefault(); // fase comprometida: la tecla no hace nada
+    }
+  });
+
+  async function runResponsePhase() {
+    await sleep(600);
+    if (!isActive()) return;
+    await typeInto(responseEl, current.response, 40);
+    if (!isActive()) return;
+    await sleep(1600);
+    await floodAndClose();
+  }
+
+  async function floodAndClose() {
+    phase = 'ending';
+    // Silencio total roto a propósito: se sube el bus de golpe (no con
+    // restoreStaticAudio(), que hace un fundido de 0.2s) para un golpe seco,
+    // y se reutiliza el mismo sonido de "estática de pantalla completa" que
+    // ya usa channel-transition, porque el efecto visual es el mismo.
+    if (audioCtx && staticBus) {
+      staticBus.gain.cancelScheduledValues(audioCtx.currentTime);
+      staticBus.gain.setValueAtTime(1, audioCtx.currentTime);
+    }
+    playChannelChangeAudio();
+    staticEl.style.opacity = '1';
+    terminalEl.style.opacity = '0';
+    await sleep(1300);
+
+    phase = 'dead';
+    scene.classList.add('is-dead');
+    try { window.close(); } catch (err) { /* bloqueado por el navegador: se queda en negro */ }
+    // Si seguimos aquí, el cierre falló (normal: esta pestaña no se abrió
+    // por script). No hay forma de volver desde aquí salvo recargar.
+  }
+
+  window.__openAdanScene = () => {
+    if (phase !== 'idle') return; // ya en curso o terminada: un solo disparo por carga de página
+    if (window.__closePasswordScreen) window.__closePasswordScreen();
+
+    phase = 'intro';
+    current = ADAN_PHRASES[Math.floor(Math.random() * ADAN_PHRASES.length)];
+    revealIndex = 0;
+    resetVisuals();
+    duckStaticAudio();
+    scene.classList.remove('is-dead');
+    scene.classList.add('active');
+    scene.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('view-adan');
+
+    (async () => {
+      await sleep(1400);
+      if (!isActive()) return;
+      await typeInto(promptEl, '¿Qué haces aquí?', 45);
+      if (!isActive()) return;
+      await sleep(500);
+      if (!isActive()) return;
+      inputRow.hidden = false;
+      inputEl.disabled = false;
+      phase = 'waiting';
+      inputEl.focus();
+    })();
+  };
+}
+
+/* ---------------------------------------------------
    Buscador "Inserta la contraseña"
    Pantalla aparte, deliberadamente limpia (sin estática ni glitches): solo
    una barra de búsqueda y un botón "Buscar". Cada palabra que hace algo se
@@ -1657,6 +1832,7 @@ const SEARCH_ACTIONS = {
   house: () => window.open('images/gallery/646390b727116f4c2c5eee161238ff86.jpg', '_blank', 'noopener'),
   jojos: () => window.open('images/gallery/c2d391b2b3f1142f75c555aca8808667.jpg', '_blank', 'noopener'),
   tuff: () => window.open('images/gallery/f9aeebe83fee27a41c31c3ebdaa7793f.jpg', '_blank', 'noopener'),
+  '4d4n': () => { if (window.__openAdanScene) window.__openAdanScene(); },
 };
 
 function normalizeSearchTerm(raw) {
@@ -1732,6 +1908,7 @@ function initPasswordScreen() {
     page.setAttribute('aria-hidden', 'true');
     document.body.classList.remove('view-password');
   };
+  window.__closePasswordScreen = close; // para que openAdanScene() pueda cerrar esta pantalla al empezar
 
   triggerBtn.addEventListener('click', open);
   backBtn.addEventListener('click', close);
