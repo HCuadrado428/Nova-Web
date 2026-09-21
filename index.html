@@ -99,8 +99,6 @@
         </div>
         <p class="modpack-version">Forge 1.20.1</p>
         <button class="btn btn-ghost intro-copy-ip" id="copy-ip-btn" type="button">Copiar IP</button>
-        <p class="server-status" id="server-status">Comprobando estado del server...</p>
-        <div class="server-players" id="server-players"></div>
       </div>
     </div>
 
@@ -254,6 +252,7 @@
         <button class="lore-nav-btn" id="personajes-profile-back-btn" type="button">← Directorio</button>
         <button class="lore-btn personajes-edit-btn" id="personajes-edit-btn" type="button" hidden>Editar</button>
         <h1 class="rules-title glitch" id="personajes-profile-name" data-text=""></h1>
+        <p class="personajes-profile-mcuser" id="personajes-profile-mcuser" hidden></p>
         <div class="personajes-blocks" id="personajes-profile-blocks"></div>
 
         <div class="personajes-comments" id="personajes-comments">
@@ -276,7 +275,7 @@
 
         <label class="personajes-field-label" for="personajes-input-mcuser">Usuario de Minecraft (opcional)</label>
         <input class="personajes-input" id="personajes-input-mcuser" type="text" maxlength="16" placeholder="TuUsuarioDeMinecraft">
-        <p class="personajes-field-hint">Si lo pones, cuando estés conectado al server aparecerás como este personaje en la lista de jugadores de la portada.</p>
+        <p class="personajes-field-hint">Es opcional: si lo pones, se muestra como dato extra debajo de tu nombre en la ficha.</p>
 
         <label class="personajes-field-label" for="personajes-input-foto">Link de foto de perfil (opcional)</label>
         <input class="personajes-input" id="personajes-input-foto" type="url" placeholder="https://...">
@@ -345,8 +344,14 @@
     <div class="adan-scene-static" id="adan-scene-static" aria-hidden="true"></div>
     <div class="adan-scene-terminal" id="adan-scene-terminal">
       <p class="adan-scene-line" id="adan-scene-prompt" aria-live="polite"></p>
+      <!-- Historial de rondas ya cerradas (frase congelada + respuesta de
+           Adán); normalmente una sola, pero la 2ª visita encadena dos
+           rondas seguidas sin recargar, así que crece dinámicamente
+           desde script.js en vez de ser un único <p> fijo. -->
+      <div class="adan-scene-log" id="adan-scene-log" aria-live="polite"></div>
       <div class="adan-scene-input-row" id="adan-scene-input-row" hidden>
         <span class="adan-scene-caret" aria-hidden="true">&gt;</span>
+        <span class="adan-scene-echo" id="adan-scene-echo" aria-hidden="true"></span><span class="adan-scene-cursor" id="adan-scene-cursor" aria-hidden="true">▊</span>
         <input
           class="adan-scene-input"
           id="adan-scene-input"
@@ -356,7 +361,6 @@
           aria-label="Responde"
           disabled>
       </div>
-      <p class="adan-scene-line" id="adan-scene-response" aria-live="polite"></p>
     </div>
   </div>
 

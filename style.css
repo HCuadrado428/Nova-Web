@@ -36,6 +36,21 @@ body {
 
 a { color: inherit; text-decoration: none; }
 
+/* ---------- Cursor personalizado: retícula con el mismo split cian/magenta
+   del resto del glitch del sitio, en vez del cursor del sistema. Los campos
+   de texto reales (input/textarea) mantienen el cursor de texto normal, y
+   los estados :disabled ya definidos más abajo (cursor: not-allowed) ganan
+   por especificidad sobre la regla genérica de "a, button". ---------- */
+html, body {
+  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><circle cx='11' cy='11' r='6' fill='none' stroke='%2337f0e0' stroke-width='1.5'/><circle cx='13' cy='13' r='6' fill='none' stroke='%23ff2e63' stroke-width='1.5'/><circle cx='12' cy='12' r='1.3' fill='%23eae6da'/></svg>") 12 12, auto;
+}
+a, button, [role="button"] {
+  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='26' height='26' viewBox='0 0 26 26'><circle cx='12' cy='12' r='7' fill='none' stroke='%2337f0e0' stroke-width='2'/><circle cx='14' cy='14' r='7' fill='none' stroke='%23ff2e63' stroke-width='2'/><circle cx='13' cy='13' r='2' fill='%23eae6da'/></svg>") 13 13, pointer;
+}
+input, textarea, select {
+  cursor: text;
+}
+
 .glitch-filter-defs {
   position: absolute;
   width: 0;
@@ -550,59 +565,6 @@ body.booted .intro-hero-inner {
   background: rgba(46, 204, 113, 0.14);
 }
 
-.server-status {
-  margin: 14px 0 0;
-  font-family: var(--font-display);
-  font-size: 0.65rem;
-  letter-spacing: 0.5px;
-  color: rgba(234, 230, 218, 0.4);
-}
-.server-status.is-online {
-  color: var(--emerald);
-  text-shadow: 0 0 10px rgba(46, 204, 113, 0.4);
-}
-.server-status.is-offline {
-  color: var(--glitch-red);
-  text-shadow: 0 0 10px rgba(255, 46, 99, 0.4);
-}
-
-.server-players {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 8px;
-  margin-top: 12px;
-  max-width: 340px;
-}
-.server-player {
-  font-family: var(--font-body);
-  font-size: 0.78rem;
-  color: rgba(234, 230, 218, 0.55);
-  padding: 4px 10px;
-  border: 1px solid rgba(234, 230, 218, 0.18);
-  border-radius: 999px;
-}
-.server-player-linked {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: transparent;
-  border-color: var(--glitch-cyan);
-  color: var(--glitch-cyan);
-  cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
-}
-.server-player-linked:hover {
-  background: rgba(55, 240, 224, 0.12);
-  color: #fff;
-}
-.server-player-photo {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
 /* ---------- Botones Lore / Normas (toggle + submenú) / Volver ---------- */
 .lore-triggers {
   position: fixed;
@@ -985,8 +947,11 @@ body.view-adan .scanline-overlay {
   transition: opacity 0.4s ease;
 }
 
-/* Líneas de Adán (la pregunta y su respuesta final): morado. */
+/* Líneas de Adán (la pregunta y su respuesta final): morado. position:relative
+   para que el glitch (.glitch, añadido por JS al terminar de escribirse)
+   recorte sus capas ::before/::after sobre esta línea y no sobre todo el panel. */
 .adan-scene-line {
+  position: relative;
   margin: 0;
   min-height: 1.4em;
   font-family: var(--font-display);
@@ -998,34 +963,86 @@ body.view-adan .scanline-overlay {
   white-space: pre-wrap;
 }
 
+/* Historial de rondas ya cerradas (una o más, si Adán te deja preguntar más
+   de una vez en la misma visita). Cada ronda añade aquí su frase congelada
+   (roja, con .adan-scene-line-player) y la respuesta de Adán (morada,
+   .adan-scene-line normal). */
+.adan-scene-log {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.adan-scene-line-player {
+  color: var(--glitch-red);
+  text-shadow: 0 0 14px rgba(255, 46, 99, 0.55);
+}
+
 /* Línea del jugador (lo que "escribe" quien responde a Adán): rojo, para
-   distinguirla de las líneas de Adán en morado. */
+   distinguirla de las líneas de Adán en morado. El <input> real captura el
+   teclado pero no se ve (evita el caret nativo, fino y casi invisible con
+   la fuente pixel); lo que se ve es .adan-scene-echo + un cursor de bloque
+   parpadeante propio, más fiel a una consola real. */
 .adan-scene-input-row {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 2px;
   width: 100%;
 }
+/* Sin esto, el atributo HTML "hidden" no hace nada aquí: una regla de autor
+   como "display: flex" de arriba gana siempre al estilo por defecto del
+   user-agent para [hidden], sea cual sea su especificidad. */
+.adan-scene-input-row[hidden] {
+  display: none;
+}
+.adan-scene-input-row.is-jittering {
+  animation: adan-row-jitter 0.18s steps(1) 1;
+}
+@keyframes adan-row-jitter {
+  0%, 100% { transform: translate(0, 0); }
+  20% { transform: translate(-3px, 1px); }
+  40% { transform: translate(2px, -1px); }
+  60% { transform: translate(-2px, 0); }
+  80% { transform: translate(1px, 1px); }
+}
 .adan-scene-caret {
+  margin-right: 6px;
   font-family: var(--font-display);
   color: var(--glitch-red);
   text-shadow: 0 0 14px rgba(255, 46, 99, 0.55);
 }
-.adan-scene-input {
-  flex: 1;
-  background: transparent;
-  border: none;
-  border-bottom: 1px solid rgba(255, 46, 99, 0.4);
-  outline: none;
-  padding: 4px 2px;
+.adan-scene-echo {
   font-family: var(--font-display);
   font-size: clamp(0.7rem, 2.2vw, 0.95rem);
   letter-spacing: 1px;
   color: var(--glitch-red);
-  caret-color: var(--glitch-red);
+  text-shadow: 0 0 14px rgba(255, 46, 99, 0.55);
+  white-space: pre-wrap;
+  word-break: break-word;
 }
-.adan-scene-input:disabled {
-  border-bottom-color: transparent;
+.adan-scene-cursor {
+  font-family: var(--font-display);
+  font-size: clamp(0.7rem, 2.2vw, 0.95rem);
+  color: var(--glitch-red);
+  text-shadow: 0 0 14px rgba(255, 46, 99, 0.55);
+  animation: adan-cursor-blink 1s steps(1) infinite;
+}
+@keyframes adan-cursor-blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+.adan-scene-input {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: transparent;
+  caret-color: transparent;
 }
 
 /* Estado final: apagado permanente, sin estática ni texto, totalmente inerte */
@@ -1552,6 +1569,15 @@ body.view-personajes .personajes-page {
 .personajes-edit-btn {
   float: right;
 }
+/* Dato extra opcional (usuario de Minecraft), justo debajo del nombre;
+   oculto por completo (ver script.js) cuando el personaje no lo puso. */
+.personajes-profile-mcuser {
+  margin: -8px 0 0;
+  font-family: var(--font-display);
+  font-size: 0.65rem;
+  letter-spacing: 1px;
+  color: rgba(234, 230, 218, 0.45);
+}
 .personajes-blocks {
   clear: both;
   margin-top: 26px;
@@ -1881,6 +1907,8 @@ body.view-personajes .personajes-page {
   .password-trigger-btn { animation: none; opacity: 1; }
   .channel-transition-static { animation: none; }
   .adan-scene-static { display: none; }
+  .adan-scene-cursor { animation: none; opacity: 1; }
+  .adan-scene-input-row.is-jittering { animation: none; }
   .lore-page::before, .lore-page::after { animation: none; }
   .rules-panel { animation: none; }
   .personajes-view { animation: none; }

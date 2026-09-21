@@ -4,7 +4,6 @@
 
 document.addEventListener('DOMContentLoaded', () => {
   initCopyIpButton();
-  initServerStatus();
   initEnterGate();
   initMenuToggle('lore-menu-btn', 'lore-submenu');
   initMenuToggle('rules-menu-btn', 'rules-submenu');
@@ -325,122 +324,6 @@ function initCopyIpButton() {
       }, 1600);
     });
   });
-}
-
-/* ---------------------------------------------------
-   Estado del server: online/offline + jugadores conectados, vía la API
-   pública de mcsrvstat.us (sin clave, CORS abierto). Se refresca solo cada
-   minuto; si la API falla o tarda, se deja un mensaje neutro en vez de
-   quedarse en "comprobando..." para siempre.
---------------------------------------------------- */
-function initServerStatus() {
-  const el = document.getElementById('server-status');
-  const listEl = document.getElementById('server-players');
-  if (!el) return;
-
-  // Mismo criterio que initPersonajes() para saber si Firebase está de
-  // verdad configurado (si no, se listan los jugadores por su usuario real
-  // de Minecraft sin más, sin intentar cruzarlos con ningún personaje).
-  const firebaseReady = typeof firebase !== 'undefined' && window.FIREBASE_CONFIG
-    && window.FIREBASE_CONFIG.apiKey && window.FIREBASE_CONFIG.apiKey !== 'TU_API_KEY';
-
-  const renderPlainPlayers = (list) => {
-    if (!listEl) return;
-    listEl.innerHTML = '';
-    list.forEach((p) => {
-      const item = document.createElement('span');
-      item.className = 'server-player';
-      item.textContent = p.name;
-      listEl.appendChild(item);
-    });
-  };
-
-  const renderPlayers = (list) => {
-    if (!listEl) return;
-    listEl.innerHTML = '';
-    if (!list.length) return;
-    if (!firebaseReady) {
-      renderPlainPlayers(list);
-      return;
-    }
-
-    if (!firebase.apps.length) {
-      try { firebase.initializeApp(window.FIREBASE_CONFIG); } catch (err) { /* ya inicializado por initPersonajes() */ }
-    }
-
-    // Cruza cada usuario conectado contra personajes.minecraftUsername (si
-    // alguien lo puso en su ficha), para mostrar su personaje en vez de su
-    // usuario real. Lectura completa de la colección: igual de barato que
-    // el propio directorio de Personajes a esta escala.
-    firebase.firestore().collection('personajes').get().then((snapshot) => {
-      const porUsuario = {};
-      snapshot.forEach((doc) => {
-        const data = doc.data();
-        if (data.minecraftUsername) {
-          porUsuario[data.minecraftUsername.toLowerCase()] = { uid: doc.id, nombre: data.nombre, fotoUrl: data.fotoUrl };
-        }
-      });
-
-      listEl.innerHTML = '';
-      list.forEach((p) => {
-        const personaje = porUsuario[p.name.toLowerCase()];
-        if (!personaje) {
-          const item = document.createElement('span');
-          item.className = 'server-player';
-          item.textContent = p.name;
-          listEl.appendChild(item);
-          return;
-        }
-
-        const item = document.createElement('button');
-        item.type = 'button';
-        item.className = 'server-player server-player-linked';
-        if (personaje.fotoUrl) {
-          const img = document.createElement('img');
-          img.className = 'server-player-photo';
-          img.src = personaje.fotoUrl;
-          img.alt = '';
-          img.addEventListener('error', () => img.remove());
-          item.appendChild(img);
-        }
-        const nameSpan = document.createElement('span');
-        nameSpan.textContent = personaje.nombre;
-        item.appendChild(nameSpan);
-        item.addEventListener('click', () => {
-          if (window.__openPersonajeFromHash) window.__openPersonajeFromHash(personaje.uid);
-        });
-        listEl.appendChild(item);
-      });
-    }).catch(() => {
-      renderPlainPlayers(list);
-    });
-  };
-
-  const render = () => {
-    fetch(`https://api.mcsrvstat.us/3/${SERVER_IP}`)
-      .then((res) => res.json())
-      .then((data) => {
-        el.classList.remove('is-online', 'is-offline');
-        if (data.online) {
-          const jugadores = data.players ? `${data.players.online}/${data.players.max}` : '?';
-          el.textContent = `● Server online — ${jugadores} jugadores`;
-          el.classList.add('is-online');
-          renderPlayers((data.players && data.players.list) || []);
-        } else {
-          el.textContent = '● Server offline';
-          el.classList.add('is-offline');
-          renderPlayers([]);
-        }
-      })
-      .catch(() => {
-        el.textContent = 'Estado del server no disponible ahora mismo.';
-        el.classList.remove('is-online', 'is-offline');
-        renderPlayers([]);
-      });
-  };
-
-  render();
-  setInterval(render, 60000);
 }
 
 /* ---------------------------------------------------
@@ -956,6 +839,7 @@ function initPersonajes() {
   const profileBackBtn = document.getElementById('personajes-profile-back-btn');
   const editBtn = document.getElementById('personajes-edit-btn');
   const profileNameEl = document.getElementById('personajes-profile-name');
+  const profileMcUserEl = document.getElementById('personajes-profile-mcuser');
   const profileBlocksEl = document.getElementById('personajes-profile-blocks');
   const commentsListEl = document.getElementById('personajes-comments-list');
   const commentForm = document.getElementById('personajes-comment-form');
@@ -979,7 +863,7 @@ function initPersonajes() {
 
   if (!menuBtn || !backBtn || !page || !transition || !signinBtn || !sessionActive || !sessionName
     || !editNameBtn || !mineBtn || !signoutBtn || !views.directory || !views.profile || !views.editor
-    || !grid || !searchInput || !profileBackBtn || !editBtn || !profileNameEl || !profileBlocksEl
+    || !grid || !searchInput || !profileBackBtn || !editBtn || !profileNameEl || !profileMcUserEl || !profileBlocksEl
     || !commentsListEl || !commentForm || !commentInput || !commentSigninHint || !commentFeedbackEl
     || !editorCancelBtn || !nombreInput || !mcUserInput || !fotoInput || !editorBlocksEl || !nombresDatalist
     || !addTextoBtn || !addImagenBtn || !addSpotifyBtn || !addRelacionBtn || !feedbackEl || !saveBtn
@@ -1144,6 +1028,14 @@ function initPersonajes() {
     currentProfileUid = uid;
     profileNameEl.textContent = data.nombre || 'Sin nombre';
     profileNameEl.dataset.text = data.nombre || '';
+    // Dato extra opcional: solo se muestra si el personaje puso un usuario de Minecraft.
+    if (data.minecraftUsername) {
+      profileMcUserEl.textContent = `Usuario de Minecraft: ${data.minecraftUsername}`;
+      profileMcUserEl.hidden = false;
+    } else {
+      profileMcUserEl.textContent = '';
+      profileMcUserEl.hidden = true;
+    }
     profileBlocksEl.innerHTML = '';
     (data.bloques || []).forEach((bloque) => {
       profileBlocksEl.appendChild(buildPersonajeBlockElement(bloque, {
@@ -1671,32 +1563,69 @@ const ADAN_PHRASES = [
   { phrase: 'Qué es el Hombre de Estática', response: 'Una víctima.' },
 ];
 
+// Cuántas veces se ha completado la escena en este navegador (ver
+// ADAN_VISITS_KEY) decide el saludo y si se vuelve a sortear entre
+// ADAN_PHRASES o no:
+//   0 veces -> "¿Qué haces aquí?" + frase al azar (primera vez)
+//   1 vez   -> "Volviste." + esta pareja fija (Adán te reconoce)
+//   2+ veces -> "Volviste." + de nuevo frase al azar (ya te deja preguntar otra vez)
+const ADAN_RETURN_PROMPT = 'Volviste.';
+const ADAN_RETURN_PHRASE = { phrase: 'Aquí estoy otra vez', response: 'Sabíamos que volverías.' };
+const ADAN_VISITS_KEY = 'nova_adan_scene_visits';
+
 function initAdanScene() {
   const scene = document.getElementById('adan-scene');
   const staticEl = document.getElementById('adan-scene-static');
   const terminalEl = document.getElementById('adan-scene-terminal');
   const promptEl = document.getElementById('adan-scene-prompt');
+  const logEl = document.getElementById('adan-scene-log');
   const inputRow = document.getElementById('adan-scene-input-row');
+  const echoEl = document.getElementById('adan-scene-echo');
   const inputEl = document.getElementById('adan-scene-input');
-  const responseEl = document.getElementById('adan-scene-response');
-  if (!scene || !staticEl || !terminalEl || !promptEl || !inputRow || !inputEl || !responseEl) return;
+  if (!scene || !staticEl || !terminalEl || !promptEl || !logEl || !inputRow || !echoEl || !inputEl) return;
 
   // idle -> intro (escribiendo la pregunta) -> waiting (esperando la frase) ->
   // locked (Enter aceptado, escribiendo la respuesta) -> ending (inundación) -> dead
   let phase = 'idle';
+  let queue = []; // rondas { phrase, response } de esta visita, en orden (normalmente 1, ver __openAdanScene)
+  let roundIndex = 0;
   let current = null;
   let revealIndex = 0;
+  let visitsAtStart = 0; // cuántas veces se había completado la escena ANTES de esta ejecución
 
   const isActive = () => scene.classList.contains('active');
 
+  // Una vez una línea de Adán termina de escribirse, se le añade el glitch
+  // cromático del sitio (mismo mecanismo que .intro-title/.rules-title):
+  // requiere que data-text tenga el texto final completo, así que se aplica
+  // después de typeInto(), nunca mientras se está escribiendo letra a letra.
+  const settleGlitch = (el) => {
+    el.dataset.text = el.textContent;
+    el.classList.add('glitch');
+  };
+
   const resetVisuals = () => {
     promptEl.textContent = '';
-    responseEl.textContent = '';
+    promptEl.classList.remove('glitch');
+    promptEl.removeAttribute('data-text');
+    logEl.innerHTML = '';
+    echoEl.textContent = '';
     inputEl.value = '';
     inputEl.disabled = true;
     inputRow.hidden = true;
+    inputRow.classList.remove('is-jittering');
     staticEl.style.opacity = '0';
     terminalEl.style.opacity = '1';
+  };
+
+  // Un pequeño temblor de vez en cuando mientras se espera la frase completa,
+  // para meter tensión antes del Enter. Se corta solo en cuanto phase deja de
+  // ser 'waiting' (frase completada, Escape, o la escena vuelve a idle).
+  const scheduleWaitingJitter = () => {
+    if (phase !== 'waiting') return;
+    inputRow.classList.add('is-jittering');
+    setTimeout(() => inputRow.classList.remove('is-jittering'), 200);
+    setTimeout(scheduleWaitingJitter, 1500 + Math.random() * 2500);
   };
 
   const cancel = () => {
@@ -1721,8 +1650,10 @@ function initAdanScene() {
     } else {
       revealIndex = Math.min(current.phrase.length, revealIndex + 1);
     }
-    inputEl.value = current.phrase.slice(0, revealIndex);
+    const revealed = current.phrase.slice(0, revealIndex);
+    inputEl.value = revealed;
     inputEl.setSelectionRange(inputEl.value.length, inputEl.value.length);
+    echoEl.textContent = revealed; // lo que de verdad se ve: el <input> está oculto (ver CSS)
   });
 
   // Un <input type="text"> (no contenteditable) no genera beforeinput al
@@ -1746,11 +1677,53 @@ function initAdanScene() {
     }
   });
 
+  // Congela la frase que se acaba de completar como línea fija del historial
+  // (log), y limpia la línea "en vivo" para la siguiente ronda si la hay.
+  function freezeCurrentEcho() {
+    const line = document.createElement('p');
+    line.className = 'adan-scene-line adan-scene-line-player';
+    line.textContent = '> ' + current.phrase;
+    logEl.appendChild(line);
+    inputRow.hidden = true;
+    echoEl.textContent = '';
+    inputEl.value = '';
+  }
+
+  function startRound() {
+    current = queue[roundIndex];
+    revealIndex = 0;
+    inputRow.hidden = false;
+    inputEl.disabled = false;
+    phase = 'waiting';
+    inputEl.focus();
+    scheduleWaitingJitter();
+  }
+
   async function runResponsePhase() {
+    freezeCurrentEcho();
     await sleep(600);
     if (!isActive()) return;
-    await typeInto(responseEl, current.response, 40);
+    const responseLine = document.createElement('p');
+    responseLine.className = 'adan-scene-line';
+    logEl.appendChild(responseLine);
+    await typeInto(responseLine, current.response, 40);
     if (!isActive()) return;
+    settleGlitch(responseLine);
+
+    roundIndex += 1;
+    if (roundIndex < queue.length) {
+      // Queda otra ronda en esta misma visita (la 2ª vez encadena, tras el
+      // reconocimiento, una ronda normal sin recargar la página): deja
+      // preguntar otra vez en vez de terminar la escena aquí.
+      await sleep(900);
+      if (!isActive()) return;
+      startRound();
+      return;
+    }
+
+    // Última ronda de esta visita: cuenta como completada para decidir el
+    // saludo/frase de la próxima vez (ver ADAN_VISITS_KEY más arriba).
+    try { localStorage.setItem(ADAN_VISITS_KEY, String(visitsAtStart + 1)); } catch (err) { /* localStorage no disponible (modo privado, etc.): no pasa nada, solo no se recordará. */ }
     await sleep(1600);
     await floodAndClose();
   }
@@ -1781,9 +1754,18 @@ function initAdanScene() {
     if (phase !== 'idle') return; // ya en curso o terminada: un solo disparo por carga de página
     if (window.__closePasswordScreen) window.__closePasswordScreen();
 
+    try { visitsAtStart = parseInt(localStorage.getItem(ADAN_VISITS_KEY), 10) || 0; } catch (err) { visitsAtStart = 0; }
+    const promptText = visitsAtStart === 0 ? '¿Qué haces aquí?' : ADAN_RETURN_PROMPT;
+    const randomPhrase = () => ADAN_PHRASES[Math.floor(Math.random() * ADAN_PHRASES.length)];
+    // Solo la segunda vez (visitsAtStart === 1) añade delante la pareja fija
+    // de "reconocimiento"; tras esa ronda, freezeCurrentEcho()/runResponsePhase()
+    // encadenan la ronda al azar que sigue en la cola en vez de terminar la
+    // escena, así que en la misma visita Adán ya te deja preguntar otra vez.
+    // La primera vez y a partir de la tercera es una sola ronda al azar.
+    queue = visitsAtStart === 1 ? [ADAN_RETURN_PHRASE, randomPhrase()] : [randomPhrase()];
+    roundIndex = 0;
+
     phase = 'intro';
-    current = ADAN_PHRASES[Math.floor(Math.random() * ADAN_PHRASES.length)];
-    revealIndex = 0;
     resetVisuals();
     duckStaticAudio();
     scene.classList.remove('is-dead');
@@ -1794,14 +1776,12 @@ function initAdanScene() {
     (async () => {
       await sleep(1400);
       if (!isActive()) return;
-      await typeInto(promptEl, '¿Qué haces aquí?', 45);
+      await typeInto(promptEl, promptText, 45);
       if (!isActive()) return;
+      settleGlitch(promptEl);
       await sleep(500);
       if (!isActive()) return;
-      inputRow.hidden = false;
-      inputEl.disabled = false;
-      phase = 'waiting';
-      inputEl.focus();
+      startRound();
     })();
   };
 }
@@ -1887,7 +1867,9 @@ function initPasswordScreen() {
   });
 
   hintBtn.addEventListener('click', () => {
-    const words = Object.keys(SEARCH_ACTIONS);
+    // "4d4n" se queda fuera del sorteo a propósito: no es una gracia como
+    // el resto, es un final de página entero, no algo que dar de pista.
+    const words = Object.keys(SEARCH_ACTIONS).filter((word) => word !== '4d4n');
     if (!words.length) return;
     const word = words[Math.floor(Math.random() * words.length)];
     input.value = word;
