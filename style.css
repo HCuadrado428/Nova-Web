@@ -750,6 +750,49 @@ body.view-adan .password-trigger-btn {
   pointer-events: none;
 }
 
+/* ---------- Botón de silenciar/reactivar el audio: abajo a la izquierda, mismo
+   patrón que el botón de la contraseña. Se ve en todas las páginas (Lore, Normas,
+   Personajes, contraseña) salvo en la escena de Adán, donde ningún control queda
+   visible a propósito. ---------- */
+.audio-toggle-btn {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  z-index: 6;
+  background: transparent;
+  border: 1px solid var(--glitch-cyan);
+  color: var(--glitch-cyan);
+  font-family: var(--font-display);
+  font-size: 0.65rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 9px 16px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+  opacity: 0;
+  pointer-events: none;
+}
+.audio-toggle-btn:hover {
+  background: rgba(55, 240, 224, 0.12);
+  color: #fff;
+}
+body.booted .audio-toggle-btn {
+  pointer-events: auto;
+  animation: intro-reveal 1s ease 2.15s 1 both;
+}
+body.view-adan .audio-toggle-btn {
+  visibility: hidden;
+  pointer-events: none;
+}
+.audio-toggle-btn.is-muted {
+  border-color: var(--glitch-red);
+  color: var(--glitch-red);
+}
+.audio-toggle-btn.is-muted:hover {
+  background: rgba(255, 46, 99, 0.12);
+}
+
 /* ---------- Pantalla "Inserta la contraseña": buscador minimalista, sin estática ni glitches ---------- */
 .password-page {
   position: fixed;

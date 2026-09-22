@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initPersonajes();
   initPasswordScreen();
   initAdanScene();
+  initAudioToggleButton();
 });
 
 /* ---------------------------------------------------
@@ -61,6 +62,11 @@ const BOOT_LINE_4_PHRASES = [
   '⊬⍜⎍ ⌰⍜⌇⏁ ⏁⊑⟒ ☌⏃⋔⟒',
   '⏁⟒⌇⏁⟟☊⎍⌰⏃⍀ ⏁⍜⍀⌇⟟⍜⋏',
   '⌿⍜⍀☌⎍⟒ ⍜⌇ ⊑⏃☊⟒⟟⌇ ⟒⌇⏁⍜',
+  '⏃⌰☌⎍⟟⟒⋏ ⏁⟒ ⍜⏚⌇⟒⍀⎐⏃',
+  '⋏⍜ ⊑⏃⊬ ⟒⌇☊⏃⌿⟒',
+  '⏁⍜⎅⍜ ⟒⌇ ⋔⟒⋏⏁⟟⍀⏃',
+  '⋏⎍⋏☊⏃ ⟒⌇⏁⏃⌇ ⌇⍜⌰⍜',
+  '⎅⟒⌇⌿⟟⟒⍀⏁⏃',
 ];
 
 // Variante "imagen" de la línea 4: en vez de frase, aparece esta imagen con un
@@ -120,20 +126,26 @@ function initEnterGate() {
 }
 
 /* Sortea entre las frases (texto pequeño) y las imágenes creepy (foto a pantalla
-   completa con texto grande) para la línea 4, todas con el mismo peso. */
+   completa con texto grande) para la línea 4, todas con el mismo peso.
+   BOOT_LINE_4_ADAN_PHRASE se suma al sorteo solo si ya se visitó la escena
+   de Adán (ver ADAN_VISITS_KEY, más abajo en el archivo). */
 function setBootLine4Variant(lineEl, fullscreenEl) {
-  const totalVariants = BOOT_LINE_4_PHRASES.length + BOOT_LINE_4_IMAGES.length;
+  let adanVisits = 0;
+  try { adanVisits = parseInt(localStorage.getItem(ADAN_VISITS_KEY), 10) || 0; } catch (err) { /* localStorage no disponible: se queda sin la frase extra */ }
+  const phrasePool = adanVisits > 0 ? BOOT_LINE_4_PHRASES.concat(BOOT_LINE_4_ADAN_PHRASE) : BOOT_LINE_4_PHRASES;
+
+  const totalVariants = phrasePool.length + BOOT_LINE_4_IMAGES.length;
   const pick = Math.floor(Math.random() * totalVariants);
 
   lineEl.textContent = '';
 
-  if (pick < BOOT_LINE_4_PHRASES.length) {
-    lineEl.textContent = BOOT_LINE_4_PHRASES[pick];
+  if (pick < phrasePool.length) {
+    lineEl.textContent = phrasePool[pick];
     return;
   }
 
   if (!fullscreenEl) return;
-  const variant = BOOT_LINE_4_IMAGES[pick - BOOT_LINE_4_PHRASES.length];
+  const variant = BOOT_LINE_4_IMAGES[pick - phrasePool.length];
   const caption = fullscreenEl.querySelector('.boot-fullscreen-caption');
 
   fullscreenEl.style.backgroundImage = `url("${variant.src}")`;
@@ -160,13 +172,19 @@ function getAudioContext() {
 
 /* Bus único por el que pasa todo el audio generado (estática, glitches,
    stinger): así se puede bajar a 0 de golpe mientras se reproduce un vídeo
-   del Lore, en vez de tener que silenciar cada sonido por separado. */
+   del Lore, en vez de tener que silenciar cada sonido por separado. También
+   es el punto por el que el botón de silenciar corta todo el audio del sitio. */
 let staticBus = null;
+
+// Preferencia de silencio, recordada entre visitas (ver initAudioToggleButton).
+const AUDIO_MUTED_KEY = 'nova_audio_muted';
+let isAudioMuted = false;
+try { isAudioMuted = localStorage.getItem(AUDIO_MUTED_KEY) === '1'; } catch (err) { /* localStorage no disponible: se queda con sonido por defecto */ }
 
 function getStaticBus(ctx) {
   if (!staticBus) {
     staticBus = ctx.createGain();
-    staticBus.gain.value = 1;
+    staticBus.gain.value = isAudioMuted ? 0 : 1;
     staticBus.connect(ctx.destination);
   }
   return staticBus;
@@ -179,11 +197,46 @@ function duckStaticAudio() {
   staticBus.gain.setTargetAtTime(0, now, 0.08);
 }
 
+// No restaura el volumen si el usuario ha silenciado el sitio a propósito
+// (p.ej. al terminar un vídeo del Lore con el audio ya silenciado).
 function restoreStaticAudio() {
-  if (!audioCtx || !staticBus) return;
+  if (!audioCtx || !staticBus || isAudioMuted) return;
   const now = audioCtx.currentTime;
   staticBus.gain.cancelScheduledValues(now);
   staticBus.gain.setTargetAtTime(1, now, 0.2);
+}
+
+/* ---------------------------------------------------
+   Botón de silenciar/reactivar el audio ambiente: útil para quien juegue
+   con el sonido puesto en un sitio público. Corta/restaura el staticBus de
+   golpe (no con el fundido de duck/restoreStaticAudio, pensado para vídeos)
+   y recuerda la preferencia en localStorage para la próxima visita.
+--------------------------------------------------- */
+function setAudioMuted(muted) {
+  isAudioMuted = muted;
+  try { localStorage.setItem(AUDIO_MUTED_KEY, muted ? '1' : '0'); } catch (err) { /* localStorage no disponible: no se recordará la próxima vez */ }
+  if (audioCtx && staticBus) {
+    const now = audioCtx.currentTime;
+    staticBus.gain.cancelScheduledValues(now);
+    staticBus.gain.setTargetAtTime(muted ? 0 : 1, now, 0.08);
+  }
+}
+
+function initAudioToggleButton() {
+  const btn = document.getElementById('audio-toggle-btn');
+  if (!btn) return;
+
+  const sync = () => {
+    btn.textContent = isAudioMuted ? 'Sonido silenciado' : 'Silenciar';
+    btn.classList.toggle('is-muted', isAudioMuted);
+    btn.setAttribute('aria-pressed', String(isAudioMuted));
+  };
+  sync();
+
+  btn.addEventListener('click', () => {
+    setAudioMuted(!isAudioMuted);
+    sync();
+  });
 }
 
 function createNoiseBuffer(ctx, duration) {
@@ -732,7 +785,7 @@ function initRules() {
    vistas conmutadas por .is-active.
 --------------------------------------------------- */
 function spotifyUrlToEmbed(url) {
-  const match = /open\.spotify\.com\/(track|album|playlist|episode|show)\/([a-zA-Z0-9]+)/.exec(url || '');
+  const match = /open\.spotify\.com\/(?:intl-[a-z]{2}\/)?(track|album|playlist|episode|show)\/([a-zA-Z0-9]+)/.exec(url || '');
   if (!match) return null;
   return `https://open.spotify.com/embed/${match[1]}/${match[2]}`;
 }
@@ -1084,7 +1137,8 @@ function initPersonajes() {
     personajesRef.doc(uid).collection('comentarios').get().then((snapshot) => {
       let hayNuevos = false;
       snapshot.forEach((doc) => {
-        if (toMillis(doc.data().creadoEn) > lastSeen) hayNuevos = true;
+        const data = doc.data();
+        if (data.autorUid !== uid && toMillis(data.creadoEn) > lastSeen) hayNuevos = true;
       });
       mineBtn.classList.toggle('personajes-has-badge', hayNuevos);
     }).catch(() => {
@@ -1561,17 +1615,30 @@ const ADAN_PHRASES = [
   { phrase: 'Quiero saber más', response: 'Nos arrepentimos de nuestro acto, ahora tenemos miedo.' },
   { phrase: 'Cuál es la verdad', response: 'No estáis listos para la respuesta.' },
   { phrase: 'Qué es el Hombre de Estática', response: 'Una víctima.' },
+  { phrase: 'Cómo salgo de este mundo', response: 'Destruyéndolo.' },
+  { phrase: 'Existe alguna sexta dimensión', response: 'No lo sé.' },
+  { phrase: 'Dios existe', response: 'Si existiera, sería todopoderoso.' },
+  { phrase: 'Hay alguien vivo', response: 'Todos están muertos, menos yo y padre.' },
 ];
 
 // Cuántas veces se ha completado la escena en este navegador (ver
 // ADAN_VISITS_KEY) decide el saludo y si se vuelve a sortear entre
 // ADAN_PHRASES o no:
 //   0 veces -> "¿Qué haces aquí?" + frase al azar (primera vez)
-//   1 vez   -> "Volviste." + esta pareja fija (Adán te reconoce)
-//   2+ veces -> "Volviste." + de nuevo frase al azar (ya te deja preguntar otra vez)
+//   1 vez   -> "Volviste." + ADAN_RETURN_PHRASE (Adán te reconoce)
+//   2 veces -> "Otra vez tú." + ADAN_THIRD_PHRASE (Adán ya cuenta tus visitas)
+//   3+ veces -> "Volviste." + de nuevo frase al azar (ya te deja preguntar otra vez)
 const ADAN_RETURN_PROMPT = 'Volviste.';
 const ADAN_RETURN_PHRASE = { phrase: 'Aquí estoy otra vez', response: 'Sabíamos que volverías.' };
+const ADAN_THIRD_PROMPT = 'Otra vez tú.';
+const ADAN_THIRD_PHRASE = { phrase: 'Sigo aquí', response: 'Lo sé. Por eso vuelvo yo también.' };
 const ADAN_VISITS_KEY = 'nova_adan_scene_visits';
+
+// Frase extra para el sorteo de la línea 4 del boot (BOOT_LINE_4_PHRASES,
+// ver setBootLine4Variant más arriba): solo entra en el sorteo si ya se ha
+// visitado la escena de Adán al menos una vez en este navegador, como rastro
+// de que la visita "dejó algo" en el resto del sitio.
+const BOOT_LINE_4_ADAN_PHRASE = '⏃⎅⏃⋏ ⌰⍜ ⌇⏃⏚⟒'; // "ADAN LO SABE"
 
 function initAdanScene() {
   const scene = document.getElementById('adan-scene');
@@ -1591,6 +1658,7 @@ function initAdanScene() {
   let roundIndex = 0;
   let current = null;
   let revealIndex = 0;
+  let backspaceCount = 0; // veces que se borró durante la revelación de la ronda actual (ver freezeCurrentEcho/runResponsePhase)
   let visitsAtStart = 0; // cuántas veces se había completado la escena ANTES de esta ejecución
 
   const isActive = () => scene.classList.contains('active');
@@ -1647,6 +1715,7 @@ function initAdanScene() {
     if (phase !== 'waiting') return;
     if (e.inputType && e.inputType.indexOf('delete') === 0) {
       revealIndex = Math.max(0, revealIndex - 1);
+      backspaceCount += 1;
     } else {
       revealIndex = Math.min(current.phrase.length, revealIndex + 1);
     }
@@ -1692,11 +1761,21 @@ function initAdanScene() {
   function startRound() {
     current = queue[roundIndex];
     revealIndex = 0;
+    backspaceCount = 0;
     inputRow.hidden = false;
     inputEl.disabled = false;
     phase = 'waiting';
     inputEl.focus();
     scheduleWaitingJitter();
+  }
+
+  // Comentario extra que Adán añade tras su respuesta según cuánto se dudó
+  // al revelar la frase (backspaceCount, ver beforeinput/startRound). Null
+  // si la duda fue intermedia, para no forzar el comentario siempre.
+  function hesitationLine(backspaces, phraseLength) {
+    if (backspaces === 0) return 'No dudaste ni un segundo.';
+    if (backspaces >= phraseLength) return 'Dudaste.';
+    return null;
   }
 
   async function runResponsePhase() {
@@ -1709,6 +1788,18 @@ function initAdanScene() {
     await typeInto(responseLine, current.response, 40);
     if (!isActive()) return;
     settleGlitch(responseLine);
+
+    const hesitationTail = hesitationLine(backspaceCount, current.phrase.length);
+    if (hesitationTail) {
+      await sleep(700);
+      if (!isActive()) return;
+      const tailLine = document.createElement('p');
+      tailLine.className = 'adan-scene-line';
+      logEl.appendChild(tailLine);
+      await typeInto(tailLine, hesitationTail, 40);
+      if (!isActive()) return;
+      settleGlitch(tailLine);
+    }
 
     roundIndex += 1;
     if (roundIndex < queue.length) {
@@ -1755,14 +1846,19 @@ function initAdanScene() {
     if (window.__closePasswordScreen) window.__closePasswordScreen();
 
     try { visitsAtStart = parseInt(localStorage.getItem(ADAN_VISITS_KEY), 10) || 0; } catch (err) { visitsAtStart = 0; }
-    const promptText = visitsAtStart === 0 ? '¿Qué haces aquí?' : ADAN_RETURN_PROMPT;
+    let promptText = ADAN_RETURN_PROMPT;
+    if (visitsAtStart === 0) promptText = '¿Qué haces aquí?';
+    else if (visitsAtStart === 2) promptText = ADAN_THIRD_PROMPT;
     const randomPhrase = () => ADAN_PHRASES[Math.floor(Math.random() * ADAN_PHRASES.length)];
-    // Solo la segunda vez (visitsAtStart === 1) añade delante la pareja fija
-    // de "reconocimiento"; tras esa ronda, freezeCurrentEcho()/runResponsePhase()
-    // encadenan la ronda al azar que sigue en la cola en vez de terminar la
-    // escena, así que en la misma visita Adán ya te deja preguntar otra vez.
-    // La primera vez y a partir de la tercera es una sola ronda al azar.
-    queue = visitsAtStart === 1 ? [ADAN_RETURN_PHRASE, randomPhrase()] : [randomPhrase()];
+    // La 2ª visita (visitsAtStart === 1) y la 3ª (visitsAtStart === 2) añaden
+    // delante su propia pareja fija de "reconocimiento"; tras esa ronda,
+    // freezeCurrentEcho()/runResponsePhase() encadenan la ronda al azar que
+    // sigue en la cola en vez de terminar la escena, así que en la misma
+    // visita Adán ya te deja preguntar otra vez. La primera vez y a partir
+    // de la cuarta es una sola ronda al azar.
+    if (visitsAtStart === 1) queue = [ADAN_RETURN_PHRASE, randomPhrase()];
+    else if (visitsAtStart === 2) queue = [ADAN_THIRD_PHRASE, randomPhrase()];
+    else queue = [randomPhrase()];
     roundIndex = 0;
 
     phase = 'intro';

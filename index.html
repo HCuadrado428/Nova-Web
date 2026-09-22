@@ -136,6 +136,11 @@
   <!-- Botón "Inserta la contraseña": abajo a la derecha, aparece junto al resto del contenido tras el boot -->
   <button class="password-trigger-btn" id="password-trigger-btn" type="button">Inserta la contraseña</button>
 
+  <!-- Botón de silenciar/reactivar el audio ambiente: abajo a la izquierda, aparece junto al resto
+       del contenido tras el boot. Se oculta solo en la escena de Adán (ver style.css), donde ningún
+       otro control queda visible a propósito. La preferencia se recuerda entre visitas (script.js). -->
+  <button class="audio-toggle-btn" id="audio-toggle-btn" type="button" aria-pressed="false">Silenciar</button>
+
   <!-- ==================== TRANSICIÓN DE CANAL ==================== -->
   <div class="channel-transition" id="channel-transition" aria-hidden="true">
     <div class="channel-transition-static"></div>
