@@ -6,9 +6,11 @@ import { playBootAudio, setAudioSuspended } from './audio.js';
 import { ADAN_VISITS_KEY, BOOT_LINE_4_ADAN_PHRASE } from './adan.js';
 import { openPersonajeFromHash } from './personajes.js';
 import { storageGet } from './utils.js';
+import { t } from './i18n.js';
 
-// IP del server, usada por el botón "Copiar IP" de la intro.
-const SERVER_IP = 'xray.dathost.net:17487';
+// IP del server: la usan el botón "Copiar IP" y el estado del servidor
+// (server-status.js). Si cambia, basta con cambiarla aquí.
+export const SERVER_IP = 'xray.dathost.net:17487';
 
 // Momento en que termina la animación intro-reveal (~2.15s de retraso + 1s)
 // y ya se ven los botones: no se salta a un link directo antes de eso.
@@ -150,7 +152,6 @@ export function initCopyIpButton() {
   const btn = document.getElementById('copy-ip-btn');
   if (!btn) return;
 
-  const defaultLabel = btn.textContent;
   let resetTimer = null;
   const flash = (label, className, ms) => {
     clearTimeout(resetTimer);
@@ -158,14 +159,14 @@ export function initCopyIpButton() {
     btn.classList.remove('is-copied');
     if (className) btn.classList.add(className);
     resetTimer = setTimeout(() => {
-      btn.textContent = defaultLabel;
+      btn.textContent = t('intro.copyIp');
       btn.classList.remove('is-copied');
     }, ms);
   };
 
   btn.addEventListener('click', () => {
     copyText(SERVER_IP)
-      .then(() => flash('IP copiada', 'is-copied', 1600))
+      .then(() => flash(t('intro.ipCopied'), 'is-copied', 1600))
       .catch(() => flash(SERVER_IP, null, 6000));
   });
 }

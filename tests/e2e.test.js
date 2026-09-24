@@ -111,13 +111,30 @@ beforeEach(async () => {
 // ---------- utilidades ----------
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-async function openPage({ hash = '', reducedMotion = 'no-preference', blockFirebase = false, signedInAs = null } = {}) {
-  const context = await browser.newContext({ reducedMotion, permissions: ['clipboard-read', 'clipboard-write'] });
+const STATUS_ONLINE = { online: true, players: { online: 5, max: 20 } };
+
+async function openPage({
+  hash = '',
+  reducedMotion = 'no-preference',
+  blockFirebase = false,
+  signedInAs = null,
+  serverStatus = STATUS_ONLINE, // respuesta falsa de api.mcsrvstat.us; null = la API no responde
+  locale = 'es-ES', // idioma del navegador: decide el idioma inicial de la web
+} = {}) {
+  const context = await browser.newContext({
+    locale,
+    reducedMotion,
+    permissions: ['clipboard-read', 'clipboard-write'],
+  });
   await context.route('**/firebase-config.js', (r) => r.fulfill({ contentType: 'text/javascript', body: TEST_CONFIG }));
   await context.route('**/__test__/auth-helper.js', (r) =>
     r.fulfill({ contentType: 'text/javascript', body: authHelper }),
   );
   if (blockFirebase) await context.route('**/vendor/firebase.js', (r) => r.abort());
+  // Estado del servidor: nunca se consulta la API real desde los tests.
+  await context.route('https://api.mcsrvstat.us/**', (r) =>
+    serverStatus ? r.fulfill({ json: serverStatus, headers: { 'Access-Control-Allow-Origin': '*' } }) : r.abort(),
+  );
   await context.addInitScript((emulators) => {
     window.NOVA_FIREBASE_EMULATORS = emulators;
   }, EMULATORS);
@@ -307,6 +324,92 @@ describe('web sin Firebase', () => {
     await sinPortapapeles.waitForFunction(() => document.getElementById('copy-ip-btn').textContent !== 'Copiar IP');
     assert.equal(await text(sinPortapapeles, '#copy-ip-btn'), 'xray.dathost.net:17487');
     await sinPortapapeles.context().close();
+  });
+
+  test('idioma: se elige solo según el navegador', async () => {
+    for (const [locale, lang, texto] of [
+      ['en-US', 'en', 'TAP TO ENTER'],
+      ['pt-BR', 'pt', 'TOQUE PARA ENTRAR'],
+      ['es-MX', 'es', 'TOCA PARA ENTRAR'],
+      ['de-DE', 'es', 'TOCA PARA ENTRAR'], // idioma que no tenemos: español
+    ]) {
+      const page = await openPage({ locale });
+      assert.equal(await page.evaluate(() => document.documentElement.lang), lang, locale);
+      assert.equal(await text(page, '.enter-text'), texto, locale);
+      // El efecto glitch copia el texto en data-text: también tiene que cambiar.
+      assert.equal(await page.getAttribute('.enter-text', 'data-text'), texto, locale);
+      await page.context().close();
+    }
+  });
+
+  test('idioma: cambiar con ES · EN · PT traduce todo y se recuerda', async () => {
+    const page = await openPage();
+    await enter(page);
+    assert.equal(await text(page, '#download-modpack'), 'Descargar Modpack');
+    assert.equal(await text(page, '#server-status-text'), 'Online · 5/20 jugadores');
+
+    await page.click('.lang-btn[data-lang="en"]');
+    assert.equal(await page.evaluate(() => document.documentElement.lang), 'en');
+    assert.equal(await page.title(), 'NOVA 2 — Modded Roleplay SMP');
+    assert.equal(await text(page, '#download-modpack'), 'Download Modpack');
+    assert.equal(await text(page, '#lore-menu-btn'), 'Lore');
+    assert.equal(await text(page, '#rules-menu-btn'), 'Rules');
+    assert.equal(await text(page, '#audio-toggle-btn'), 'Mute');
+    assert.equal(await text(page, '#server-status-text'), 'Online · 5/20 players');
+    assert.equal(await page.getAttribute('.lang-btn[data-lang="en"]', 'aria-pressed'), 'true');
+    assert.equal(await page.getAttribute('.lang-btn[data-lang="es"]', 'aria-pressed'), 'false');
+
+    // Normas en inglés, con su <strong>.
+    await page.click('#rules-menu-btn');
+    await page.click('#rules-minecraft-btn');
+    await sleep(CHANNEL_MS);
+    assert.equal(await text(page, '#rules-panel-minecraft .rules-title'), 'RULES · MINECRAFT');
+    assert.equal(await text(page, '#rules-panel-minecraft .rules-item strong'), 'Out of character:');
+    await page.keyboard.press('Escape');
+    await sleep(CHANNEL_MS);
+
+    // Lore en inglés.
+    await page.click('#lore-menu-btn');
+    await page.click('#lore-antes-btn');
+    await sleep(CHANNEL_MS);
+    assert.match(await text(page, '.lore-paragraph'), /^Sometimes humanity wears you out/);
+    assert.equal(await text(page, '#lore-next-btn'), 'Next →');
+    await page.keyboard.press('Escape');
+    await sleep(CHANNEL_MS);
+
+    // Portugués, y se recuerda al recargar.
+    await page.click('.lang-btn[data-lang="pt"]');
+    assert.equal(await text(page, '#download-modpack'), 'Baixar Modpack');
+    await page.reload();
+    assert.equal(await text(page, '.enter-text'), 'TOQUE PARA ENTRAR');
+    await enter(page);
+    assert.equal(await text(page, '#copy-ip-btn'), 'Copiar IP');
+    assert.equal(await text(page, '#password-trigger-btn'), 'Digite a senha');
+    assert.equal(await text(page, '#server-status-text'), 'Online · 5/20 jogadores');
+    assert.deepEqual(page.errors, []);
+    await page.context().close();
+  });
+
+  test('estado del servidor: online, offline y API caída', async () => {
+    const online = await openPage();
+    await enter(online);
+    await online.locator('#server-status:not([hidden])').waitFor();
+    assert.equal(await text(online, '#server-status-text'), 'Online · 5/20 jugadores');
+    assert.equal(await online.getAttribute('#server-status', 'data-state'), 'online');
+    await online.context().close();
+
+    const offline = await openPage({ serverStatus: { online: false } });
+    await enter(offline);
+    await offline.locator('#server-status:not([hidden])').waitFor();
+    assert.equal(await text(offline, '#server-status-text'), 'Offline');
+    assert.equal(await offline.getAttribute('#server-status', 'data-state'), 'offline');
+    await offline.context().close();
+
+    const caida = await openPage({ serverStatus: null });
+    await enter(caida);
+    assert.ok(await caida.locator('#server-status').isHidden());
+    assert.deepEqual(caida.errors, []);
+    await caida.context().close();
   });
 
   test('reducir movimiento: botones visibles sin animación', async () => {

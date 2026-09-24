@@ -14,6 +14,7 @@
 
 import { channelSwitch, closeMenuToggle, isView, setView } from './views.js';
 import { normalizeSearchTerm, storageGet, storageSet } from './utils.js';
+import { onLanguageChange, t } from './i18n.js';
 
 /* ---------------------------------------------------
    Carga de Firebase bajo demanda
@@ -239,7 +240,7 @@ export function initPersonajes() {
 
   if (!isFirebaseConfigured()) {
     menuBtn.disabled = true;
-    menuBtn.title = 'Personajes: falta configurar Firebase (ver firebase-config.js)';
+    menuBtn.title = t('pj.notConfigured');
     return;
   }
 
@@ -310,7 +311,7 @@ export function initPersonajes() {
       }
       setView('personajes');
       showView('directory');
-      if (!auth) setGridMessage('Cargando personajes...');
+      if (!auth) setGridMessage(t('pj.loading'));
       connect()
         .then(() => {
           const directoryLoaded = renderDirectory();
@@ -318,7 +319,7 @@ export function initPersonajes() {
         })
         .catch((err) => {
           grid.innerHTML = ''; // quita el "Cargando..."; el aviso va arriba
-          reportError('No se pudo conectar con Personajes. Revisa la conexión y recarga la página.', err);
+          reportError(t('pj.connectError'), err);
         });
     });
 
@@ -338,11 +339,7 @@ export function initPersonajes() {
       : allPersonajes;
 
     if (!filtered.length) {
-      setGridMessage(
-        allPersonajes.length
-          ? 'Ningún personaje coincide con la búsqueda.'
-          : 'Todavía no hay personajes. ¡Sé el primero!',
-      );
+      setGridMessage(allPersonajes.length ? t('pj.noMatches') : t('pj.empty'));
       return;
     }
     grid.innerHTML = '';
@@ -366,7 +363,7 @@ export function initPersonajes() {
       }
       const name = document.createElement('span');
       name.className = 'personajes-card-name';
-      name.textContent = data.nombre || 'Sin nombre';
+      name.textContent = data.nombre || t('pj.noName');
       card.appendChild(name);
       card.addEventListener('click', () => openProfile(id, data));
       grid.appendChild(card);
@@ -394,7 +391,7 @@ export function initPersonajes() {
       })
       .catch((err) => {
         console.error('No se pudieron cargar los personajes:', err);
-        setGridMessage('No se pudieron cargar los personajes. Vuelve a entrar para reintentarlo.');
+        setGridMessage(t('pj.loadError'));
       });
   }
 
@@ -409,9 +406,9 @@ export function initPersonajes() {
     fb.getDoc(personajeDoc(uid))
       .then((doc) => {
         if (doc.exists()) openProfile(uid, doc.data());
-        else showStatus('Ese personaje ya no existe.');
+        else showStatus(t('pj.gone'));
       })
-      .catch((err) => reportError('No se pudo abrir ese personaje.', err));
+      .catch((err) => reportError(t('pj.openError'), err));
   }
 
   // ---- Perfil (solo lectura) ----
@@ -424,11 +421,11 @@ export function initPersonajes() {
 
   function openProfile(uid, data) {
     currentProfileUid = uid;
-    profileNameEl.textContent = data.nombre || 'Sin nombre';
+    profileNameEl.textContent = data.nombre || t('pj.noName');
     profileNameEl.dataset.text = data.nombre || '';
     // Dato extra opcional: solo se muestra si el personaje puso un usuario de Minecraft.
     if (data.minecraftUsername) {
-      profileMcUserEl.textContent = `Usuario de Minecraft: ${data.minecraftUsername}`;
+      profileMcUserEl.textContent = t('pj.mcUser', { name: data.minecraftUsername });
       profileMcUserEl.hidden = false;
     } else {
       profileMcUserEl.textContent = '';
@@ -521,7 +518,7 @@ export function initPersonajes() {
         commentsListEl.innerHTML = '';
         const msg = document.createElement('p');
         msg.className = 'personajes-comments-hint is-fail';
-        msg.textContent = 'No se pudieron cargar los comentarios.';
+        msg.textContent = t('pj.commentsLoadError');
         commentsListEl.appendChild(msg);
       },
     );
@@ -538,7 +535,7 @@ export function initPersonajes() {
     if (snapshot.empty) {
       const empty = document.createElement('p');
       empty.className = 'personajes-comments-hint';
-      empty.textContent = 'Todavía no hay comentarios.';
+      empty.textContent = t('pj.noComments');
       commentsListEl.appendChild(empty);
       return;
     }
@@ -551,7 +548,7 @@ export function initPersonajes() {
       header.className = 'personajes-comment-header';
       const author = document.createElement('span');
       author.className = 'personajes-comment-author';
-      author.textContent = data.autorNombre || 'Alguien';
+      author.textContent = data.autorNombre || t('pj.someone');
       header.appendChild(author);
 
       const text = document.createElement('p');
@@ -560,7 +557,7 @@ export function initPersonajes() {
       if (data.editadoEn) {
         const editedTag = document.createElement('span');
         editedTag.className = 'personajes-comment-edited-tag';
-        editedTag.textContent = '(editado)';
+        editedTag.textContent = t('pj.edited');
         text.appendChild(editedTag);
       }
 
@@ -570,7 +567,7 @@ export function initPersonajes() {
         const editCommentBtn = document.createElement('button');
         editCommentBtn.type = 'button';
         editCommentBtn.className = 'personajes-comment-edit-btn';
-        editCommentBtn.textContent = 'Editar';
+        editCommentBtn.textContent = t('common.edit');
         editCommentBtn.addEventListener('click', () => startEditingComment(uid, doc.id, data.texto, text));
         header.appendChild(editCommentBtn);
       }
@@ -580,13 +577,13 @@ export function initPersonajes() {
         removeBtn.type = 'button';
         removeBtn.className = 'personajes-comment-remove-btn';
         removeBtn.textContent = '✕';
-        removeBtn.setAttribute('aria-label', 'Borrar comentario');
+        removeBtn.setAttribute('aria-label', t('pj.deleteComment'));
         removeBtn.addEventListener('click', () => {
           removeBtn.disabled = true;
           // No hace falta repintar a mano: onSnapshot se entera del borrado.
           fb.deleteDoc(fb.doc(comentariosCol(uid), doc.id)).catch((err) => {
             removeBtn.disabled = false;
-            reportError('No se pudo borrar el comentario.', err);
+            reportError(t('pj.deleteCommentError'), err);
           });
         });
         header.appendChild(removeBtn);
@@ -608,18 +605,18 @@ export function initPersonajes() {
     textarea.className = 'personajes-input personajes-block-textarea';
     textarea.maxLength = 500;
     textarea.value = original;
-    textarea.setAttribute('aria-label', 'Editar comentario');
+    textarea.setAttribute('aria-label', t('pj.editComment'));
 
     const actions = document.createElement('div');
     actions.className = 'personajes-comment-edit-actions';
     const saveBtnEl = document.createElement('button');
     saveBtnEl.type = 'button';
     saveBtnEl.className = 'rules-switch-btn';
-    saveBtnEl.textContent = 'Guardar';
+    saveBtnEl.textContent = t('common.save');
     const cancelBtnEl = document.createElement('button');
     cancelBtnEl.type = 'button';
     cancelBtnEl.className = 'personajes-comment-edit-btn';
-    cancelBtnEl.textContent = 'Cancelar';
+    cancelBtnEl.textContent = t('common.cancel');
 
     saveBtnEl.addEventListener('click', () => {
       const nuevo = textarea.value.trim();
@@ -632,7 +629,7 @@ export function initPersonajes() {
         .then(() => renderComments())
         .catch((err) => {
           saveBtnEl.disabled = false;
-          reportError('No se pudo editar el comentario.', err);
+          reportError(t('pj.editCommentError'), err);
         });
     });
     cancelBtnEl.addEventListener('click', () => renderComments());
@@ -655,7 +652,7 @@ export function initPersonajes() {
     fb.addDoc(comentariosCol(currentProfileUid), {
       autorUid: currentUser.uid,
       // Máx. 60: lo que aceptan las reglas de Firestore.
-      autorNombre: (currentUser.displayName || currentUser.email || 'Alguien').slice(0, 60),
+      autorNombre: (currentUser.displayName || currentUser.email || t('pj.someone')).slice(0, 60),
       texto,
       creadoEn: fb.serverTimestamp(),
     })
@@ -664,7 +661,7 @@ export function initPersonajes() {
       })
       .catch((err) => {
         console.error('No se pudo publicar el comentario:', err);
-        commentFeedbackEl.textContent = 'No se pudo publicar el comentario. Inténtalo de nuevo.';
+        commentFeedbackEl.textContent = t('pj.commentError');
         commentFeedbackEl.classList.add('is-fail');
       })
       .finally(() => {
@@ -687,7 +684,7 @@ export function initPersonajes() {
       .then((doc) => {
         openEditor(doc.exists() ? doc.data() : null);
       })
-      .catch((err) => reportError('No se pudo abrir tu personaje. Inténtalo de nuevo.', err));
+      .catch((err) => reportError(t('pj.openOwnError'), err));
   }
 
   editBtn.addEventListener('click', () => {
@@ -709,7 +706,7 @@ export function initPersonajes() {
       upBtn.type = 'button';
       upBtn.className = 'personajes-block-move-btn';
       upBtn.textContent = '▲';
-      upBtn.setAttribute('aria-label', 'Subir bloque');
+      upBtn.setAttribute('aria-label', t('pj.moveUp'));
       upBtn.disabled = index === 0;
       upBtn.addEventListener('click', () => {
         [editorBloques[index - 1], editorBloques[index]] = [editorBloques[index], editorBloques[index - 1]];
@@ -720,7 +717,7 @@ export function initPersonajes() {
       downBtn.type = 'button';
       downBtn.className = 'personajes-block-move-btn';
       downBtn.textContent = '▼';
-      downBtn.setAttribute('aria-label', 'Bajar bloque');
+      downBtn.setAttribute('aria-label', t('pj.moveDown'));
       downBtn.disabled = index === editorBloques.length - 1;
       downBtn.addEventListener('click', () => {
         [editorBloques[index + 1], editorBloques[index]] = [editorBloques[index], editorBloques[index + 1]];
@@ -731,7 +728,7 @@ export function initPersonajes() {
       removeBtn.type = 'button';
       removeBtn.className = 'personajes-block-remove-btn';
       removeBtn.textContent = '✕';
-      removeBtn.setAttribute('aria-label', 'Quitar bloque');
+      removeBtn.setAttribute('aria-label', t('pj.removeBlock'));
       removeBtn.addEventListener('click', () => {
         editorBloques.splice(index, 1);
         renderEditorBlocks();
@@ -747,8 +744,8 @@ export function initPersonajes() {
         const nombreField = document.createElement('input');
         nombreField.className = 'personajes-input';
         nombreField.type = 'text';
-        nombreField.placeholder = 'Nombre del otro personaje';
-        nombreField.setAttribute('aria-label', 'Nombre del otro personaje');
+        nombreField.placeholder = t('pj.relName');
+        nombreField.setAttribute('aria-label', t('pj.relName'));
         nombreField.setAttribute('list', 'personajes-nombres-datalist');
         nombreField.value = bloque.nombre || '';
         const resolveUid = () => {
@@ -766,8 +763,8 @@ export function initPersonajes() {
         etiquetaField.className = 'personajes-input';
         etiquetaField.type = 'text';
         etiquetaField.maxLength = 40;
-        etiquetaField.placeholder = 'Relación (ej. hermano)';
-        etiquetaField.setAttribute('aria-label', 'Tipo de relación');
+        etiquetaField.placeholder = t('pj.relLabelPlaceholder');
+        etiquetaField.setAttribute('aria-label', t('pj.relLabel'));
         etiquetaField.value = bloque.etiqueta || '';
         etiquetaField.addEventListener('input', () => {
           bloque.etiqueta = etiquetaField.value;
@@ -781,19 +778,16 @@ export function initPersonajes() {
           field = document.createElement('textarea');
           field.className = 'personajes-input personajes-block-textarea';
           field.rows = 3;
-          field.placeholder = 'Escribe aquí...';
+          field.placeholder = t('pj.textPlaceholder');
         } else {
           field = document.createElement('input');
           field.className = 'personajes-input';
           field.type = 'url';
-          field.placeholder =
-            bloque.tipo === 'imagen'
-              ? 'Link de imagen (https://...)'
-              : 'Link de Spotify (https://open.spotify.com/...)';
+          field.placeholder = bloque.tipo === 'imagen' ? t('pj.imagePlaceholder') : t('pj.spotifyPlaceholder');
         }
         field.setAttribute(
           'aria-label',
-          { texto: 'Texto del bloque', imagen: 'Link de la imagen', spotify: 'Link de Spotify' }[bloque.tipo],
+          { texto: t('pj.textLabel'), imagen: t('pj.imageLabel'), spotify: t('pj.spotifyLabel') }[bloque.tipo],
         );
         field.value = bloque.contenido || '';
         field.addEventListener('input', () => {
@@ -856,26 +850,26 @@ export function initPersonajes() {
     if (!currentUser) return;
     const nombre = nombreInput.value.trim();
     if (!nombre) {
-      setFeedback('Ponle un nombre a tu personaje.', 'fail');
+      setFeedback(t('pj.errNoName'), 'fail');
       return;
     }
     if (nombre.length > 60) {
-      setFeedback('El nombre es demasiado largo (máx. 60 caracteres).', 'fail');
+      setFeedback(t('pj.errNameLong'), 'fail');
       return;
     }
     const fotoUrl = fotoInput.value.trim();
     if (fotoUrl && !/^https?:\/\//i.test(fotoUrl)) {
-      setFeedback('El link de la foto debe empezar por http:// o https://', 'fail');
+      setFeedback(t('pj.errPhoto'), 'fail');
       return;
     }
     const minecraftUsername = mcUserInput.value.trim();
     if (minecraftUsername && !/^\w{1,16}$/.test(minecraftUsername)) {
-      setFeedback('El usuario de Minecraft solo puede tener letras, números y "_" (máx. 16).', 'fail');
+      setFeedback(t('pj.errMcUser'), 'fail');
       return;
     }
     const relacionInvalida = editorBloques.some((b) => b.tipo === 'relacion' && (b.nombre || '').trim() && !b.uid);
     if (relacionInvalida) {
-      setFeedback('Alguna relación no coincide con ningún personaje existente. Revisa el nombre.', 'fail');
+      setFeedback(t('pj.errRelation'), 'fail');
       return;
     }
 
@@ -888,7 +882,7 @@ export function initPersonajes() {
       .filter((b) => (b.tipo === 'relacion' ? !!b.uid : !!b.contenido));
 
     saveBtn.disabled = true;
-    setFeedback('Guardando...', null);
+    setFeedback(t('pj.saving'), null);
 
     const payload = {
       nombre,
@@ -905,7 +899,7 @@ export function initPersonajes() {
     write
       .then(() => {
         editingExisting = true;
-        mineBtn.textContent = 'Mi personaje';
+        setHasCharacter(true);
         currentProfileUid = currentUser.uid;
         openProfile(currentUser.uid, {
           nombre,
@@ -916,7 +910,7 @@ export function initPersonajes() {
       })
       .catch((err) => {
         console.error('No se pudo guardar el personaje:', err);
-        setFeedback('No se pudo guardar. Inténtalo de nuevo.', 'fail');
+        setFeedback(t('pj.saveError'), 'fail');
       })
       .finally(() => {
         saveBtn.disabled = false;
@@ -925,22 +919,22 @@ export function initPersonajes() {
 
   deleteBtn.addEventListener('click', () => {
     if (!currentUser || !editingExisting) return;
-    const ok = window.confirm('¿Seguro que quieres eliminar tu personaje? Esto no se puede deshacer.');
+    const ok = window.confirm(t('pj.confirmDelete'));
     if (!ok) return;
 
     deleteBtn.disabled = true;
-    setFeedback('Eliminando...', null);
+    setFeedback(t('pj.deleting'), null);
 
     fb.deleteDoc(personajeDoc(currentUser.uid))
       .then(() => {
         editingExisting = false;
-        mineBtn.textContent = 'Crear personaje';
+        setHasCharacter(false);
         showView('directory');
         renderDirectory();
       })
       .catch((err) => {
         console.error('No se pudo eliminar el personaje:', err);
-        setFeedback('No se pudo eliminar. Inténtalo de nuevo.', 'fail');
+        setFeedback(t('pj.deleteError'), 'fail');
       })
       .finally(() => {
         deleteBtn.disabled = false;
@@ -948,6 +942,18 @@ export function initPersonajes() {
   });
 
   // ---- Sesión ----
+  // "Mi personaje" o "Crear personaje": se guarda si ya lo tiene para poder
+  // repintar el botón al cambiar de idioma.
+  let hasCharacter = false;
+  function setHasCharacter(value) {
+    hasCharacter = value;
+    mineBtn.textContent = t(value ? 'pj.mine' : 'pj.create');
+  }
+  onLanguageChange(() => {
+    setHasCharacter(hasCharacter);
+    if (!signinBtn.hasAttribute('aria-busy')) signinBtn.textContent = t('pj.signin');
+  });
+
   function handleAuthState(user) {
     currentUser = user;
     resetSigninButton();
@@ -956,17 +962,17 @@ export function initPersonajes() {
     mineBtn.hidden = true;
     mineBtn.classList.remove('personajes-has-badge');
     if (user) {
-      sessionName.textContent = user.displayName || user.email || 'Cuenta de Google';
+      sessionName.textContent = user.displayName || user.email || t('pj.googleAccount');
       fb.getDoc(personajeDoc(user.uid))
         .then((doc) => {
-          mineBtn.textContent = doc.exists() ? 'Mi personaje' : 'Crear personaje';
+          setHasCharacter(doc.exists());
           if (doc.exists()) checkUnreadComments(user.uid);
         })
         .catch((err) => {
           // Sin saber si ya tiene personaje: el botón se enseña igual y, al
           // pulsarlo, openOwnEditor() vuelve a comprobarlo.
           console.error('No se pudo comprobar tu personaje:', err);
-          mineBtn.textContent = 'Mi personaje';
+          setHasCharacter(true);
         })
         .finally(() => {
           mineBtn.hidden = false;
@@ -987,14 +993,13 @@ export function initPersonajes() {
   // haberse quedado colgado si la ventana se cerró o no llegó a abrirse).
   // Cada intento lleva un número para que la respuesta tardía de uno viejo
   // no deshaga el estado del botón del intento actual.
-  const SIGNIN_LABEL = signinBtn.textContent;
   const SIGNIN_SLOW_MS = 15000; // si tarda más, se avisa de cómo desatascarlo
   let signinAttempt = 0;
   let signinSlowTimer = null;
 
   function resetSigninButton() {
     clearTimeout(signinSlowTimer);
-    signinBtn.textContent = SIGNIN_LABEL;
+    signinBtn.textContent = t('pj.signin');
     signinBtn.removeAttribute('aria-busy');
   }
 
@@ -1003,13 +1008,11 @@ export function initPersonajes() {
     const attempt = ++signinAttempt;
     showStatus('');
     clearTimeout(signinSlowTimer);
-    signinBtn.textContent = 'Abriendo Google...';
+    signinBtn.textContent = t('pj.signinOpening');
     signinBtn.setAttribute('aria-busy', 'true');
     signinSlowTimer = setTimeout(() => {
       if (attempt !== signinAttempt) return;
-      showStatus(
-        '¿No se abre la ventana de Google? Pulsa el botón otra vez; si sigue sin abrirse, permite las ventanas emergentes para esta web.',
-      );
+      showStatus(t('pj.signinSlow'));
     }, SIGNIN_SLOW_MS);
 
     fb.signInWithPopup(auth, new fb.GoogleAuthProvider())
@@ -1023,12 +1026,7 @@ export function initPersonajes() {
           showStatus(''); // la persona cerró la ventana de Google: nada que avisar
           return;
         }
-        reportError(
-          err.code === 'auth/popup-blocked'
-            ? 'El navegador ha bloqueado la ventana de Google. Permite las ventanas emergentes para esta web y vuelve a intentarlo.'
-            : 'No se pudo iniciar sesión con Google. Inténtalo de nuevo.',
-          err,
-        );
+        reportError(err.code === 'auth/popup-blocked' ? t('pj.popupBlocked') : t('pj.signinError'), err);
       })
       .finally(() => {
         if (attempt === signinAttempt) resetSigninButton();
@@ -1040,7 +1038,7 @@ export function initPersonajes() {
 
   editNameBtn.addEventListener('click', () => {
     if (!currentUser) return;
-    const nuevo = window.prompt('¿Qué nombre quieres que vean los demás en Personajes?', currentUser.displayName || '');
+    const nuevo = window.prompt(t('pj.promptName'), currentUser.displayName || '');
     if (nuevo === null) return;
     const nombre = nuevo.trim().slice(0, 60); // máx. que aceptan los comentarios (firestore.rules)
     if (!nombre) return;
@@ -1048,7 +1046,7 @@ export function initPersonajes() {
       .then(() => {
         sessionName.textContent = nombre;
       })
-      .catch((err) => reportError('No se pudo cambiar el nombre.', err));
+      .catch((err) => reportError(t('pj.renameError'), err));
   });
 
   mineBtn.addEventListener('click', openOwnEditor);

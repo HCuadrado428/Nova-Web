@@ -12,12 +12,32 @@ Firebase) y algún secreto. Se publica con GitHub Pages tal cual está en
 | `js/main.js` | Punto de entrada: arranca cada sección |
 | `js/intro.js`, `lore.js`, `rules.js`, `personajes.js`, `password.js`, `adan.js` | Una sección cada uno |
 | `js/audio.js`, `views.js`, `utils.js` | Sonido, cambio de pantalla y utilidades compartidas |
-| `js/data/lore.js` | **Los textos del Lore** (lo que se edita para cambiar la historia) |
+| `js/data/lore.es.js` | **Los textos del Lore** en español (lo que se edita para cambiar la historia) |
+| `js/data/lore.en.js`, `lore.pt.js` | El Lore traducido (mismos pases en el mismo orden) |
+| `js/i18n/es.js`, `en.js`, `pt.js` | **Todos los demás textos** (botones, normas, avisos...) en cada idioma |
 | `firebase-config.js` | Configuración pública del proyecto de Firebase |
 | `firestore.rules` | Reglas de seguridad de Firestore (ver abajo cómo publicarlas) |
 | `vendor/firebase.js` | SDK de Firebase generado (ver `vendor/README.md`) |
 | `fonts/`, `images/` | Fuentes e imágenes |
 | `tests/` | Tests (reglas y la web en un navegador) |
+
+## Idiomas
+
+La web está en español, inglés y portugués (de Brasil). Se elige sola según el
+idioma del navegador (si no es ninguno de los tres, español) y se puede
+cambiar con los botones **ES · EN · PT** de la intro; se recuerda la elección.
+
+- **Cambiar un texto:** búscalo en `js/i18n/es.js` (o en `js/data/lore.es.js`
+  si es del Lore) y cámbialo también en `en.js` y `pt.js`.
+- **Añadir un texto nuevo:** ponle una clave en los tres diccionarios; en el
+  HTML se marca con `data-i18n="clave"` y en JS se usa `t('clave')`.
+- `npm run test:unit` avisa si falta alguna clave en algún idioma, si el Lore
+  traducido no tiene los mismos pases o si el español del HTML no coincide
+  con `es.js`.
+
+No se traducen: lo que escribe cada jugador (personajes y comentarios), las
+frases en el alfabeto cifrado del arranque ni las palabras secretas del
+buscador.
 
 ## Verla en local
 

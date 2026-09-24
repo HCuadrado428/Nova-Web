@@ -947,6 +947,69 @@ body.tab-hidden .enter-text {
   opacity: 0.7;
 }
 
+/* Estado del servidor (js/server-status.js): punto verde/rojo + texto */
+.server-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 10px 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(0.55rem, 1.2vw, 0.7rem);
+  letter-spacing: 0.5px;
+  color: var(--text-main);
+  opacity: 0.85;
+}
+.server-status[hidden] {
+  display: none;
+}
+.server-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--glitch-red);
+  box-shadow: 0 0 6px rgba(255, 46, 99, 0.8);
+}
+/* Selector de idioma (js/i18n.js): tres botones pequeños "ES · EN · PT" */
+.lang-switch {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  min-width: 0;
+  margin: 16px 0 0;
+  padding: 0;
+  border: 0;
+}
+.lang-btn {
+  background: transparent;
+  border: 1px solid rgba(234, 230, 218, 0.2);
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-family: var(--font-display);
+  font-size: 0.55rem;
+  letter-spacing: 1px;
+  color: rgba(234, 230, 218, 0.55);
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+.lang-btn:hover {
+  color: var(--text-main);
+  border-color: rgba(55, 240, 224, 0.5);
+}
+.lang-btn[aria-pressed='true'] {
+  color: var(--glitch-cyan);
+  border-color: var(--glitch-cyan);
+  background: rgba(55, 240, 224, 0.1);
+}
+
+.server-status[data-state='online'] .server-status-dot {
+  background: var(--emerald);
+  box-shadow: 0 0 6px rgba(46, 204, 113, 0.8);
+}
+
 .intro-copy-ip {
   display: block;
   margin: 24px auto 0;

@@ -1,0 +1,190 @@
+// Textos do site em português (do Brasil). Mesmas chaves que es.js
+// (verificado por tests/i18n.test.js). Os textos da história do Lore estão
+// à parte, em js/data/lore.pt.js.
+export default {
+  // ---- Aba do navegador e buscadores ----
+  'meta.title': 'NOVA 2 — SMP de Roleplay com Mods',
+  'meta.description':
+    'NOVA 2: a segunda temporada do nosso SMP de roleplay com mods entre amigos. Baixe o modpack, entre no Discord e descubra a história do mundo.',
+  // ---- Tela de entrada ----
+  'gate.label': 'Toque para entrar',
+  'gate.text': 'TOQUE PARA ENTRAR',
+  'gate.hint': 'Tem certeza de que quer entrar?',
+  // ---- Inicialização (texto de terminal) ----
+  'boot.line1': 'SINAL PERDIDO...',
+  'boot.line2': 'RECONECTANDO...',
+  'boot.line3': 'SINTONIZANDO...',
+  // ---- Intro ----
+  'intro.download': 'Baixar Modpack',
+  'intro.copyIp': 'Copiar IP',
+  'intro.ipCopied': 'IP copiado',
+  // ---- Seletor de idioma ----
+  'lang.label': 'Idioma',
+  // ---- Status do servidor ----
+  'status.online': 'Online · {online}/{max} jogadores',
+  'status.onlineOne': 'Online · {online}/{max} jogador',
+  'status.onlineNoCount': 'Online',
+  'status.offline': 'Offline',
+  // ---- Menus Lore / Regras ----
+  'menu.lore': 'Lore',
+  'menu.loreAntes': 'Antes do Nova',
+  'menu.personajes': 'Personagens',
+  'menu.rules': 'Regras',
+  // ---- Botão de som ----
+  'audio.mute': 'Silenciar',
+  'audio.muted': 'Som silenciado',
+  // ---- Transição de canal ----
+  'channel.text': 'SINTONIZANDO CANAL...',
+  // ---- Botões comuns ----
+  'common.back': '← Voltar',
+  'common.edit': 'Editar',
+  'common.save': 'Salvar',
+  'common.cancel': 'Cancelar',
+  // ---- Lore (o texto da história está em js/data/lore.pt.js) ----
+  'lore.prev': '← Anterior',
+  'lore.next': 'Próximo →',
+  'lore.backToStart': 'Voltar ao início',
+  // ---- Regras (podem conter <strong>) ----
+  'rules.tabObjetos': 'Itens',
+  'rules.discord.title': 'REGRAS · DISCORD',
+  'rules.discord.intro': 'Estas regras valem para o servidor do Discord.',
+  'rules.discord.1': '<strong>Idade:</strong> 17+.',
+  'rules.discord.2':
+    '<strong>Ficha:</strong> Vocês terão todo o tempo que precisarem para fazer a ficha; mesmo só com as informações básicas ela já é válida.',
+  'rules.discord.3':
+    '<strong>Canais:</strong> Respeitem a função de cada canal; eles foram criados com um propósito específico.',
+  'rules.discord.4':
+    '<strong>Spam:</strong> Existe um canal próprio para compartilhar links ou outros tipos de mensagens repetitivas.',
+  'rules.discord.5':
+    '<strong>Comunicação:</strong> Se surgir algum problema, desconforto ou mal-entendido com outro membro, converse com respeito, de preferência no privado e não no meio do chat geral. Se a discussão piorar, por favor fale com um admin para resolver a situação da forma adequada.',
+  'rules.discord.6':
+    '<strong>Descumprimento:</strong> Caso algum membro esteja quebrando alguma das regras, avise os administradores imediatamente.',
+  'rules.discord.7':
+    '<strong>Conteúdo sensível:</strong> Conteúdo +18, gore ou similares é proibido. Qualquer conteúdo visual ou escrito que possa incomodar outros membros não é permitido. Se for algo relacionado ao lore, pedimos que usem spoiler; se for uma imagem/desenho, enviem como spoiler e avisem sobre o conteúdo (ex.: TW: sangue).',
+  'rules.discord.8':
+    '<strong>Relações:</strong> É importante lembrar que o roleplay é interpretar personagens fictícios; não reflete a realidade nem as opiniões pessoais dos membros. Por isso, pedimos que ninguém leve para o lado pessoal o roleplay de alguém. Conflitos ou interações dentro do roleplay não devem afetar as relações pessoais.',
+  'rules.discord.9':
+    '<strong>Respeito:</strong> Pedimos respeito com os outros, seja por gostos ou por transtornos. Se alguém tem um transtorno e quer que ele seja compartilhado em um anúncio para que os outros possam entender, fale com um admin; se preferir contar por conta própria às pessoas com quem interage, pedimos respeito e compreensão dos demais membros. Faltas de respeito (zoação, insultos, desprezo, isolamento social, ignorar alguém pelo seu transtorno) resultarão em ban direto.',
+  'rules.discord.10':
+    '<strong>Inatividade:</strong> Se vocês tiverem algum problema pessoal e não puderem estar muito ativos, pedimos que digam o motivo da inatividade no canal correspondente. Se possível, informem também uma estimativa de quanto tempo ficarão inativos, para que isso seja levado em conta.',
+  'rules.minecraft.title': 'REGRAS · MINECRAFT',
+  'rules.minecraft.intro': 'Estas regras valem para o servidor de Minecraft.',
+  'rules.minecraft.1':
+    '<strong>Off RP:</strong> Dentro do servidor, a maioria das interações com outros membros é on RP; caso contrário, por favor usem "//" para diferenciar. Respeitem isso para que todos possam distinguir.',
+  'rules.minecraft.2':
+    '<strong>Colaboração e respeito:</strong> Respeite as decisões e ações dos outros personagens na história e colabore de forma construtiva para manter a coerência e o fluxo da narrativa. Comunicação aberta e respeito mútuo são essenciais para uma boa experiência de roleplay.',
+  'rules.minecraft.3': '<strong>Portais:</strong> É permitido ir à Twilight Forest, ao Nether e ao End.',
+  'rules.minecraft.4':
+    '<strong>Spawn:</strong> No spawn é totalmente proibido minerar ou roubar blocos ou itens. Se o spawn for danificado por um creeper ou algum mob, pedimos que chamem um admin para consertar.',
+  'rules.minecraft.5':
+    '<strong>Limite de adoções:</strong> Se forem adotar outros jogadores, o limite é de 4 adoções (os ovinhos também contam). Isso é para evitar que os roleplays fiquem impossíveis porque todo mundo é da mesma família.',
+  'rules.minecraft.6':
+    '<strong>Borda do mundo:</strong> O limite de blocos é 14000, para manter o servidor otimizado e focado no roleplay. Haverá uma borda e, se você morrer ao atravessá-la, os itens perdidos não serão devolvidos. O limite para construir sua casa é até 5000.',
+  'rules.objetos.title': 'REGRAS · ITENS',
+  'rules.objetos.intro': 'Itens cujo uso ou obtenção é proibido no servidor.',
+  'rules.objetos.1': '<strong>Anel de Odin:</strong> Proibido.',
+  'rules.footer.1': 'Obrigado por ler e fazer parte deste servidor; queremos te dar uma ótima experiência.',
+  'rules.footer.2':
+    'É importante lembrar que estas medidas existem para manter um ambiente de roleplay seguro e respeitoso para todos os participantes. Obrigado pela compreensão e colaboração!',
+  // ---- Personagens ----
+  'pj.signin': 'Entrar com o Google',
+  'pj.editName': 'Mudar o nome que os outros veem',
+  'pj.mine': 'Meu personagem',
+  'pj.create': 'Criar personagem',
+  'pj.signout': 'Sair',
+  'pj.title': 'PERSONAGENS',
+  'pj.searchPlaceholder': 'Buscar personagem...',
+  'pj.searchLabel': 'Buscar personagem',
+  'pj.backToDirectory': '← Diretório',
+  'pj.comments': 'Comentários',
+  'pj.commentPlaceholder': 'Deixe um comentário...',
+  'pj.commentLabel': 'Comentário',
+  'pj.commentSubmit': 'Comentar',
+  'pj.commentSigninHint': 'Entre para comentar.',
+  'pj.editorCancel': '← Cancelar',
+  'pj.fieldName': 'Nome do personagem',
+  'pj.fieldNamePlaceholder': 'Nome',
+  'pj.fieldMcUser': 'Usuário do Minecraft (opcional)',
+  'pj.fieldMcUserPlaceholder': 'SeuUsuarioDoMinecraft',
+  'pj.fieldMcUserHint': 'É opcional: se você colocar, aparece como informação extra abaixo do seu nome na ficha.',
+  'pj.fieldPhoto': 'Link da foto de perfil (opcional)',
+  'pj.fieldPhotoHint': 'Um link do Pinterest também serve: clique direito na imagem → "Copiar endereço da imagem".',
+  'pj.addText': '+ Texto',
+  'pj.addImage': '+ Imagem',
+  'pj.addRelation': '+ Relação',
+  'pj.delete': 'Excluir personagem',
+  'pj.notConfigured': 'Personagens: falta configurar o Firebase (veja firebase-config.js)',
+  'pj.loading': 'Carregando personagens...',
+  'pj.connectError': 'Não foi possível conectar com Personagens. Verifique a conexão e recarregue a página.',
+  'pj.noMatches': 'Nenhum personagem corresponde à busca.',
+  'pj.empty': 'Ainda não há personagens. Seja o primeiro!',
+  'pj.noName': 'Sem nome',
+  'pj.loadError': 'Não foi possível carregar os personagens. Entre de novo para tentar outra vez.',
+  'pj.gone': 'Esse personagem não existe mais.',
+  'pj.openError': 'Não foi possível abrir esse personagem.',
+  'pj.commentsLoadError': 'Não foi possível carregar os comentários.',
+  'pj.noComments': 'Ainda não há comentários.',
+  'pj.someone': 'Alguém',
+  'pj.edited': '(editado)',
+  'pj.deleteComment': 'Excluir comentário',
+  'pj.deleteCommentError': 'Não foi possível excluir o comentário.',
+  'pj.editComment': 'Editar comentário',
+  'pj.editCommentError': 'Não foi possível editar o comentário.',
+  'pj.commentError': 'Não foi possível publicar o comentário. Tente de novo.',
+  'pj.openOwnError': 'Não foi possível abrir seu personagem. Tente de novo.',
+  'pj.moveUp': 'Subir bloco',
+  'pj.moveDown': 'Descer bloco',
+  'pj.removeBlock': 'Remover bloco',
+  'pj.relName': 'Nome do outro personagem',
+  'pj.relLabelPlaceholder': 'Relação (ex.: irmão)',
+  'pj.relLabel': 'Tipo de relação',
+  'pj.textPlaceholder': 'Escreva aqui...',
+  'pj.imagePlaceholder': 'Link da imagem (https://...)',
+  'pj.spotifyPlaceholder': 'Link do Spotify (https://open.spotify.com/...)',
+  'pj.textLabel': 'Texto do bloco',
+  'pj.imageLabel': 'Link da imagem',
+  'pj.spotifyLabel': 'Link do Spotify',
+  'pj.errNoName': 'Dê um nome ao seu personagem.',
+  'pj.errNameLong': 'O nome é longo demais (máx. 60 caracteres).',
+  'pj.errPhoto': 'O link da foto deve começar com http:// ou https://',
+  'pj.errMcUser': 'O usuário do Minecraft só pode ter letras, números e "_" (máx. 16).',
+  'pj.errRelation': 'Alguma relação não corresponde a nenhum personagem existente. Verifique o nome.',
+  'pj.saving': 'Salvando...',
+  'pj.saveError': 'Não foi possível salvar. Tente de novo.',
+  'pj.confirmDelete': 'Tem certeza de que quer excluir seu personagem? Isso não pode ser desfeito.',
+  'pj.deleting': 'Excluindo...',
+  'pj.deleteError': 'Não foi possível excluir. Tente de novo.',
+  'pj.googleAccount': 'Conta do Google',
+  'pj.signinOpening': 'Abrindo o Google...',
+  'pj.signinSlow':
+    'A janela do Google não abre? Aperte o botão de novo; se continuar sem abrir, permita pop-ups para este site.',
+  'pj.popupBlocked': 'O navegador bloqueou a janela do Google. Permita pop-ups para este site e tente de novo.',
+  'pj.signinError': 'Não foi possível entrar com o Google. Tente de novo.',
+  'pj.promptName': 'Que nome você quer que os outros vejam em Personagens?',
+  'pj.renameError': 'Não foi possível mudar o nome.',
+  'pj.mcUser': 'Usuário do Minecraft: {name}',
+  // ---- Busca "Digite a senha" ----
+  'password.trigger': 'Digite a senha',
+  'password.placeholder': 'Digite a senha',
+  'password.search': 'Buscar',
+  'password.nothing': 'Nada por aqui.',
+  'password.hint': 'Uma ajudinha?',
+  // ---- Cena de Adão ----
+  'adan.inputLabel': 'Responda',
+  'adan.promptFirst': 'O que você está fazendo aqui?',
+  'adan.promptReturn': 'Você voltou.',
+  'adan.promptThird': 'Você de novo.',
+  'adan.noHesitation': 'Você não hesitou nem um segundo.',
+  'adan.hesitated': 'Você hesitou.',
+  'adan.phrases': [
+    { phrase: 'Quero saber mais', response: 'Nos arrependemos do que fizemos, agora temos medo.' },
+    { phrase: 'Qual é a verdade', response: 'Vocês não estão prontos para a resposta.' },
+    { phrase: 'O que é o Homem de Estática', response: 'Uma vítima.' },
+    { phrase: 'Como eu saio deste mundo', response: 'Destruindo-o.' },
+    { phrase: 'Existe alguma sexta dimensão', response: 'Não sei.' },
+    { phrase: 'Deus existe', response: 'Se existisse, seria todo-poderoso.' },
+    { phrase: 'Há alguém vivo', response: 'Todos estão mortos, menos eu e o pai.' },
+  ],
+  'adan.returnPhrase': { phrase: 'Aqui estou de novo', response: 'Sabíamos que você voltaria.' },
+  'adan.thirdPhrase': { phrase: 'Ainda estou aqui', response: 'Eu sei. Por isso eu também volto.' },
+};

@@ -3,6 +3,7 @@
 // ======================================================
 
 import { duckStaticAudio, restoreStaticAudio, slamStaticAudio, playChannelChangeAudio } from './audio.js';
+import { t, tRaw } from './i18n.js';
 import { isView, setView } from './views.js';
 import { sleep, storageGet, storageSet, typeInto } from './utils.js';
 
@@ -10,37 +11,27 @@ import { sleep, storageGet, storageSet, typeInto } from './utils.js';
    Easter egg de Adán (palabra secreta del buscador, ver password.js)
    Pantalla negra de golpe, en silencio total, con un diálogo tecleado en
    terminal. La frase con la que "responde" el usuario se sortea entre las
-   de ADAN_PHRASES al empezar; lo que teclee de verdad da igual, cada
+   de adan.phrases (diccionario de idioma) al empezar; lo que teclee de verdad da igual, cada
    pulsación solo cuenta como "avanzar" o "retroceder" la revelación de esa
    frase (como en el juego SPLIT). Al completarla y pulsar Enter, se escribe
    la respuesta fija emparejada, la pantalla se inunda de estática y la
    página intenta cerrarse; si el navegador lo bloquea (lo normal, esta
    pestaña no se abrió por script), se queda negra e inerte para siempre.
 --------------------------------------------------- */
-// Cada frase que el usuario puede "escribir" (sin que importe lo que teclee
-// de verdad) y la respuesta fija que le corresponde. Añadir una cuarta solo
-// requiere añadir un objeto más aquí.
-const ADAN_PHRASES = [
-  { phrase: 'Quiero saber más', response: 'Nos arrepentimos de nuestro acto, ahora tenemos miedo.' },
-  { phrase: 'Cuál es la verdad', response: 'No estáis listos para la respuesta.' },
-  { phrase: 'Qué es el Hombre de Estática', response: 'Una víctima.' },
-  { phrase: 'Cómo salgo de este mundo', response: 'Destruyéndolo.' },
-  { phrase: 'Existe alguna sexta dimensión', response: 'No lo sé.' },
-  { phrase: 'Dios existe', response: 'Si existiera, sería todopoderoso.' },
-  { phrase: 'Hay alguien vivo', response: 'Todos están muertos, menos yo y padre.' },
-];
-
+// Los textos de Adán (frases que "escribe" quien juega, sus respuestas y los
+// saludos) están en los diccionarios de idioma, js/i18n/<idioma>.js, bajo las
+// claves adan.*. Se leen al abrir la escena, en el idioma de ese momento.
+//
+// adan.phrases: cada frase que el usuario puede "escribir" (sin que importe lo
+// que teclee de verdad) y la respuesta fija que le corresponde.
+//
 // Cuántas veces se ha completado la escena en este navegador (ver
 // ADAN_VISITS_KEY) decide el saludo y si se vuelve a sortear entre
-// ADAN_PHRASES o no:
-//   0 veces -> "¿Qué haces aquí?" + frase al azar (primera vez)
-//   1 vez   -> "Volviste." + ADAN_RETURN_PHRASE (Adán te reconoce)
-//   2 veces -> "Otra vez tú." + ADAN_THIRD_PHRASE (Adán ya cuenta tus visitas)
-//   3+ veces -> "Volviste." + de nuevo frase al azar (ya te deja preguntar otra vez)
-const ADAN_RETURN_PROMPT = 'Volviste.';
-const ADAN_RETURN_PHRASE = { phrase: 'Aquí estoy otra vez', response: 'Sabíamos que volverías.' };
-const ADAN_THIRD_PROMPT = 'Otra vez tú.';
-const ADAN_THIRD_PHRASE = { phrase: 'Sigo aquí', response: 'Lo sé. Por eso vuelvo yo también.' };
+// adan.phrases o no:
+//   0 veces -> adan.promptFirst ("¿Qué haces aquí?") + frase al azar
+//   1 vez   -> adan.promptReturn ("Volviste.") + adan.returnPhrase (Adán te reconoce)
+//   2 veces -> adan.promptThird ("Otra vez tú.") + adan.thirdPhrase (ya cuenta tus visitas)
+//   3+ veces -> adan.promptReturn + de nuevo frase al azar
 export const ADAN_VISITS_KEY = 'nova_adan_scene_visits';
 
 // Frase extra para el sorteo de la línea 4 del boot (BOOT_LINE_4_PHRASES,
@@ -190,8 +181,8 @@ export function initAdanScene() {
   // al revelar la frase (backspaceCount, ver beforeinput/startRound). Null
   // si la duda fue intermedia, para no forzar el comentario siempre.
   function hesitationLine(backspaces, phraseLength) {
-    if (backspaces === 0) return 'No dudaste ni un segundo.';
-    if (backspaces >= phraseLength) return 'Dudaste.';
+    if (backspaces === 0) return t('adan.noHesitation');
+    if (backspaces >= phraseLength) return t('adan.hesitated');
     return null;
   }
 
@@ -263,18 +254,19 @@ export function initAdanScene() {
     if (phase !== 'idle') return; // ya en curso o terminada: un solo disparo por carga de página
 
     visitsAtStart = parseInt(storageGet(ADAN_VISITS_KEY), 10) || 0;
-    let promptText = ADAN_RETURN_PROMPT;
-    if (visitsAtStart === 0) promptText = '¿Qué haces aquí?';
-    else if (visitsAtStart === 2) promptText = ADAN_THIRD_PROMPT;
-    const randomPhrase = () => ADAN_PHRASES[Math.floor(Math.random() * ADAN_PHRASES.length)];
+    let promptText = t('adan.promptReturn');
+    if (visitsAtStart === 0) promptText = t('adan.promptFirst');
+    else if (visitsAtStart === 2) promptText = t('adan.promptThird');
+    const phrases = tRaw('adan.phrases');
+    const randomPhrase = () => phrases[Math.floor(Math.random() * phrases.length)];
     // La 2ª visita (visitsAtStart === 1) y la 3ª (visitsAtStart === 2) añaden
     // delante su propia pareja fija de "reconocimiento"; tras esa ronda,
     // freezeCurrentEcho()/runResponsePhase() encadenan la ronda al azar que
     // sigue en la cola en vez de terminar la escena, así que en la misma
     // visita Adán ya te deja preguntar otra vez. La primera vez y a partir
     // de la cuarta es una sola ronda al azar.
-    if (visitsAtStart === 1) queue = [ADAN_RETURN_PHRASE, randomPhrase()];
-    else if (visitsAtStart === 2) queue = [ADAN_THIRD_PHRASE, randomPhrase()];
+    if (visitsAtStart === 1) queue = [tRaw('adan.returnPhrase'), randomPhrase()];
+    else if (visitsAtStart === 2) queue = [tRaw('adan.thirdPhrase'), randomPhrase()];
     else queue = [randomPhrase()];
     roundIndex = 0;
 

@@ -10,10 +10,11 @@
     "start": "npx serve@14 -l 8000 .",
     "check": "biome check .",
     "fix": "biome check --write .",
-    "test": "npm run test:rules && npm run test:e2e",
+    "test": "npm run test:unit && npm run test:rules && npm run test:e2e",
     "test:rules": "firebase emulators:exec --only firestore --project demo-nova \"node --test tests/rules.test.js\"",
     "test:e2e": "firebase emulators:exec --only firestore,auth --project demo-nova \"node --test tests/e2e.test.js\"",
-    "build:firebase": "esbuild tools/firebase-entry.js --bundle --format=esm --minify --platform=browser --target=es2020 --legal-comments=eof --outfile=vendor/firebase.js"
+    "build:firebase": "esbuild tools/firebase-entry.js --bundle --format=esm --minify --platform=browser --target=es2020 --legal-comments=eof --outfile=vendor/firebase.js",
+    "test:unit": "node --test tests/i18n.test.js"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.14",
