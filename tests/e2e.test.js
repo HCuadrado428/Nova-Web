@@ -617,6 +617,50 @@ describe('Personajes', () => {
     await page.context().close();
   });
 
+  test('árbol de relaciones: dibuja las relaciones y lleva al perfil', async () => {
+    const page = await openPage();
+    await enter(page);
+    await openPersonajes(page);
+    await page.click('#personajes-relations-btn');
+    await page.locator('#personajes-view-relations.is-active').waitFor();
+
+    // Semilla: Kira declara a Zed como "hermano".
+    assert.equal(await page.locator('.relations-node').count(), 2);
+    assert.equal(await page.locator('.relations-edge').count(), 1);
+    assert.equal(await text(page, '.relations-edge-label'), 'hermano');
+    assert.equal(await text(page, '.relations-list li'), 'Kira → hermano → Zed');
+    assert.ok(await page.locator('#personajes-relations-empty').isHidden()); // todos tienen relación
+
+    // Pulsar un personaje del árbol abre su perfil.
+    await page.locator('.relations-node[aria-label="Ver el perfil de Zed"]').click();
+    await page.waitForFunction(() => document.getElementById('personajes-profile-name').textContent === 'Zed');
+    assert.deepEqual(page.errors, []);
+    await page.context().close();
+  });
+
+  test('árbol de relaciones: sin relaciones, aviso en vez de dibujo', async () => {
+    await env.withSecurityRulesDisabled((ctx) =>
+      setDoc(doc(ctx.firestore(), 'personajes/kira'), {
+        nombre: 'Kira',
+        minecraftUsername: null,
+        fotoUrl: null,
+        bloques: [],
+        actualizadoEn: Timestamp.now(),
+        creadoEn: Timestamp.now(),
+      }),
+    );
+    const page = await openPage({ locale: 'en-US' });
+    await enter(page);
+    await page.click('#lore-menu-btn');
+    await page.click('#lore-personajes-btn');
+    await page.locator('.personajes-card').first().waitFor();
+    await page.click('#personajes-relations-btn');
+    await page.locator('#personajes-relations-empty:not([hidden])').waitFor();
+    assert.match(await text(page, '#personajes-relations-empty'), /^No relationships yet/);
+    assert.equal(await page.locator('.relations-graph').count(), 0);
+    await page.context().close();
+  });
+
   test('link directo #personaje/<uid>', async () => {
     const page = await openPage({ hash: '#personaje/zed' });
     await enter(page);

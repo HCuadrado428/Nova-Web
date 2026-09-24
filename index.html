@@ -269,7 +269,21 @@
       <div class="personajes-view is-active" id="personajes-view-directory">
         <h2 class="rules-title glitch" data-text="PERSONAJES" data-i18n="pj.title">PERSONAJES</h2>
         <input class="personajes-input personajes-search-input" id="personajes-search-input" type="text" placeholder="Buscar personaje..." aria-label="Buscar personaje" data-i18n-attr="placeholder:pj.searchPlaceholder|aria-label:pj.searchLabel">
+        <div class="personajes-directory-tools">
+          <button class="rules-switch-btn" id="personajes-relations-btn" type="button" data-i18n="pj.treeBtn">Árbol de relaciones</button>
+        </div>
         <div class="personajes-grid" id="personajes-grid"></div>
+      </div>
+
+      <!-- Árbol de relaciones: lo dibuja js/relations-graph.js con los bloques "Relación" -->
+      <div class="personajes-view" id="personajes-view-relations">
+        <button class="lore-nav-btn" id="personajes-relations-back-btn" type="button" data-i18n="pj.backToDirectory">← Directorio</button>
+        <h2 class="rules-title glitch" data-text="RELACIONES" data-i18n="pj.treeTitle">RELACIONES</h2>
+        <p class="personajes-field-hint relations-hint" id="personajes-relations-hint" data-i18n="pj.treeHint">Pulsa un personaje para ver su perfil.</p>
+        <div class="relations-graph-wrap" id="personajes-relations-graph"></div>
+        <p class="personajes-empty" id="personajes-relations-empty" hidden></p>
+        <h3 class="personajes-comments-title relations-list-title" id="personajes-relations-list-title" data-i18n="pj.treeListTitle">Todas las relaciones</h3>
+        <ul class="relations-list" id="personajes-relations-list"></ul>
       </div>
 
       <div class="personajes-view" id="personajes-view-profile">

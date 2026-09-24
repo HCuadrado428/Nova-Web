@@ -15,6 +15,7 @@
 import { channelSwitch, closeMenuToggle, isView, setView } from './views.js';
 import { normalizeSearchTerm, storageGet, storageSet } from './utils.js';
 import { onLanguageChange, t } from './i18n.js';
+import { buildGraph, renderRelationsGraph } from './relations-graph.js';
 
 /* ---------------------------------------------------
    Carga de Firebase bajo demanda
@@ -166,9 +167,17 @@ export function initPersonajes() {
     directory: document.getElementById('personajes-view-directory'),
     profile: document.getElementById('personajes-view-profile'),
     editor: document.getElementById('personajes-view-editor'),
+    relations: document.getElementById('personajes-view-relations'),
   };
   const grid = document.getElementById('personajes-grid');
   const searchInput = document.getElementById('personajes-search-input');
+  const relationsBtn = document.getElementById('personajes-relations-btn');
+  const relationsBackBtn = document.getElementById('personajes-relations-back-btn');
+  const relationsGraphEl = document.getElementById('personajes-relations-graph');
+  const relationsEmptyEl = document.getElementById('personajes-relations-empty');
+  const relationsHintEl = document.getElementById('personajes-relations-hint');
+  const relationsListTitleEl = document.getElementById('personajes-relations-list-title');
+  const relationsListEl = document.getElementById('personajes-relations-list');
 
   const profileBackBtn = document.getElementById('personajes-profile-back-btn');
   const editBtn = document.getElementById('personajes-edit-btn');
@@ -234,7 +243,15 @@ export function initPersonajes() {
     !addRelacionBtn ||
     !feedbackEl ||
     !saveBtn ||
-    !deleteBtn
+    !deleteBtn ||
+    !views.relations ||
+    !relationsBtn ||
+    !relationsBackBtn ||
+    !relationsGraphEl ||
+    !relationsEmptyEl ||
+    !relationsHintEl ||
+    !relationsListTitleEl ||
+    !relationsListEl
   )
     return;
 
@@ -396,6 +413,63 @@ export function initPersonajes() {
   }
 
   searchInput.addEventListener('input', renderGrid);
+
+  // ---- Árbol de relaciones (js/relations-graph.js) ----
+  // Usa la caché del directorio (allPersonajes), que ya está cargada porque
+  // al árbol solo se llega desde el directorio.
+  function renderRelations() {
+    const graph = buildGraph(allPersonajes);
+    const nameOf = (id) => allPersonajes.find((p) => p.id === id)?.data.nombre || t('pj.noName');
+    const hasEdges = graph.edges.length > 0;
+
+    renderRelationsGraph(relationsGraphEl, graph, {
+      onSelect: goToProfile,
+      nodeLabel: (name) => t('pj.treeNodeLabel', { name: name || t('pj.noName') }),
+    });
+    relationsHintEl.hidden = !hasEdges;
+    relationsListTitleEl.hidden = !hasEdges;
+
+    // Aviso: vacío del todo, o cuántos personajes se quedan fuera por no tener relaciones.
+    if (!hasEdges) relationsEmptyEl.textContent = t('pj.treeEmpty');
+    else if (graph.isolatedCount === 1) relationsEmptyEl.textContent = t('pj.treeIsolatedOne');
+    else relationsEmptyEl.textContent = graph.isolatedCount ? t('pj.treeIsolated', { n: graph.isolatedCount }) : '';
+    relationsEmptyEl.hidden = !relationsEmptyEl.textContent;
+
+    // La misma información en texto (se lee mejor en móvil y con lector de pantalla).
+    relationsListEl.innerHTML = '';
+    const personButton = (id) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'relations-list-person';
+      btn.textContent = nameOf(id);
+      btn.addEventListener('click', () => goToProfile(id));
+      return btn;
+    };
+    // Cada relación con su dirección, tal cual la puso su autor:
+    // "Kira → hermano → Zed" (en el dibujo, la pareja comparte una línea).
+    const declarations = [...graph.declarations].sort(
+      (x, y) => nameOf(x.from).localeCompare(nameOf(y.from)) || nameOf(x.to).localeCompare(nameOf(y.to)),
+    );
+    for (const { from, to, label } of declarations) {
+      const li = document.createElement('li');
+      const labelEl = document.createElement('span');
+      labelEl.className = 'relations-list-label';
+      labelEl.textContent = label ? ` → ${label} → ` : ' → ';
+      li.append(personButton(from), labelEl, personButton(to));
+      relationsListEl.append(li);
+    }
+  }
+
+  relationsBtn.addEventListener('click', () => {
+    setProfileHash(null);
+    showView('relations');
+    renderRelations();
+  });
+  relationsBackBtn.addEventListener('click', () => showView('directory'));
+  // Si se cambia de idioma con el árbol abierto, se repintan sus textos.
+  onLanguageChange(() => {
+    if (views.relations.classList.contains('is-active')) renderRelations();
+  });
 
   function goToProfile(uid) {
     const cached = allPersonajes.find((p) => p.id === uid);
