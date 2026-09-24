@@ -1,1 +1,4 @@
 node_modules/
+
+# Logs de los emuladores de Firebase (npm test)
+*-debug.log

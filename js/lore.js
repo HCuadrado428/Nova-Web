@@ -12,7 +12,7 @@ function buildLoreSlideElement(slide) {
   el.className = 'lore-slide';
 
   if (slide.type === 'title') {
-    el.innerHTML = '<h1 class="lore-slide-title glitch" data-text="𝙽𝚘𝚟𝚊ᏕᎷᎮ ²⁰⁵⁵">𝙽𝚘𝚟𝚊ᏕᎷᎮ ²⁰⁵⁵</h1>';
+    el.innerHTML = '<h2 class="lore-slide-title glitch" data-text="𝙽𝚘𝚟𝚊ᏕᎷᎮ ²⁰⁵⁵">𝙽𝚘𝚟𝚊ᏕᎷᎮ ²⁰⁵⁵</h2>';
   } else if (slide.type === 'image') {
     el.classList.add('lore-slide-image');
     const img = document.createElement('img');

@@ -61,7 +61,7 @@ export function restoreStaticAudio() {
   staticBus.gain.setTargetAtTime(1, now, 0.2);
 }
 
-// Sube el bus de golpe, sin fundido (el "golpe seco" del final de 4D4N).
+// Sube el bus de golpe, sin fundido (el "golpe seco" del final de la escena de Adán).
 export function slamStaticAudio() {
   if (!audioCtx || !staticBus) return;
   staticBus.gain.cancelScheduledValues(audioCtx.currentTime);

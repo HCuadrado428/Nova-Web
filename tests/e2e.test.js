@@ -117,8 +117,6 @@ async function openPage({ hash = '', reducedMotion = 'no-preference', blockFireb
   await context.route('**/__test__/auth-helper.js', (r) =>
     r.fulfill({ contentType: 'text/javascript', body: authHelper }),
   );
-  // Sin red externa: las fuentes de Google no hacen falta para probar nada.
-  await context.route(/fonts\.(googleapis|gstatic)\.com/, (r) => r.abort());
   if (blockFirebase) await context.route('**/vendor/firebase.js', (r) => r.abort());
   await context.addInitScript((emulators) => {
     window.NOVA_FIREBASE_EMULATORS = emulators;
@@ -174,6 +172,22 @@ describe('web sin Firebase', () => {
     assert.equal(await view(page), 'home');
     assert.equal(page.firebaseRequests, 0);
     assert.deepEqual(page.errors, []);
+    await page.context().close();
+  });
+
+  test('teclado: antes de entrar, Tab solo llega a la pantalla de entrada', async () => {
+    const page = await openPage();
+    await page.keyboard.press('Tab');
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'enter-gate');
+    await page.keyboard.press('Tab');
+    assert.notEqual(await page.evaluate(() => document.activeElement.id), 'download-modpack');
+    await page.keyboard.press('Shift+Tab');
+    await page.keyboard.press('Enter'); // Enter sobre el botón = entrar
+    await sleep(INTRO_MS);
+    assert.ok(await page.evaluate(() => document.body.classList.contains('booted')));
+    // Ya dentro, Tab llega a los botones (sigue desde donde estaba la pantalla de entrada).
+    await page.keyboard.press('Tab');
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'lore-menu-btn');
     await page.context().close();
   });
 
@@ -251,6 +265,12 @@ describe('web sin Firebase', () => {
       await page.press('#password-input', 'Enter');
     }
     assert.equal(await page.locator('#password-hint-btn.is-visible').count(), 1);
+    // Nombres internos de JavaScript no cuentan como palabra (antes "__proto__" daba error).
+    for (const palabra of ['__proto__', 'constructor']) {
+      await page.fill('#password-input', palabra);
+      await page.press('#password-input', 'Enter');
+      await page.waitForFunction(() => document.getElementById('password-feedback').textContent === 'Nada por aquí.');
+    }
     await page.click('#password-hint-btn');
     assert.notEqual(await page.inputValue('#password-input'), '4d4n');
     await page.fill('#password-input', ' 4D4N ');

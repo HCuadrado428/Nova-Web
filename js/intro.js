@@ -62,6 +62,7 @@ export function initEnterGate() {
       setBootLine4Variant(bootLine4, fullscreenImage);
     }
 
+    for (const el of document.querySelectorAll('[data-until-boot]')) el.inert = false;
     gate.classList.add('hidden');
     gate.addEventListener('transitionend', () => gate.remove(), { once: true });
     document.body.classList.add('booted');
@@ -78,13 +79,8 @@ export function initEnterGate() {
     }
   };
 
+  // Es un <button>: Enter y Espacio ya lanzan "click" solos.
   gate.addEventListener('click', enter);
-  gate.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      enter();
-    }
-  });
 
   document.addEventListener('visibilitychange', () => {
     document.body.classList.toggle('tab-hidden', document.hidden);

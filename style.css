@@ -4,6 +4,42 @@
    glitches de color (cian + magenta) sobre acentos esmeralda + morado end
    ====================================================== */
 
+/* ---------- Fuentes (servidas desde fonts/, ver fonts/README.md) ----------
+   Cada fuente va partida en dos archivos por "unicode-range": el navegador
+   solo descarga el de letras extra (latin-ext) si la página las usa. */
+@font-face {
+  font-family: 'Press Start 2P';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('fonts/press-start-2p-latin-400-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Press Start 2P';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('fonts/press-start-2p-latin-ext-400-normal.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('fonts/inter-latin-wght-normal.woff2') format('woff2-variations');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('fonts/inter-latin-ext-wght-normal.woff2') format('woff2-variations');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
 :root {
   --bg-stone: #17150f;
 
@@ -19,7 +55,14 @@
   --font-display: 'Press Start 2P', 'Courier New', monospace;
   --font-body: 'Inter', system-ui, -apple-system, Segoe UI, sans-serif;
 
+  --text-dim: #8a8a8a;
+
   --radius: 10px;
+
+  /* Texturas de ruido (SVG generado, sin archivos). La de estática la
+     comparten la intro, la transición de canal y la escena de Adán. */
+  --noise-grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  --noise-static: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
 }
 
 * { box-sizing: border-box; }
@@ -51,6 +94,18 @@ input, textarea, select {
   cursor: text;
 }
 
+/* Foco visible al moverse con el teclado (Tab): un contorno cian en botones
+   y enlaces. Con ratón o dedo no aparece (:focus-visible). Los campos de
+   texto ya marcan el foco cambiando el color del borde. */
+:is(a, button, [tabindex]):focus-visible {
+  outline: 2px solid var(--glitch-cyan);
+  outline-offset: 3px;
+}
+/* La pantalla de entrada ocupa toda la ventana: el contorno va por dentro. */
+.enter-gate:focus-visible {
+  outline-offset: -8px;
+}
+
 .glitch-filter-defs {
   position: absolute;
   width: 0;
@@ -70,13 +125,23 @@ input, textarea, select {
 .noise-overlay {
   opacity: 0.05;
   mix-blend-mode: overlay;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  background-image: var(--noise-grain);
   animation: noise-flicker 6s steps(1) infinite;
 }
 
+/* Las líneas van en un ::before 120px más alto que la pantalla que se
+   desliza con transform (lo mueve la GPU), en vez de animar
+   background-position, que obligaba a repintar la pantalla entera en cada
+   fotograma. 120px = 40 líneas de 3px: el bucle no tiene salto. */
 .scanline-overlay {
+  overflow: hidden;
   opacity: 0.35;
   mix-blend-mode: multiply;
+}
+.scanline-overlay::before {
+  content: '';
+  position: absolute;
+  inset: -120px 0 0;
   background-image: repeating-linear-gradient(
     180deg,
     rgba(0, 0, 0, 0.35) 0px,
@@ -85,6 +150,7 @@ input, textarea, select {
     transparent 3px
   );
   animation: scan-drift 7s linear infinite;
+  will-change: transform;
 }
 
 @keyframes noise-flicker {
@@ -94,8 +160,8 @@ input, textarea, select {
   95% { opacity: 0.07; }
 }
 @keyframes scan-drift {
-  from { background-position: 0 0; }
-  to { background-position: 0 120px; }
+  from { transform: translateY(0); }
+  to { transform: translateY(120px); }
 }
 
 /* ---------- Botones ---------- */
@@ -233,6 +299,13 @@ body.tab-hidden .enter-text {
   position: absolute;
   inset: 0;
   z-index: 10;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font: inherit;
+  color: inherit;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -245,7 +318,11 @@ body.tab-hidden .enter-text {
   pointer-events: none;
 }
 .enter-inner { text-align: center; }
+/* Van en <span> (un <button> no puede llevar <p> dentro), con los mismos
+   márgenes que tenían como párrafos. */
 .enter-text {
+  display: block;
+  margin: 1em 0;
   position: relative;
   font-family: var(--font-display);
   font-size: clamp(0.8rem, 2.3vw, 1.05rem);
@@ -255,6 +332,7 @@ body.tab-hidden .enter-text {
   animation: enter-pulse 1.8s ease-in-out infinite;
 }
 .enter-hint {
+  display: block;
   margin: 14px 0 0;
   color: var(--text-main);
   opacity: 0.35;
@@ -266,26 +344,39 @@ body.tab-hidden .enter-text {
   50% { opacity: 1; }
 }
 
+/* Capa de estática de TV, compartida por la intro, la transición de canal y
+   la escena de Adán. Es 100px más grande que su contenedor por cada lado
+   para poder temblar con transform (static-jitter, lo mueve la GPU) sin
+   que se vea el borde; antes temblaba moviendo background-position, que
+   repinta toda la capa en cada salto. Su contenedor la recorta
+   (overflow: hidden). */
+.intro-static,
+.adan-scene-static,
+.channel-transition-static {
+  position: absolute;
+  inset: -100px;
+  background-image: var(--noise-static);
+  background-size: 140px 140px;
+  will-change: transform;
+}
+
 /* Estática tipo señal de TV sin sintonizar: fuerte al cargar, luego ambiente con picos */
 .intro-static {
-  position: absolute;
-  inset: 0;
   z-index: 1;
   pointer-events: none;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
-  background-size: 140px 140px;
   animation:
-    intro-static-jitter 0.15s steps(1) infinite,
+    static-jitter 0.15s steps(1) infinite,
     intro-boot 2.2s steps(9, end) 1 both,
     intro-static-ambient 6s steps(2, end) infinite 2.2s;
 }
 
-@keyframes intro-static-jitter {
-  0%   { background-position: 0 0; }
-  25%  { background-position: -70px 40px; }
-  50%  { background-position: 55px -60px; }
-  75%  { background-position: -40px -90px; }
-  100% { background-position: 90px 20px; }
+/* Saltos de como mucho 90px: la capa sobra 100px por cada lado. */
+@keyframes static-jitter {
+  0%   { transform: translate(0, 0); }
+  25%  { transform: translate(-70px, 40px); }
+  50%  { transform: translate(55px, -60px); }
+  75%  { transform: translate(-40px, -90px); }
+  100% { transform: translate(90px, 20px); }
 }
 
 @keyframes intro-boot {
@@ -473,7 +564,7 @@ body.tab-hidden .enter-text {
   position: absolute;
   inset: -24px;
   pointer-events: none;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  background-image: var(--noise-static);
   mix-blend-mode: overlay;
   opacity: 0;
   animation: intro-content-static-flash 8s steps(1) infinite 3.15s;
@@ -546,7 +637,7 @@ body.tab-hidden .enter-text {
   font-family: var(--font-display);
   font-size: clamp(0.6rem, 1.3vw, 0.75rem);
   letter-spacing: 0.5px;
-  color: var(--text-dim, #8a8a8a);
+  color: var(--text-dim);
   opacity: 0.7;
 }
 
@@ -600,11 +691,22 @@ body:not([data-view="home"]) :is(.lore-triggers, .rules-triggers, .password-trig
   pointer-events: none;
 }
 
-.menu-toggle-btn,
-.lore-btn,
-.lore-back-btn,
-.rules-back-btn,
-.personajes-back-btn {
+/* Botón "terminal" (borde cian + fuente pixel): la base común de casi
+   todos los botones del sitio. Cada botón solo declara aparte lo que tiene
+   distinto (posición, espaciado...). */
+:is(
+  .menu-toggle-btn,
+  .lore-btn,
+  .lore-back-btn,
+  .rules-back-btn,
+  .personajes-back-btn,
+  .password-back-btn,
+  .password-trigger-btn,
+  .audio-toggle-btn,
+  .lore-nav-btn,
+  .rules-switch-btn,
+  .password-search-btn
+) {
   background: transparent;
   border: 1px solid var(--glitch-cyan);
   color: var(--glitch-cyan);
@@ -617,11 +719,19 @@ body:not([data-view="home"]) :is(.lore-triggers, .rules-triggers, .password-trig
   cursor: pointer;
   transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
 }
-.menu-toggle-btn:hover,
-.lore-btn:hover,
-.lore-back-btn:hover,
-.rules-back-btn:hover,
-.personajes-back-btn:hover {
+:is(
+  .menu-toggle-btn,
+  .lore-btn,
+  .lore-back-btn,
+  .rules-back-btn,
+  .personajes-back-btn,
+  .password-back-btn,
+  .password-trigger-btn,
+  .audio-toggle-btn,
+  .lore-nav-btn,
+  .rules-switch-btn,
+  .password-search-btn
+):hover {
   background: rgba(55, 240, 224, 0.12);
   color: #fff;
 }
@@ -705,23 +815,8 @@ body[data-view="personajes"] .personajes-back-btn {
   bottom: 20px;
   right: 20px;
   z-index: 6;
-  background: transparent;
-  border: 1px solid var(--glitch-cyan);
-  color: var(--glitch-cyan);
-  font-family: var(--font-display);
-  font-size: 0.65rem;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  padding: 9px 16px;
-  border-radius: var(--radius);
-  cursor: pointer;
-  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
   opacity: 0;
   pointer-events: none;
-}
-.password-trigger-btn:hover {
-  background: rgba(55, 240, 224, 0.12);
-  color: #fff;
 }
 body.booted .password-trigger-btn {
   pointer-events: auto;
@@ -737,23 +832,8 @@ body.booted .password-trigger-btn {
   bottom: 20px;
   left: 20px;
   z-index: 6;
-  background: transparent;
-  border: 1px solid var(--glitch-cyan);
-  color: var(--glitch-cyan);
-  font-family: var(--font-display);
-  font-size: 0.65rem;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  padding: 9px 16px;
-  border-radius: var(--radius);
-  cursor: pointer;
-  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
   opacity: 0;
   pointer-events: none;
-}
-.audio-toggle-btn:hover {
-  background: rgba(55, 240, 224, 0.12);
-  color: #fff;
 }
 body.booted .audio-toggle-btn {
   pointer-events: auto;
@@ -805,21 +885,6 @@ body:is([data-view="password"], [data-view="adan"]) :is(.noise-overlay, .scanlin
   top: 20px;
   left: 20px;
   z-index: 6;
-  background: transparent;
-  border: 1px solid var(--glitch-cyan);
-  color: var(--glitch-cyan);
-  font-family: var(--font-display);
-  font-size: 0.65rem;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  padding: 9px 16px;
-  border-radius: var(--radius);
-  cursor: pointer;
-  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
-}
-.password-back-btn:hover {
-  background: rgba(55, 240, 224, 0.12);
-  color: #fff;
 }
 
 .password-inner {
@@ -856,21 +921,8 @@ body:is([data-view="password"], [data-view="adan"]) :is(.noise-overlay, .scanlin
 }
 
 .password-search-btn {
-  background: transparent;
-  border: 1px solid var(--glitch-cyan);
-  color: var(--glitch-cyan);
-  font-family: var(--font-display);
-  font-size: 0.65rem;
   letter-spacing: 1.5px;
-  text-transform: uppercase;
   padding: 0 18px;
-  border-radius: var(--radius);
-  cursor: pointer;
-  transition: color 0.15s ease, background 0.15s ease;
-}
-.password-search-btn:hover {
-  background: rgba(55, 240, 224, 0.12);
-  color: #fff;
 }
 
 .password-feedback {
@@ -917,11 +969,12 @@ body:is([data-view="password"], [data-view="adan"]) :is(.noise-overlay, .scanlin
   color: var(--glitch-cyan);
 }
 
-/* ---------- Easter egg "4D4N": pantalla negra, diálogo tecleado, apagado final ---------- */
+/* ---------- Easter egg de Adán: pantalla negra, diálogo tecleado, apagado final ---------- */
 .adan-scene {
   position: fixed;
   inset: 0;
   z-index: 900;
+  overflow: hidden;
   display: flex;
   align-items: flex-start;
   justify-content: flex-start;
@@ -939,16 +992,12 @@ body[data-view="adan"] .adan-scene {
 }
 
 .adan-scene-static {
-  position: absolute;
-  inset: 0;
   z-index: 1;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
-  background-size: 140px 140px;
   opacity: 0;
   transition: opacity 0.6s ease;
 }
 body[data-view="adan"] .adan-scene-static {
-  animation: intro-static-jitter 0.15s steps(1) infinite;
+  animation: static-jitter 0.15s steps(1) infinite;
 }
 
 /* Panel de consola real: pegado a la esquina superior izquierda, texto
@@ -1076,6 +1125,7 @@ body[data-view="adan"] .adan-scene-static {
   position: fixed;
   inset: 0;
   z-index: 100;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1088,14 +1138,9 @@ body[data-view="adan"] .adan-scene-static {
   opacity: 1;
   pointer-events: auto;
 }
-.channel-transition-static {
-  position: absolute;
-  inset: 0;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
-  background-size: 140px 140px;
-}
+
 .channel-transition.active .channel-transition-static {
-  animation: intro-static-jitter 0.15s steps(1) infinite, channel-static-pulse 1.4s steps(2, end) infinite;
+  animation: static-jitter 0.15s steps(1) infinite, channel-static-pulse 1.4s steps(2, end) infinite;
 }
 @keyframes channel-static-pulse {
   0%, 100% { opacity: 0.9; }
@@ -1112,7 +1157,9 @@ body[data-view="adan"] .adan-scene-static {
 }
 
 /* ---------- Página de Lore ---------- */
-.lore-page {
+/* Base común de las tres páginas completas (Lore, Normas, Personajes):
+   ocultas con "visibility" hasta que data-view las muestra. */
+:is(.lore-page, .rules-page, .personajes-page) {
   position: fixed;
   inset: 0;
   overflow-y: auto;
@@ -1180,6 +1227,7 @@ body[data-view="lore"] .lore-page {
 }
 
 .lore-slide-title {
+  margin: 0.67em 0; /* el que tenía cuando era <h1> */
   text-align: center;
   font-family: var(--font-display);
   font-size: clamp(1.3rem, 5vw, 2.2rem);
@@ -1212,9 +1260,12 @@ body[data-view="lore"] .lore-page {
   margin: 0 0 14px;
 }
 
-/* Párrafo destacado dentro de un pase de texto (momentos dramáticos) */
-.lore-paragraph-emphasis {
-  margin-top: 36px !important;
+/* Párrafo destacado dentro de un pase de texto (momentos dramáticos).
+   El selector lleva ".lore-slide-text" delante para ganar a
+   ".lore-slide-text .lore-paragraph" (que va antes); con solo la clase
+   perdía y el párrafo salía gris y con la fuente normal. */
+.lore-slide-text .lore-paragraph-emphasis {
+  margin-top: 36px;
   text-align: center;
   font-family: var(--font-display);
   font-size: clamp(0.95rem, 2.6vw, 1.3rem);
@@ -1223,7 +1274,7 @@ body[data-view="lore"] .lore-page {
   text-shadow: 0 0 12px rgba(255, 46, 99, 0.6);
 }
 .lore-slide-text.is-centered .lore-paragraph-emphasis {
-  margin-top: 8px !important;
+  margin-top: 8px;
 }
 
 .lore-slide-image {
@@ -1313,21 +1364,7 @@ body[data-view="lore"] .lore-page {
   padding: 26px 0 20px;
 }
 .lore-nav-btn {
-  background: transparent;
-  border: 1px solid var(--glitch-cyan);
-  color: var(--glitch-cyan);
-  font-family: var(--font-display);
-  font-size: 0.65rem;
   letter-spacing: 1.5px;
-  text-transform: uppercase;
-  padding: 9px 16px;
-  border-radius: var(--radius);
-  cursor: pointer;
-  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
-}
-.lore-nav-btn:hover {
-  background: rgba(55, 240, 224, 0.12);
-  color: #fff;
 }
 .lore-prev-btn.is-hidden {
   visibility: hidden;
@@ -1342,18 +1379,6 @@ body[data-view="lore"] .lore-page {
 }
 
 /* ---------- Página de Normas: mismo tratamiento visual que la de Lore ---------- */
-.rules-page {
-  position: fixed;
-  inset: 0;
-  overflow-y: auto;
-  background:
-    radial-gradient(ellipse at 15% 10%, rgba(55, 240, 224, 0.05), transparent 55%),
-    radial-gradient(ellipse at 85% 90%, rgba(255, 46, 99, 0.05), transparent 55%),
-    #050505;
-  padding: 110px 24px 100px;
-  visibility: hidden;
-  pointer-events: none;
-}
 body[data-view="rules"] .rules-page {
   visibility: visible;
   pointer-events: auto;
@@ -1375,21 +1400,7 @@ body[data-view="rules"] .rules-page {
   margin-bottom: 44px;
 }
 .rules-switch-btn {
-  background: transparent;
-  border: 1px solid var(--glitch-cyan);
-  color: var(--glitch-cyan);
-  font-family: var(--font-display);
-  font-size: 0.65rem;
   letter-spacing: 1.5px;
-  text-transform: uppercase;
-  padding: 9px 16px;
-  border-radius: var(--radius);
-  cursor: pointer;
-  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
-}
-.rules-switch-btn:hover {
-  background: rgba(55, 240, 224, 0.12);
-  color: #fff;
 }
 .rules-switch-btn.is-active {
   background: rgba(55, 240, 224, 0.16);
@@ -1448,18 +1459,6 @@ body[data-view="rules"] .rules-page {
 }
 
 /* ---------- Personajes (dentro de Lore): mismo tratamiento que Normas ---------- */
-.personajes-page {
-  position: fixed;
-  inset: 0;
-  overflow-y: auto;
-  background:
-    radial-gradient(ellipse at 15% 10%, rgba(55, 240, 224, 0.05), transparent 55%),
-    radial-gradient(ellipse at 85% 90%, rgba(255, 46, 99, 0.05), transparent 55%),
-    #050505;
-  padding: 110px 24px 100px;
-  visibility: hidden;
-  pointer-events: none;
-}
 body[data-view="personajes"] .personajes-page {
   visibility: visible;
   pointer-events: auto;
@@ -1936,11 +1935,11 @@ body[data-view="personajes"] .personajes-page {
   .enter-text { animation: none; opacity: 1; }
   .boot-log { display: none; }
   .boot-fullscreen-image { display: none; }
-  .intro-hero-inner { animation: none; }
+  body.booted .intro-hero-inner { animation: none; } /* la sacudida de pantalla: gana a la regla que la pone */
   /* Misma especificidad que "body.booted .menu-toggle-btn" (que es quien les
      pone la animación de aparición), y va después, así que gana. */
   body.booted :is(.menu-toggle-btn, .password-trigger-btn, .audio-toggle-btn) { animation: none; opacity: 1; }
-  .channel-transition-static { animation: none; }
+  .channel-transition.active .channel-transition-static { animation: none; }
   .adan-scene-static { display: none; }
   .adan-scene-cursor { animation: none; opacity: 1; }
   .adan-scene-input-row.is-jittering { animation: none; }

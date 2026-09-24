@@ -22,10 +22,11 @@
   <meta name="twitter:description" content="La segunda temporada del SMP modeado de rol entre amigos. Descarga el modpack, únete al Discord y descubre la historia del mundo.">
   <meta name="twitter:image" content="https://hcuadrado428.github.io/Nova-Web/images/og-image.jpg">
 
-  <!-- Fuentes: una tipo pixel para títulos y una legible para el cuerpo -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Fuentes: una tipo pixel para títulos y una legible para el cuerpo,
+       servidas desde fonts/ (ver @font-face en style.css). Se precargan las
+       dos que se ven nada más entrar para que no parpadeen al aparecer. -->
+  <link rel="preload" href="fonts/press-start-2p-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 
   <!-- Favicon: versiones pequeñas del logo (images/logo.webp es el original a
        768px, demasiado pesado para una pestaña). Ver images/README.txt. -->
@@ -80,7 +81,10 @@
         <div class="boot-line boot-line-4 boot-line-creepy" id="boot-line-4"></div>
       </div>
 
-      <div class="intro-content">
+      <!-- "inert" (aquí y en los botones de las esquinas): mientras la pantalla de
+           entrada tapa todo, esto no se puede alcanzar con Tab ni pulsar. Lo quita
+           js/intro.js al entrar (atributo data-until-boot). -->
+      <div class="intro-content" inert data-until-boot>
         <h1 class="intro-title glitch" id="intro-title" data-text="NOVA 2">NOVA 2</h1>
         <div class="intro-actions">
           <!--
@@ -101,18 +105,20 @@
       </div>
     </div>
 
-    <!-- Pantalla de entrada: el boot (estática + glitches + sonido) no arranca hasta que se pulsa -->
-    <div class="enter-gate" id="enter-gate" role="button" tabindex="0" aria-label="Tocar para entrar">
-      <div class="enter-inner">
-        <p class="enter-text glitch" data-text="TOCA PARA ENTRAR">TOCA PARA ENTRAR</p>
-        <p class="enter-hint">Estas seguro que quieres entrar?</p>
-      </div>
-    </div>
+    <!-- Pantalla de entrada: el boot (estática + glitches + sonido) no arranca hasta que se pulsa.
+         Es un <button> de verdad: funciona con teclado (Enter/Espacio) sin código extra.
+         aria-label porque el efecto glitch repite el texto en ::before/::after. -->
+    <button class="enter-gate" id="enter-gate" type="button" aria-label="Tocar para entrar">
+      <span class="enter-inner">
+        <span class="enter-text glitch" data-text="TOCA PARA ENTRAR">TOCA PARA ENTRAR</span>
+        <span class="enter-hint">¿Estás seguro de que quieres entrar?</span>
+      </span>
+    </button>
   </section>
 
   <!-- Botón Lore: arriba a la izquierda, aparece junto al resto del contenido tras el boot.
        Al pulsarlo despliega el submenú con las pistas (Antes del Nova / Nova / Personajes). -->
-  <div class="lore-triggers">
+  <div class="lore-triggers" inert data-until-boot>
     <button class="menu-toggle-btn" id="lore-menu-btn" type="button" aria-expanded="false" aria-controls="lore-submenu">Lore</button>
     <div class="submenu" id="lore-submenu">
       <button class="lore-btn" id="lore-antes-btn" type="button">Antes del Nova</button>
@@ -123,7 +129,7 @@
 
   <!-- Botón Normas: arriba a la derecha, mismo patrón que el botón Lore.
        Al pulsarlo despliega el submenú con las normativas (Discord / Minecraft / Objetos). -->
-  <div class="rules-triggers" id="rules-triggers">
+  <div class="rules-triggers" id="rules-triggers" inert data-until-boot>
     <button class="menu-toggle-btn" id="rules-menu-btn" type="button" aria-expanded="false" aria-controls="rules-submenu">Normas</button>
     <div class="submenu" id="rules-submenu">
       <button class="lore-btn" id="rules-discord-btn" type="button">Discord</button>
@@ -133,12 +139,12 @@
   </div>
 
   <!-- Botón "Inserta la contraseña": abajo a la derecha, aparece junto al resto del contenido tras el boot -->
-  <button class="password-trigger-btn" id="password-trigger-btn" type="button">Inserta la contraseña</button>
+  <button class="password-trigger-btn" id="password-trigger-btn" type="button" inert data-until-boot>Inserta la contraseña</button>
 
   <!-- Botón de silenciar/reactivar el audio ambiente: abajo a la izquierda, aparece junto al resto
        del contenido tras el boot. Se oculta solo en la escena de Adán (ver style.css), donde ningún
        otro control queda visible a propósito. La preferencia se recuerda entre visitas (js/audio.js). -->
-  <button class="audio-toggle-btn" id="audio-toggle-btn" type="button" aria-pressed="false">Silenciar</button>
+  <button class="audio-toggle-btn" id="audio-toggle-btn" type="button" aria-pressed="false" inert data-until-boot>Silenciar</button>
 
   <!-- ==================== TRANSICIÓN DE CANAL ==================== -->
   <div class="channel-transition" id="channel-transition" aria-hidden="true">
@@ -182,7 +188,7 @@
       </div>
 
       <div class="rules-panel is-active" id="rules-panel-discord">
-        <h1 class="rules-title glitch" data-text="NORMAS · DISCORD">NORMAS · DISCORD</h1>
+        <h2 class="rules-title glitch" data-text="NORMAS · DISCORD">NORMAS · DISCORD</h2>
         <p class="rules-intro">Estas reglas son para el servidor de Discord.</p>
 
         <p class="rules-item"><strong>Edad:</strong> +17.</p>
@@ -198,7 +204,7 @@
       </div>
 
       <div class="rules-panel" id="rules-panel-minecraft">
-        <h1 class="rules-title glitch" data-text="NORMAS · MINECRAFT">NORMAS · MINECRAFT</h1>
+        <h2 class="rules-title glitch" data-text="NORMAS · MINECRAFT">NORMAS · MINECRAFT</h2>
         <p class="rules-intro">Estas reglas son para el servidor de Minecraft.</p>
 
         <p class="rules-item"><strong>Off rol:</strong> Dentro del servidor, cuando son interacciones con otros integrantes, la mayoría son on rol; en caso contrario por favor utilicen "//" para diferenciarlo. Respeten esto para poder distinguir.</p>
@@ -210,7 +216,7 @@
       </div>
 
       <div class="rules-panel" id="rules-panel-objetos">
-        <h1 class="rules-title glitch" data-text="NORMAS · OBJETOS">NORMAS · OBJETOS</h1>
+        <h2 class="rules-title glitch" data-text="NORMAS · OBJETOS">NORMAS · OBJETOS</h2>
         <p class="rules-intro">Objetos cuyo uso u obtención está prohibido en el servidor.</p>
 
         <p class="rules-item"><strong>Anillo de Odín:</strong> Prohibido.</p>
@@ -241,7 +247,7 @@
         <button class="lore-btn" id="personajes-signin-btn" type="button">Entrar con Google</button>
         <div class="personajes-session-active" id="personajes-session-active" hidden>
           <span class="personajes-session-name" id="personajes-session-name"></span>
-          <button class="personajes-edit-name-btn" id="personajes-edit-name-btn" type="button" title="Cambiar el nombre que ven los demás">✎</button>
+          <button class="personajes-edit-name-btn" id="personajes-edit-name-btn" type="button" title="Cambiar el nombre que ven los demás" aria-label="Cambiar el nombre que ven los demás">✎</button>
           <button class="lore-btn" id="personajes-mine-btn" type="button" hidden>Mi personaje</button>
           <button class="lore-btn" id="personajes-signout-btn" type="button">Cerrar sesión</button>
         </div>
@@ -251,23 +257,23 @@
       <p class="personajes-status" id="personajes-status" role="status" aria-live="polite" hidden></p>
 
       <div class="personajes-view is-active" id="personajes-view-directory">
-        <h1 class="rules-title glitch" data-text="PERSONAJES">PERSONAJES</h1>
-        <input class="personajes-input personajes-search-input" id="personajes-search-input" type="text" placeholder="Buscar personaje...">
+        <h2 class="rules-title glitch" data-text="PERSONAJES">PERSONAJES</h2>
+        <input class="personajes-input personajes-search-input" id="personajes-search-input" type="text" placeholder="Buscar personaje..." aria-label="Buscar personaje">
         <div class="personajes-grid" id="personajes-grid"></div>
       </div>
 
       <div class="personajes-view" id="personajes-view-profile">
         <button class="lore-nav-btn" id="personajes-profile-back-btn" type="button">← Directorio</button>
         <button class="lore-btn personajes-edit-btn" id="personajes-edit-btn" type="button" hidden>Editar</button>
-        <h1 class="rules-title glitch" id="personajes-profile-name" data-text=""></h1>
+        <h2 class="rules-title glitch" id="personajes-profile-name" data-text="Personaje">Personaje</h2>
         <p class="personajes-profile-mcuser" id="personajes-profile-mcuser" hidden></p>
         <div class="personajes-blocks" id="personajes-profile-blocks"></div>
 
         <div class="personajes-comments" id="personajes-comments">
-          <h2 class="personajes-comments-title">Comentarios</h2>
+          <h3 class="personajes-comments-title">Comentarios</h3>
           <div class="personajes-comments-list" id="personajes-comments-list"></div>
           <form class="personajes-comment-form" id="personajes-comment-form">
-            <textarea class="personajes-input personajes-block-textarea" id="personajes-comment-input" rows="2" maxlength="500" placeholder="Deja un comentario..."></textarea>
+            <textarea class="personajes-input personajes-block-textarea" id="personajes-comment-input" rows="2" maxlength="500" placeholder="Deja un comentario..." aria-label="Comentario"></textarea>
             <button class="rules-switch-btn" type="submit">Comentar</button>
             <p class="personajes-comments-hint" id="personajes-comment-feedback" aria-live="polite"></p>
           </form>
@@ -313,7 +319,7 @@
        BUSCADOR "INSERTA LA CONTRASEÑA": pantalla aparte, deliberadamente
        limpia (sin estática ni glitches) con un buscador. Las palabras que
        hacen algo se definen en SEARCH_ACTIONS (js/password.js); cada 3 fallos
-       seguidos aparece el botón "Una ayudita?", que rellena el buscador
+       seguidos aparece el botón "¿Una ayudita?", que rellena el buscador
        con una palabra al azar de entre las de SEARCH_ACTIONS.
        ==================================================================== -->
   <section class="password-page" id="password-page" aria-hidden="true">
@@ -334,11 +340,11 @@
       <p class="password-feedback" id="password-feedback" aria-live="polite"></p>
     </div>
 
-    <button class="password-hint-btn" id="password-hint-btn" type="button">Una ayudita?</button>
+    <button class="password-hint-btn" id="password-hint-btn" type="button">¿Una ayudita?</button>
   </section>
 
   <!-- ====================================================================
-       EASTER EGG "4D4N" (código secreto en el buscador de arriba, ver
+       EASTER EGG "ADÁN" (palabra secreta del buscador de arriba, ver
        SEARCH_ACTIONS en js/password.js): pantalla negra de golpe, en silencio
        total, con un diálogo tecleado en terminal. La frase con la que
        "responde" el usuario se elige al azar entre 3 al empezar (lo que

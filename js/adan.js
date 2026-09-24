@@ -1,5 +1,5 @@
 // ======================================================
-// Easter egg "4D4N"
+// Easter egg de Adán
 // ======================================================
 
 import { duckStaticAudio, restoreStaticAudio, slamStaticAudio, playChannelChangeAudio } from './audio.js';
@@ -7,7 +7,7 @@ import { isView, setView } from './views.js';
 import { sleep, storageGet, storageSet, typeInto } from './utils.js';
 
 /* ---------------------------------------------------
-   Easter egg "4D4N" (código secreto del buscador, ver password.js)
+   Easter egg de Adán (palabra secreta del buscador, ver password.js)
    Pantalla negra de golpe, en silencio total, con un diálogo tecleado en
    terminal. La frase con la que "responde" el usuario se sortea entre las
    de ADAN_PHRASES al empezar; lo que teclee de verdad da igual, cada

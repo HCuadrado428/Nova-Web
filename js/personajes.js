@@ -651,6 +651,7 @@ export function initPersonajes() {
       upBtn.type = 'button';
       upBtn.className = 'personajes-block-move-btn';
       upBtn.textContent = '▲';
+      upBtn.setAttribute('aria-label', 'Subir bloque');
       upBtn.disabled = index === 0;
       upBtn.addEventListener('click', () => {
         [editorBloques[index - 1], editorBloques[index]] = [editorBloques[index], editorBloques[index - 1]];
@@ -661,6 +662,7 @@ export function initPersonajes() {
       downBtn.type = 'button';
       downBtn.className = 'personajes-block-move-btn';
       downBtn.textContent = '▼';
+      downBtn.setAttribute('aria-label', 'Bajar bloque');
       downBtn.disabled = index === editorBloques.length - 1;
       downBtn.addEventListener('click', () => {
         [editorBloques[index + 1], editorBloques[index]] = [editorBloques[index], editorBloques[index + 1]];
@@ -671,6 +673,7 @@ export function initPersonajes() {
       removeBtn.type = 'button';
       removeBtn.className = 'personajes-block-remove-btn';
       removeBtn.textContent = '✕';
+      removeBtn.setAttribute('aria-label', 'Quitar bloque');
       removeBtn.addEventListener('click', () => {
         editorBloques.splice(index, 1);
         renderEditorBlocks();
@@ -687,6 +690,7 @@ export function initPersonajes() {
         nombreField.className = 'personajes-input';
         nombreField.type = 'text';
         nombreField.placeholder = 'Nombre del otro personaje';
+        nombreField.setAttribute('aria-label', 'Nombre del otro personaje');
         nombreField.setAttribute('list', 'personajes-nombres-datalist');
         nombreField.value = bloque.nombre || '';
         const resolveUid = () => {
@@ -703,6 +707,7 @@ export function initPersonajes() {
         etiquetaField.type = 'text';
         etiquetaField.maxLength = 40;
         etiquetaField.placeholder = 'Relación (ej. hermano)';
+        etiquetaField.setAttribute('aria-label', 'Tipo de relación');
         etiquetaField.value = bloque.etiqueta || '';
         etiquetaField.addEventListener('input', () => { bloque.etiqueta = etiquetaField.value; });
 
@@ -723,6 +728,7 @@ export function initPersonajes() {
             ? 'Link de imagen (https://...)'
             : 'Link de Spotify (https://open.spotify.com/...)';
         }
+        field.setAttribute('aria-label', { texto: 'Texto del bloque', imagen: 'Link de la imagen', spotify: 'Link de Spotify' }[bloque.tipo]);
         field.value = bloque.contenido || '';
         field.addEventListener('input', () => { bloque.contenido = field.value; });
         row.appendChild(field);
