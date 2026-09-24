@@ -2040,6 +2040,119 @@ body[data-view='personajes'] .personajes-page {
   color: rgba(234, 230, 218, 0.5);
 }
 
+/* ---- Árbol de relaciones (js/relations-graph.js) ---- */
+.personajes-directory-tools {
+  display: flex;
+  justify-content: center;
+  margin: -8px 0 24px;
+}
+.relations-hint {
+  text-align: center;
+  margin: 0 0 16px;
+}
+.relations-graph-wrap {
+  border: 1px solid rgba(55, 240, 224, 0.2);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+}
+.relations-graph-wrap:empty {
+  display: none;
+}
+.relations-graph {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 70vh;
+}
+.relations-edge {
+  stroke: rgba(55, 240, 224, 0.5);
+  stroke-width: 2;
+  transition:
+    opacity 0.15s ease,
+    stroke 0.15s ease;
+}
+.relations-edge-label {
+  font-family: var(--font-body);
+  font-size: 14px;
+  fill: rgba(234, 230, 218, 0.8);
+  paint-order: stroke;
+  stroke: #050505;
+  stroke-width: 4px;
+  transition: opacity 0.15s ease;
+}
+.relations-node {
+  cursor: pointer;
+  outline: none; /* el foco se marca con el aro (abajo) */
+}
+.relations-node-bg {
+  fill: #0d0d0d;
+}
+.relations-node-ring {
+  fill: none;
+  stroke: var(--glitch-cyan);
+  stroke-width: 2;
+  transition:
+    stroke 0.15s ease,
+    stroke-width 0.15s ease;
+}
+.relations-node:hover .relations-node-ring,
+.relations-node:focus-visible .relations-node-ring {
+  stroke: var(--glitch-red);
+  stroke-width: 3;
+}
+.relations-node-initial {
+  font-family: var(--font-display);
+  font-size: 18px;
+  fill: var(--text-main);
+}
+.relations-node-name {
+  font-family: var(--font-display);
+  font-size: 13px;
+  fill: var(--text-main);
+  paint-order: stroke;
+  stroke: #050505;
+  stroke-width: 4px;
+}
+/* Al pasar por un personaje, se apagan las relaciones que no son suyas. */
+.relations-graph.is-highlighting .relations-edge:not(.is-related),
+.relations-graph.is-highlighting .relations-edge-label:not(.is-related) {
+  opacity: 0.15;
+}
+.relations-edge.is-related {
+  stroke: var(--glitch-cyan);
+}
+.relations-list-title {
+  margin-top: 36px;
+}
+.relations-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-family: var(--font-body);
+  color: rgba(234, 230, 218, 0.78);
+}
+.relations-list-label {
+  color: rgba(234, 230, 218, 0.55);
+}
+.relations-list-person {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: var(--glitch-cyan);
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: rgba(55, 240, 224, 0.35);
+  text-underline-offset: 3px;
+}
+.relations-list-person:hover {
+  color: #fff;
+}
+
 /* ---- Perfil (solo lectura) ---- */
 .personajes-edit-btn {
   float: right;
