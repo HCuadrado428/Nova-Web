@@ -154,7 +154,12 @@ async function openPersonajes(page) {
   await page.click('#lore-menu-btn');
   await page.click('#lore-personajes-btn');
   await sleep(CHANNEL_MS);
-  await page.locator('.personajes-card, .personajes-empty').first().waitFor();
+  // Espera a que el directorio termine de cargar: "Cargando personajes..."
+  // también usa .personajes-empty, así que no basta con que aparezca algo.
+  await page.waitForFunction(() => {
+    const grid = document.getElementById('personajes-grid');
+    return grid.children.length > 0 && !grid.textContent.includes('Cargando');
+  });
 }
 
 async function openProfile(page, nombre) {
