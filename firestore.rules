@@ -12,7 +12,7 @@ rules_version = '2';
 // ocultan la opción por comodidad visual.
 //
 // Además de quién escribe, se valida QUÉ se escribe: solo los campos que usa
-// script.js, con su tipo y tamaño, y las fechas tienen que ser la hora real
+// js/personajes.js, con su tipo y tamaño, y las fechas tienen que ser la hora real
 // del servidor (request.time), no una que se invente el navegador.
 service cloud.firestore {
   match /databases/{database}/documents {

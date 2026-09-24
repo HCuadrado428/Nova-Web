@@ -35,7 +35,7 @@
 
   <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body data-view="home">
 
   <!-- Capas de ambientación: grano/estática y líneas de escaneo tipo VHS, fijas sobre toda la página -->
   <div class="noise-overlay" aria-hidden="true"></div>
@@ -61,7 +61,7 @@
       <!--
         Variante "imagen" de la línea 4: cuando toca en el sorteo, la foto ocupa
         toda la pantalla como fondo y el texto sale grande encima, en vez de la
-        frase pequeña de .boot-log. Se rellena desde script.js (BOOT_LINE_4_IMAGES).
+        frase pequeña de .boot-log. Se rellena desde js/intro.js (BOOT_LINE_4_IMAGES).
       -->
       <div class="boot-fullscreen-image" id="boot-fullscreen-image" aria-hidden="true">
         <span class="boot-fullscreen-caption" id="boot-fullscreen-caption"></span>
@@ -74,8 +74,8 @@
         <span class="boot-line boot-line-3">SINTONIZANDO...</span>
         <!--
           LÍNEA 4 (aleatoria): a veces es una frase, a veces una imagen "creepy"
-          con un texto rojo debajo. Amplía BOOT_LINE_4_VARIANTS en script.js
-          para añadir más frases o más imágenes al mismo sorteo.
+          con un texto rojo debajo. Amplía BOOT_LINE_4_PHRASES / BOOT_LINE_4_IMAGES en
+          js/intro.js para añadir más frases o más imágenes al mismo sorteo.
         -->
         <div class="boot-line boot-line-4 boot-line-creepy" id="boot-line-4"></div>
       </div>
@@ -137,7 +137,7 @@
 
   <!-- Botón de silenciar/reactivar el audio ambiente: abajo a la izquierda, aparece junto al resto
        del contenido tras el boot. Se oculta solo en la escena de Adán (ver style.css), donde ningún
-       otro control queda visible a propósito. La preferencia se recuerda entre visitas (script.js). -->
+       otro control queda visible a propósito. La preferencia se recuerda entre visitas (js/audio.js). -->
   <button class="audio-toggle-btn" id="audio-toggle-btn" type="button" aria-pressed="false">Silenciar</button>
 
   <!-- ==================== TRANSICIÓN DE CANAL ==================== -->
@@ -153,7 +153,7 @@
     <!--
       LORE:
       Todo el contenido (título, imágenes, texto) se genera desde el array
-      LORE_SLIDES en script.js. No hace falta tocar este HTML para añadir,
+      LORE_TRACKS en js/data/lore.js. No hace falta tocar este HTML para añadir,
       quitar o reordenar pases.
     -->
     <div class="lore-viewer">
@@ -169,7 +169,7 @@
   <!-- ==================== NORMAS (Discord / Minecraft) ====================
        Mismo patrón visual que la página de Lore. El contenido de las dos
        normativas vive directamente aquí (es texto estático, no hace falta
-       generarlo desde script.js). Los botones "rules-switch-btn" cambian
+       generarlo desde js/rules.js). Los botones "rules-switch-btn" cambian
        entre paneles sin salir de la página. -->
   <section class="rules-page" id="rules-page">
     <button class="rules-back-btn" id="rules-back-btn" type="button">← Volver</button>
@@ -229,14 +229,15 @@
        sesión con Google puede crear/editar el suyo (nombre, foto y bloques
        de texto/imagen/spotify/relación reordenables, más comentarios de
        otros usuarios). Todo lo dinámico lo genera
-       initPersonajes() en script.js contra Firebase (Auth + Firestore) —
+       initPersonajes() en js/personajes.js contra Firebase (Auth + Firestore) —
        ver firebase-config.js para la configuración del proyecto.
        ==================================================================== -->
   <section class="personajes-page" id="personajes-page">
     <button class="personajes-back-btn" id="personajes-back-btn" type="button">← Volver</button>
 
     <div class="personajes-viewer">
-      <div class="personajes-session" id="personajes-session">
+      <!-- Oculto hasta que Firebase termina de cargar (ver connect() en js/personajes.js) -->
+      <div class="personajes-session" id="personajes-session" hidden>
         <button class="lore-btn" id="personajes-signin-btn" type="button">Entrar con Google</button>
         <div class="personajes-session-active" id="personajes-session-active" hidden>
           <span class="personajes-session-name" id="personajes-session-name"></span>
@@ -245,6 +246,9 @@
           <button class="lore-btn" id="personajes-signout-btn" type="button">Cerrar sesión</button>
         </div>
       </div>
+
+      <!-- Avisos de la sección (no se pudo cargar, login bloqueado...) -->
+      <p class="personajes-status" id="personajes-status" role="status" aria-live="polite" hidden></p>
 
       <div class="personajes-view is-active" id="personajes-view-directory">
         <h1 class="rules-title glitch" data-text="PERSONAJES">PERSONAJES</h1>
@@ -308,7 +312,7 @@
   <!-- ====================================================================
        BUSCADOR "INSERTA LA CONTRASEÑA": pantalla aparte, deliberadamente
        limpia (sin estática ni glitches) con un buscador. Las palabras que
-       hacen algo se definen en SEARCH_ACTIONS (script.js); cada 3 fallos
+       hacen algo se definen en SEARCH_ACTIONS (js/password.js); cada 3 fallos
        seguidos aparece el botón "Una ayudita?", que rellena el buscador
        con una palabra al azar de entre las de SEARCH_ACTIONS.
        ==================================================================== -->
@@ -335,12 +339,12 @@
 
   <!-- ====================================================================
        EASTER EGG "4D4N" (código secreto en el buscador de arriba, ver
-       SEARCH_ACTIONS en script.js): pantalla negra de golpe, en silencio
+       SEARCH_ACTIONS en js/password.js): pantalla negra de golpe, en silencio
        total, con un diálogo tecleado en terminal. La frase con la que
        "responde" el usuario se elige al azar entre 3 al empezar (lo que
        teclee de verdad no importa, cada pulsación solo cuenta como
        "avanzar" o "retroceder" la revelación, ver ADAN_PHRASES en
-       script.js) y cada frase tiene una respuesta fija emparejada.
+       js/adan.js) y cada frase tiene una respuesta fija emparejada.
        Sin botón de volver ni de cerrar a propósito: una vez se acepta la
        frase completa (Enter), no hay marcha atrás.
        ==================================================================== -->
@@ -351,7 +355,7 @@
       <!-- Historial de rondas ya cerradas (frase congelada + respuesta de
            Adán); normalmente una sola, pero la 2ª visita encadena dos
            rondas seguidas sin recargar, así que crece dinámicamente
-           desde script.js en vez de ser un único <p> fijo. -->
+           desde js/adan.js en vez de ser un único <p> fijo. -->
       <div class="adan-scene-log" id="adan-scene-log" aria-live="polite"></div>
       <div class="adan-scene-input-row" id="adan-scene-input-row" hidden>
         <span class="adan-scene-caret" aria-hidden="true">&gt;</span>
@@ -369,15 +373,10 @@
   </div>
 
   <!--
-    FIREBASE (Personajes):
-    Build "compat" para poder usar el global `firebase.*` desde script.js
-    tal cual, sin convertirlo a ES modules. Versión fijada a propósito
-    (ver firebase-config.js para la configuración real del proyecto).
+    El SDK de Firebase ya no se carga aquí: js/personajes.js lo descarga la
+    primera vez que se abre Personajes. Aquí solo va su configuración.
   -->
-  <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
   <script src="firebase-config.js"></script>
-  <script src="script.js"></script>
+  <script type="module" src="js/main.js"></script>
 </body>
 </html>
