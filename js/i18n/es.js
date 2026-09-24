@@ -18,6 +18,7 @@ export default {
   'intro.download': 'Descargar Modpack',
   'intro.copyIp': 'Copiar IP',
   'intro.ipCopied': 'IP copiada',
+  'intro.map': 'Mapa 3D',
   // ---- Selector de idioma ----
   'lang.label': 'Idioma',
   // ---- Estado del servidor ----
