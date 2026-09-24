@@ -353,9 +353,6 @@ describe('web sin Firebase', () => {
     assert.equal(await page.title(), 'NOVA 2 — Modded Roleplay SMP');
     assert.equal(await text(page, '#download-modpack'), 'Download Modpack');
     assert.equal(await text(page, '#lore-menu-btn'), 'Lore');
-    assert.equal(await text(page, '#map-link'), '3D Map');
-    assert.equal(await page.getAttribute('#map-link', 'href'), 'http://xray.dathost.net:17490');
-    assert.equal(await page.getAttribute('#map-link', 'target'), '_blank');
     assert.equal(await text(page, '#rules-menu-btn'), 'Rules');
     assert.equal(await text(page, '#audio-toggle-btn'), 'Mute');
     assert.equal(await text(page, '#server-status-text'), 'Online · 5/20 players');

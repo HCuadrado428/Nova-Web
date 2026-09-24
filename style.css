@@ -1010,14 +1010,9 @@ body.tab-hidden .enter-text {
   box-shadow: 0 0 6px rgba(46, 204, 113, 0.8);
 }
 
-.intro-secondary {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 24px;
-}
 .intro-copy-ip {
+  display: block;
+  margin: 24px auto 0;
   background: rgba(55, 240, 224, 0.1);
   border-color: var(--glitch-cyan);
   color: var(--glitch-cyan);
