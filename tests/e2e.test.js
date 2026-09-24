@@ -111,13 +111,25 @@ beforeEach(async () => {
 // ---------- utilidades ----------
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-async function openPage({ hash = '', reducedMotion = 'no-preference', blockFirebase = false, signedInAs = null } = {}) {
+const STATUS_ONLINE = { online: true, players: { online: 5, max: 20 } };
+
+async function openPage({
+  hash = '',
+  reducedMotion = 'no-preference',
+  blockFirebase = false,
+  signedInAs = null,
+  serverStatus = STATUS_ONLINE, // respuesta falsa de api.mcsrvstat.us; null = la API no responde
+} = {}) {
   const context = await browser.newContext({ reducedMotion, permissions: ['clipboard-read', 'clipboard-write'] });
   await context.route('**/firebase-config.js', (r) => r.fulfill({ contentType: 'text/javascript', body: TEST_CONFIG }));
   await context.route('**/__test__/auth-helper.js', (r) =>
     r.fulfill({ contentType: 'text/javascript', body: authHelper }),
   );
   if (blockFirebase) await context.route('**/vendor/firebase.js', (r) => r.abort());
+  // Estado del servidor: nunca se consulta la API real desde los tests.
+  await context.route('https://api.mcsrvstat.us/**', (r) =>
+    serverStatus ? r.fulfill({ json: serverStatus, headers: { 'Access-Control-Allow-Origin': '*' } }) : r.abort(),
+  );
   await context.addInitScript((emulators) => {
     window.NOVA_FIREBASE_EMULATORS = emulators;
   }, EMULATORS);
@@ -307,6 +319,28 @@ describe('web sin Firebase', () => {
     await sinPortapapeles.waitForFunction(() => document.getElementById('copy-ip-btn').textContent !== 'Copiar IP');
     assert.equal(await text(sinPortapapeles, '#copy-ip-btn'), 'xray.dathost.net:17487');
     await sinPortapapeles.context().close();
+  });
+
+  test('estado del servidor: online, offline y API caída', async () => {
+    const online = await openPage();
+    await enter(online);
+    await online.locator('#server-status:not([hidden])').waitFor();
+    assert.equal(await text(online, '#server-status-text'), 'Online · 5/20 jugadores');
+    assert.equal(await online.getAttribute('#server-status', 'data-state'), 'online');
+    await online.context().close();
+
+    const offline = await openPage({ serverStatus: { online: false } });
+    await enter(offline);
+    await offline.locator('#server-status:not([hidden])').waitFor();
+    assert.equal(await text(offline, '#server-status-text'), 'Offline');
+    assert.equal(await offline.getAttribute('#server-status', 'data-state'), 'offline');
+    await offline.context().close();
+
+    const caida = await openPage({ serverStatus: null });
+    await enter(caida);
+    assert.ok(await caida.locator('#server-status').isHidden());
+    assert.deepEqual(caida.errors, []);
+    await caida.context().close();
   });
 
   test('reducir movimiento: botones visibles sin animación', async () => {

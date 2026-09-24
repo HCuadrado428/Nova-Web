@@ -18,6 +18,7 @@ import { initRules } from './rules.js';
 import { initPersonajes } from './personajes.js';
 import { initPasswordScreen } from './password.js';
 import { initAdanScene } from './adan.js';
+import { initServerStatus } from './server-status.js';
 
 initCopyIpButton();
 initEnterGate();
@@ -29,3 +30,4 @@ initPersonajes();
 initPasswordScreen();
 initAdanScene();
 initAudioToggleButton();
+initServerStatus();

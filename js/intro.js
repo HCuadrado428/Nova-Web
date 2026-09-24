@@ -7,8 +7,9 @@ import { ADAN_VISITS_KEY, BOOT_LINE_4_ADAN_PHRASE } from './adan.js';
 import { openPersonajeFromHash } from './personajes.js';
 import { storageGet } from './utils.js';
 
-// IP del server, usada por el botón "Copiar IP" de la intro.
-const SERVER_IP = 'xray.dathost.net:17487';
+// IP del server: la usan el botón "Copiar IP" y el estado del servidor
+// (server-status.js). Si cambia, basta con cambiarla aquí.
+export const SERVER_IP = 'xray.dathost.net:17487';
 
 // Momento en que termina la animación intro-reveal (~2.15s de retraso + 1s)
 // y ya se ven los botones: no se salta a un link directo antes de eso.

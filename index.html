@@ -101,6 +101,12 @@
           </a>
         </div>
         <p class="modpack-version">Forge 1.20.1</p>
+        <!-- Estado del servidor en directo: lo rellena js/server-status.js.
+             Oculto hasta tener respuesta (y si no la hay, se queda oculto). -->
+        <p class="server-status" id="server-status" hidden>
+          <span class="server-status-dot" aria-hidden="true"></span>
+          <span class="server-status-text" id="server-status-text"></span>
+        </p>
         <button class="btn btn-ghost intro-copy-ip" id="copy-ip-btn" type="button">Copiar IP</button>
       </div>
     </div>
