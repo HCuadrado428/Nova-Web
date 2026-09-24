@@ -13,6 +13,7 @@
 // API no responde, el recuadro simplemente no aparece.
 
 import { SERVER_IP } from './intro.js';
+import { onLanguageChange, t } from './i18n.js';
 import { isView } from './views.js';
 
 const STATUS_URL = `https://api.mcsrvstat.us/3/${encodeURIComponent(SERVER_IP)}`;
@@ -25,21 +26,26 @@ export function initServerStatus() {
 
   let timer = null;
   let loading = false;
+  let lastData = null; // para repintar el texto al cambiar de idioma
 
   const render = (data) => {
+    lastData = data;
     if (data.online) {
       const players = data.players;
       el.dataset.state = 'online';
       textEl.textContent =
         players && Number.isFinite(players.online) && Number.isFinite(players.max)
-          ? `Online · ${players.online}/${players.max} ${players.max === 1 ? 'jugador' : 'jugadores'}`
-          : 'Online';
+          ? t(players.max === 1 ? 'status.onlineOne' : 'status.online', { online: players.online, max: players.max })
+          : t('status.onlineNoCount');
     } else {
       el.dataset.state = 'offline';
-      textEl.textContent = 'Offline';
+      textEl.textContent = t('status.offline');
     }
     el.hidden = false;
   };
+  onLanguageChange(() => {
+    if (lastData) render(lastData);
+  });
 
   const refresh = async () => {
     clearTimeout(timer);

@@ -970,6 +970,41 @@ body.tab-hidden .enter-text {
   background: var(--glitch-red);
   box-shadow: 0 0 6px rgba(255, 46, 99, 0.8);
 }
+/* Selector de idioma (js/i18n.js): tres botones pequeños "ES · EN · PT" */
+.lang-switch {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  min-width: 0;
+  margin: 16px 0 0;
+  padding: 0;
+  border: 0;
+}
+.lang-btn {
+  background: transparent;
+  border: 1px solid rgba(234, 230, 218, 0.2);
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-family: var(--font-display);
+  font-size: 0.55rem;
+  letter-spacing: 1px;
+  color: rgba(234, 230, 218, 0.55);
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+.lang-btn:hover {
+  color: var(--text-main);
+  border-color: rgba(55, 240, 224, 0.5);
+}
+.lang-btn[aria-pressed='true'] {
+  color: var(--glitch-cyan);
+  border-color: var(--glitch-cyan);
+  background: rgba(55, 240, 224, 0.1);
+}
+
 .server-status[data-state='online'] .server-status-dot {
   background: var(--emerald);
   box-shadow: 0 0 6px rgba(46, 204, 113, 0.8);

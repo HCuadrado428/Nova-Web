@@ -2,10 +2,11 @@
 // Lore: visor de pases (los textos viven en js/data/lore.js)
 // ======================================================
 
-import { LORE_TRACKS } from './data/lore.js';
+import { LORE_BY_LANGUAGE } from './data/lore.js';
 import { duckStaticAudio, restoreStaticAudio, playStingerNow } from './audio.js';
 import { channelSwitch, closeMenuToggle, isView, setView } from './views.js';
 import { isTypingOrMediaTarget } from './utils.js';
+import { getLanguage, t } from './i18n.js';
 
 function buildLoreSlideElement(slide) {
   const el = document.createElement('div');
@@ -88,7 +89,9 @@ export function initLore() {
   if (!antesBtn || !novaBtn || !loreBackBtn || !lorePage || !loreSlidesEl || !prevBtn || !nextBtn || !progressEl)
     return;
 
-  let currentTrack = LORE_TRACKS.nova;
+  // El Lore del idioma actual (el español si faltara alguno).
+  const tracks = () => LORE_BY_LANGUAGE[getLanguage()] || LORE_BY_LANGUAGE.es;
+  let currentTrack = tracks().nova;
   let currentSlide = 0;
 
   const renderSlide = (index) => {
@@ -99,7 +102,7 @@ export function initLore() {
     if (currentTrack[index].type === 'reveal') playStingerNow(0.16);
 
     prevBtn.classList.toggle('is-hidden', index === 0);
-    nextBtn.textContent = index === currentTrack.length - 1 ? 'Volver al inicio' : 'Siguiente →';
+    nextBtn.textContent = index === currentTrack.length - 1 ? t('lore.backToStart') : t('lore.next');
     progressEl.textContent = `${index + 1} / ${currentTrack.length}`;
 
     lorePage.scrollTop = 0;
@@ -111,7 +114,7 @@ export function initLore() {
   const switchTo = (showLore, trackKey) =>
     channelSwitch(() => {
       if (showLore) {
-        currentTrack = LORE_TRACKS[trackKey];
+        currentTrack = tracks()[trackKey];
         currentSlide = 0;
         renderSlide(currentSlide);
         setView('lore');

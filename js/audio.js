@@ -6,6 +6,7 @@
 // CSS del boot (@keyframes intro-boot / intro-static-ambient).
 
 import { storageGet, storageSet } from './utils.js';
+import { onLanguageChange, t } from './i18n.js';
 
 let audioCtx = null;
 
@@ -89,11 +90,12 @@ export function initAudioToggleButton() {
   if (!btn) return;
 
   const sync = () => {
-    btn.textContent = isAudioMuted ? 'Sonido silenciado' : 'Silenciar';
+    btn.textContent = isAudioMuted ? t('audio.muted') : t('audio.mute');
     btn.classList.toggle('is-muted', isAudioMuted);
     btn.setAttribute('aria-pressed', String(isAudioMuted));
   };
   sync();
+  onLanguageChange(sync);
 
   btn.addEventListener('click', () => {
     setAudioMuted(!isAudioMuted);

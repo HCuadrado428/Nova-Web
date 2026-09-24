@@ -70,9 +70,9 @@
 
       <!-- Texto de sintonización tipo terminal, parpadea antes de que se asiente el título -->
       <div class="boot-log" aria-hidden="true">
-        <span class="boot-line boot-line-1">SEÑAL PERDIDA...</span>
-        <span class="boot-line boot-line-2">RECONECTANDO...</span>
-        <span class="boot-line boot-line-3">SINTONIZANDO...</span>
+        <span class="boot-line boot-line-1" data-i18n="boot.line1">SEÑAL PERDIDA...</span>
+        <span class="boot-line boot-line-2" data-i18n="boot.line2">RECONECTANDO...</span>
+        <span class="boot-line boot-line-3" data-i18n="boot.line3">SINTONIZANDO...</span>
         <!--
           LÍNEA 4 (aleatoria): a veces es una frase, a veces una imagen "creepy"
           con un texto rojo debajo. Amplía BOOT_LINE_4_PHRASES / BOOT_LINE_4_IMAGES en
@@ -96,9 +96,7 @@
           -->
           <a class="btn btn-primary btn-lg" id="download-modpack"
              href="https://drive.google.com/drive/u/1/folders/1d6L9iJC7T4NUyx9x8YVAl2wPVo0LmIGE"
-             target="_blank" rel="noopener">
-            Descargar Modpack
-          </a>
+             target="_blank" rel="noopener" data-i18n="intro.download">Descargar Modpack</a>
         </div>
         <p class="modpack-version">Forge 1.20.1</p>
         <!-- Estado del servidor en directo: lo rellena js/server-status.js.
@@ -107,17 +105,23 @@
           <span class="server-status-dot" aria-hidden="true"></span>
           <span class="server-status-text" id="server-status-text"></span>
         </p>
-        <button class="btn btn-ghost intro-copy-ip" id="copy-ip-btn" type="button">Copiar IP</button>
+        <button class="btn btn-ghost intro-copy-ip" id="copy-ip-btn" type="button" data-i18n="intro.copyIp">Copiar IP</button>
+        <!-- Selector de idioma (js/i18n.js). Cada botón lleva el nombre en su propio idioma. -->
+        <fieldset class="lang-switch" aria-label="Idioma" data-i18n-attr="aria-label:lang.label">
+          <button class="lang-btn" type="button" data-lang="es" lang="es" aria-label="Español">ES</button>
+          <button class="lang-btn" type="button" data-lang="en" lang="en" aria-label="English">EN</button>
+          <button class="lang-btn" type="button" data-lang="pt" lang="pt" aria-label="Português">PT</button>
+        </fieldset>
       </div>
     </div>
 
     <!-- Pantalla de entrada: el boot (estática + glitches + sonido) no arranca hasta que se pulsa.
          Es un <button> de verdad: funciona con teclado (Enter/Espacio) sin código extra.
          aria-label porque el efecto glitch repite el texto en ::before/::after. -->
-    <button class="enter-gate" id="enter-gate" type="button" aria-label="Tocar para entrar">
+    <button class="enter-gate" id="enter-gate" type="button" aria-label="Tocar para entrar" data-i18n-attr="aria-label:gate.label">
       <span class="enter-inner">
-        <span class="enter-text glitch" data-text="TOCA PARA ENTRAR">TOCA PARA ENTRAR</span>
-        <span class="enter-hint">¿Estás seguro de que quieres entrar?</span>
+        <span class="enter-text glitch" data-text="TOCA PARA ENTRAR" data-i18n="gate.text">TOCA PARA ENTRAR</span>
+        <span class="enter-hint" data-i18n="gate.hint">¿Estás seguro de que quieres entrar?</span>
       </span>
     </button>
   </section>
@@ -125,42 +129,42 @@
   <!-- Botón Lore: arriba a la izquierda, aparece junto al resto del contenido tras el boot.
        Al pulsarlo despliega el submenú con las pistas (Antes del Nova / Nova / Personajes). -->
   <div class="lore-triggers" inert data-until-boot>
-    <button class="menu-toggle-btn" id="lore-menu-btn" type="button" aria-expanded="false" aria-controls="lore-submenu">Lore</button>
+    <button class="menu-toggle-btn" id="lore-menu-btn" type="button" aria-expanded="false" aria-controls="lore-submenu" data-i18n="menu.lore">Lore</button>
     <div class="submenu" id="lore-submenu">
-      <button class="lore-btn" id="lore-antes-btn" type="button">Antes del Nova</button>
+      <button class="lore-btn" id="lore-antes-btn" type="button" data-i18n="menu.loreAntes">Antes del Nova</button>
       <button class="lore-btn" id="lore-nova-btn" type="button">Nova</button>
-      <button class="lore-btn" id="lore-personajes-btn" type="button">Personajes</button>
+      <button class="lore-btn" id="lore-personajes-btn" type="button" data-i18n="menu.personajes">Personajes</button>
     </div>
   </div>
 
   <!-- Botón Normas: arriba a la derecha, mismo patrón que el botón Lore.
        Al pulsarlo despliega el submenú con las normativas (Discord / Minecraft / Objetos). -->
   <div class="rules-triggers" id="rules-triggers" inert data-until-boot>
-    <button class="menu-toggle-btn" id="rules-menu-btn" type="button" aria-expanded="false" aria-controls="rules-submenu">Normas</button>
+    <button class="menu-toggle-btn" id="rules-menu-btn" type="button" aria-expanded="false" aria-controls="rules-submenu" data-i18n="menu.rules">Normas</button>
     <div class="submenu" id="rules-submenu">
       <button class="lore-btn" id="rules-discord-btn" type="button">Discord</button>
       <button class="lore-btn" id="rules-minecraft-btn" type="button">Minecraft</button>
-      <button class="lore-btn" id="rules-objetos-btn" type="button">Objetos</button>
+      <button class="lore-btn" id="rules-objetos-btn" type="button" data-i18n="rules.tabObjetos">Objetos</button>
     </div>
   </div>
 
   <!-- Botón "Inserta la contraseña": abajo a la derecha, aparece junto al resto del contenido tras el boot -->
-  <button class="password-trigger-btn" id="password-trigger-btn" type="button" inert data-until-boot>Inserta la contraseña</button>
+  <button class="password-trigger-btn" id="password-trigger-btn" type="button" inert data-until-boot data-i18n="password.trigger">Inserta la contraseña</button>
 
   <!-- Botón de silenciar/reactivar el audio ambiente: abajo a la izquierda, aparece junto al resto
        del contenido tras el boot. Se oculta solo en la escena de Adán (ver style.css), donde ningún
        otro control queda visible a propósito. La preferencia se recuerda entre visitas (js/audio.js). -->
-  <button class="audio-toggle-btn" id="audio-toggle-btn" type="button" aria-pressed="false" inert data-until-boot>Silenciar</button>
+  <button class="audio-toggle-btn" id="audio-toggle-btn" type="button" aria-pressed="false" inert data-until-boot data-i18n="audio.mute">Silenciar</button>
 
   <!-- ==================== TRANSICIÓN DE CANAL ==================== -->
   <div class="channel-transition" id="channel-transition" aria-hidden="true">
     <div class="channel-transition-static"></div>
-    <p class="channel-transition-text">SINTONIZANDO CANAL...</p>
+    <p class="channel-transition-text" data-i18n="channel.text">SINTONIZANDO CANAL...</p>
   </div>
 
   <!-- ==================== LORE (pases: imagen o texto) ==================== -->
   <section class="lore-page" id="lore-page">
-    <button class="lore-back-btn" id="lore-back-btn" type="button">← Volver</button>
+    <button class="lore-back-btn" id="lore-back-btn" type="button" data-i18n="common.back">← Volver</button>
 
     <!--
       LORE:
@@ -171,9 +175,9 @@
     <div class="lore-viewer">
       <div class="lore-slides" id="lore-slides"></div>
       <div class="lore-nav">
-        <button class="lore-nav-btn lore-prev-btn" id="lore-prev-btn" type="button">← Anterior</button>
+        <button class="lore-nav-btn lore-prev-btn" id="lore-prev-btn" type="button" data-i18n="lore.prev">← Anterior</button>
         <p class="lore-progress" id="lore-progress"></p>
-        <button class="lore-nav-btn lore-next-btn" id="lore-next-btn" type="button">Siguiente →</button>
+        <button class="lore-nav-btn lore-next-btn" id="lore-next-btn" type="button" data-i18n="lore.next">Siguiente →</button>
       </div>
     </div>
   </section>
@@ -184,53 +188,53 @@
        generarlo desde js/rules.js). Los botones "rules-switch-btn" cambian
        entre paneles sin salir de la página. -->
   <section class="rules-page" id="rules-page">
-    <button class="rules-back-btn" id="rules-back-btn" type="button">← Volver</button>
+    <button class="rules-back-btn" id="rules-back-btn" type="button" data-i18n="common.back">← Volver</button>
 
     <div class="rules-viewer">
       <div class="rules-switch" id="rules-switch">
         <button class="rules-switch-btn is-active" id="rules-switch-discord" data-rules-target="discord" type="button">Discord</button>
         <button class="rules-switch-btn" id="rules-switch-minecraft" data-rules-target="minecraft" type="button">Minecraft</button>
-        <button class="rules-switch-btn" id="rules-switch-objetos" data-rules-target="objetos" type="button">Objetos</button>
+        <button class="rules-switch-btn" id="rules-switch-objetos" data-rules-target="objetos" type="button" data-i18n="rules.tabObjetos">Objetos</button>
       </div>
 
       <div class="rules-panel is-active" id="rules-panel-discord">
-        <h2 class="rules-title glitch" data-text="NORMAS · DISCORD">NORMAS · DISCORD</h2>
-        <p class="rules-intro">Estas reglas son para el servidor de Discord.</p>
+        <h2 class="rules-title glitch" data-text="NORMAS · DISCORD" data-i18n="rules.discord.title">NORMAS · DISCORD</h2>
+        <p class="rules-intro" data-i18n="rules.discord.intro">Estas reglas son para el servidor de Discord.</p>
 
-        <p class="rules-item"><strong>Edad:</strong> +17.</p>
-        <p class="rules-item"><strong>Ficha:</strong> Tendrán todo el tiempo que necesiten para hacer la ficha, incluso solo con poner info básica será válida.</p>
-        <p class="rules-item"><strong>Canales:</strong> Respeten la función de cada canal, estos fueron creados con un propósito específico.</p>
-        <p class="rules-item"><strong>Spam:</strong> Existe el canal correspondiente para compartir enlaces u otro tipo de mensajes repetitivos.</p>
-        <p class="rules-item"><strong>Comunicación:</strong> Si surge algún problema, incomodidad o malentendido con otro integrante, comunícate de manera respetuosa, preferiblemente que se resuelva en privado y no en medio del chat general. En caso de que la discusión vaya a peor, por favor comunicarse con un admin para resolver la situación de manera adecuada.</p>
-        <p class="rules-item"><strong>Incumplimiento:</strong> Dada la situación que algún miembro esté rompiendo alguna de las reglas, avisar a los administradores de inmediato.</p>
-        <p class="rules-item"><strong>Contenido sensible:</strong> Contenido +18, gore o similares, está prohibido. Se prohíbe todo contenido visual o textual que pueda resultar incómodo a otros integrantes. En caso de que sea algo relacionado con lore pedimos usar spoilers, o si es una imagen/dibujo enviarlo como spoiler y avisar del contenido (ej: Twt: sangre).</p>
-        <p class="rules-item"><strong>Relaciones:</strong> Es importante recordar que el rol se trata de interpretar personajes ficticios, no refleja la realidad ni las opiniones personales de los integrantes. Por lo tanto, se insta a los miembros a no tomarse personal el rol de alguien. Los conflictos o interacciones dentro del rol no deben afectar las relaciones personales.</p>
-        <p class="rules-item"><strong>Respeto:</strong> Se pide respeto a los demás, ya sea por gustos o por trastornos. Si alguno sufre de un trastorno y quiere que se comparta como un anuncio para que los demás puedan comprenderlo, hablarlo con un admin; si por el contrario prefiere decirlo por su cuenta a personas con quien interactúe, entonces pedimos respeto y comprensión de los demás integrantes. En caso de faltas de respeto (burlas, insultos, desprecio, aislamiento social, ignorar por su trastorno) será un baneo directo.</p>
-        <p class="rules-item"><strong>Inactividad:</strong> Si tienen algún problema personal y no pueden estar muy activos, pedimos decir su razón de inactividad en el canal correspondiente. También, si es posible, den un aproximado de su tiempo de inactividad para así tener en cuenta su justificación.</p>
+        <p class="rules-item" data-i18n-html="rules.discord.1"><strong>Edad:</strong> +17.</p>
+        <p class="rules-item" data-i18n-html="rules.discord.2"><strong>Ficha:</strong> Tendrán todo el tiempo que necesiten para hacer la ficha, incluso solo con poner info básica será válida.</p>
+        <p class="rules-item" data-i18n-html="rules.discord.3"><strong>Canales:</strong> Respeten la función de cada canal, estos fueron creados con un propósito específico.</p>
+        <p class="rules-item" data-i18n-html="rules.discord.4"><strong>Spam:</strong> Existe el canal correspondiente para compartir enlaces u otro tipo de mensajes repetitivos.</p>
+        <p class="rules-item" data-i18n-html="rules.discord.5"><strong>Comunicación:</strong> Si surge algún problema, incomodidad o malentendido con otro integrante, comunícate de manera respetuosa, preferiblemente que se resuelva en privado y no en medio del chat general. En caso de que la discusión vaya a peor, por favor comunicarse con un admin para resolver la situación de manera adecuada.</p>
+        <p class="rules-item" data-i18n-html="rules.discord.6"><strong>Incumplimiento:</strong> Dada la situación que algún miembro esté rompiendo alguna de las reglas, avisar a los administradores de inmediato.</p>
+        <p class="rules-item" data-i18n-html="rules.discord.7"><strong>Contenido sensible:</strong> Contenido +18, gore o similares, está prohibido. Se prohíbe todo contenido visual o textual que pueda resultar incómodo a otros integrantes. En caso de que sea algo relacionado con lore pedimos usar spoilers, o si es una imagen/dibujo enviarlo como spoiler y avisar del contenido (ej: Twt: sangre).</p>
+        <p class="rules-item" data-i18n-html="rules.discord.8"><strong>Relaciones:</strong> Es importante recordar que el rol se trata de interpretar personajes ficticios, no refleja la realidad ni las opiniones personales de los integrantes. Por lo tanto, se insta a los miembros a no tomarse personal el rol de alguien. Los conflictos o interacciones dentro del rol no deben afectar las relaciones personales.</p>
+        <p class="rules-item" data-i18n-html="rules.discord.9"><strong>Respeto:</strong> Se pide respeto a los demás, ya sea por gustos o por trastornos. Si alguno sufre de un trastorno y quiere que se comparta como un anuncio para que los demás puedan comprenderlo, hablarlo con un admin; si por el contrario prefiere decirlo por su cuenta a personas con quien interactúe, entonces pedimos respeto y comprensión de los demás integrantes. En caso de faltas de respeto (burlas, insultos, desprecio, aislamiento social, ignorar por su trastorno) será un baneo directo.</p>
+        <p class="rules-item" data-i18n-html="rules.discord.10"><strong>Inactividad:</strong> Si tienen algún problema personal y no pueden estar muy activos, pedimos decir su razón de inactividad en el canal correspondiente. También, si es posible, den un aproximado de su tiempo de inactividad para así tener en cuenta su justificación.</p>
       </div>
 
       <div class="rules-panel" id="rules-panel-minecraft">
-        <h2 class="rules-title glitch" data-text="NORMAS · MINECRAFT">NORMAS · MINECRAFT</h2>
-        <p class="rules-intro">Estas reglas son para el servidor de Minecraft.</p>
+        <h2 class="rules-title glitch" data-text="NORMAS · MINECRAFT" data-i18n="rules.minecraft.title">NORMAS · MINECRAFT</h2>
+        <p class="rules-intro" data-i18n="rules.minecraft.intro">Estas reglas son para el servidor de Minecraft.</p>
 
-        <p class="rules-item"><strong>Off rol:</strong> Dentro del servidor, cuando son interacciones con otros integrantes, la mayoría son on rol; en caso contrario por favor utilicen "//" para diferenciarlo. Respeten esto para poder distinguir.</p>
-        <p class="rules-item"><strong>Colaboración y respeto:</strong> Respeta las decisiones y acciones de otros personajes en la historia y colabora de manera constructiva para mantener la coherencia y el flujo narrativo. La comunicación abierta y el respeto mutuo son clave para una experiencia de rol positiva.</p>
-        <p class="rules-item"><strong>Portales:</strong> Se puede ir al Twilight Forest, al Nether y al End.</p>
-        <p class="rules-item"><strong>Spawn:</strong> En cuanto al spawn queda totalmente prohibido el uso de minas / robos de bloques o objetos en el lugar. Si el daño al spawn llega a ser por un creeper o algún mob, pedimos llamen a un admin para que este lo pueda arreglar.</p>
-        <p class="rules-item"><strong>Límite de adopciones:</strong> Si van a adoptar a otros cubitos el límite es de 4 adopciones (los huevitos también cuentan). Esto para evitar que los roles no se puedan realizar debido a que son familiares.</p>
-        <p class="rules-item"><strong>Borde del mundo:</strong> El límite de bloques es de 14000, esto para mantener el servidor optimizado y enfocado en el roleplay. Habrá un borde el cual, en caso de morir por cruzarlo, no se devolverán las cosas perdidas. El límite para hacer vuestra casa será hasta 5000.</p>
+        <p class="rules-item" data-i18n-html="rules.minecraft.1"><strong>Off rol:</strong> Dentro del servidor, cuando son interacciones con otros integrantes, la mayoría son on rol; en caso contrario por favor utilicen "//" para diferenciarlo. Respeten esto para poder distinguir.</p>
+        <p class="rules-item" data-i18n-html="rules.minecraft.2"><strong>Colaboración y respeto:</strong> Respeta las decisiones y acciones de otros personajes en la historia y colabora de manera constructiva para mantener la coherencia y el flujo narrativo. La comunicación abierta y el respeto mutuo son clave para una experiencia de rol positiva.</p>
+        <p class="rules-item" data-i18n-html="rules.minecraft.3"><strong>Portales:</strong> Se puede ir al Twilight Forest, al Nether y al End.</p>
+        <p class="rules-item" data-i18n-html="rules.minecraft.4"><strong>Spawn:</strong> En cuanto al spawn queda totalmente prohibido el uso de minas / robos de bloques o objetos en el lugar. Si el daño al spawn llega a ser por un creeper o algún mob, pedimos llamen a un admin para que este lo pueda arreglar.</p>
+        <p class="rules-item" data-i18n-html="rules.minecraft.5"><strong>Límite de adopciones:</strong> Si van a adoptar a otros cubitos el límite es de 4 adopciones (los huevitos también cuentan). Esto para evitar que los roles no se puedan realizar debido a que son familiares.</p>
+        <p class="rules-item" data-i18n-html="rules.minecraft.6"><strong>Borde del mundo:</strong> El límite de bloques es de 14000, esto para mantener el servidor optimizado y enfocado en el roleplay. Habrá un borde el cual, en caso de morir por cruzarlo, no se devolverán las cosas perdidas. El límite para hacer vuestra casa será hasta 5000.</p>
       </div>
 
       <div class="rules-panel" id="rules-panel-objetos">
-        <h2 class="rules-title glitch" data-text="NORMAS · OBJETOS">NORMAS · OBJETOS</h2>
-        <p class="rules-intro">Objetos cuyo uso u obtención está prohibido en el servidor.</p>
+        <h2 class="rules-title glitch" data-text="NORMAS · OBJETOS" data-i18n="rules.objetos.title">NORMAS · OBJETOS</h2>
+        <p class="rules-intro" data-i18n="rules.objetos.intro">Objetos cuyo uso u obtención está prohibido en el servidor.</p>
 
-        <p class="rules-item"><strong>Anillo de Odín:</strong> Prohibido.</p>
+        <p class="rules-item" data-i18n-html="rules.objetos.1"><strong>Anillo de Odín:</strong> Prohibido.</p>
       </div>
 
       <div class="rules-footer">
-        <p class="rules-item rules-footer-item">Gracias por leer y formar parte de este servidor, queremos darte una buena experiencia.</p>
-        <p class="rules-item rules-footer-item">Es importante recordar que estas medidas se implementan para mantener un ambiente de rol seguro y respetuoso para todos los participantes. ¡Gracias por su comprensión y colaboración!</p>
+        <p class="rules-item rules-footer-item" data-i18n="rules.footer.1">Gracias por leer y formar parte de este servidor, queremos darte una buena experiencia.</p>
+        <p class="rules-item rules-footer-item" data-i18n="rules.footer.2">Es importante recordar que estas medidas se implementan para mantener un ambiente de rol seguro y respetuoso para todos los participantes. ¡Gracias por su comprensión y colaboración!</p>
       </div>
     </div>
   </section>
@@ -245,17 +249,17 @@
        ver firebase-config.js para la configuración del proyecto.
        ==================================================================== -->
   <section class="personajes-page" id="personajes-page">
-    <button class="personajes-back-btn" id="personajes-back-btn" type="button">← Volver</button>
+    <button class="personajes-back-btn" id="personajes-back-btn" type="button" data-i18n="common.back">← Volver</button>
 
     <div class="personajes-viewer">
       <!-- Oculto hasta que Firebase termina de cargar (ver connect() en js/personajes.js) -->
       <div class="personajes-session" id="personajes-session" hidden>
-        <button class="lore-btn" id="personajes-signin-btn" type="button">Entrar con Google</button>
+        <button class="lore-btn" id="personajes-signin-btn" type="button" data-i18n="pj.signin">Entrar con Google</button>
         <div class="personajes-session-active" id="personajes-session-active" hidden>
           <span class="personajes-session-name" id="personajes-session-name"></span>
-          <button class="personajes-edit-name-btn" id="personajes-edit-name-btn" type="button" title="Cambiar el nombre que ven los demás" aria-label="Cambiar el nombre que ven los demás">✎</button>
+          <button class="personajes-edit-name-btn" id="personajes-edit-name-btn" type="button" title="Cambiar el nombre que ven los demás" aria-label="Cambiar el nombre que ven los demás" data-i18n-attr="title:pj.editName|aria-label:pj.editName">✎</button>
           <button class="lore-btn" id="personajes-mine-btn" type="button" hidden>Mi personaje</button>
-          <button class="lore-btn" id="personajes-signout-btn" type="button">Cerrar sesión</button>
+          <button class="lore-btn" id="personajes-signout-btn" type="button" data-i18n="pj.signout">Cerrar sesión</button>
         </div>
       </div>
 
@@ -263,59 +267,59 @@
       <p class="personajes-status" id="personajes-status" role="status" aria-live="polite" hidden></p>
 
       <div class="personajes-view is-active" id="personajes-view-directory">
-        <h2 class="rules-title glitch" data-text="PERSONAJES">PERSONAJES</h2>
-        <input class="personajes-input personajes-search-input" id="personajes-search-input" type="text" placeholder="Buscar personaje..." aria-label="Buscar personaje">
+        <h2 class="rules-title glitch" data-text="PERSONAJES" data-i18n="pj.title">PERSONAJES</h2>
+        <input class="personajes-input personajes-search-input" id="personajes-search-input" type="text" placeholder="Buscar personaje..." aria-label="Buscar personaje" data-i18n-attr="placeholder:pj.searchPlaceholder|aria-label:pj.searchLabel">
         <div class="personajes-grid" id="personajes-grid"></div>
       </div>
 
       <div class="personajes-view" id="personajes-view-profile">
-        <button class="lore-nav-btn" id="personajes-profile-back-btn" type="button">← Directorio</button>
-        <button class="lore-btn personajes-edit-btn" id="personajes-edit-btn" type="button" hidden>Editar</button>
+        <button class="lore-nav-btn" id="personajes-profile-back-btn" type="button" data-i18n="pj.backToDirectory">← Directorio</button>
+        <button class="lore-btn personajes-edit-btn" id="personajes-edit-btn" type="button" hidden data-i18n="common.edit">Editar</button>
         <h2 class="rules-title glitch" id="personajes-profile-name" data-text="Personaje">Personaje</h2>
         <p class="personajes-profile-mcuser" id="personajes-profile-mcuser" hidden></p>
         <div class="personajes-blocks" id="personajes-profile-blocks"></div>
 
         <div class="personajes-comments" id="personajes-comments">
-          <h3 class="personajes-comments-title">Comentarios</h3>
+          <h3 class="personajes-comments-title" data-i18n="pj.comments">Comentarios</h3>
           <div class="personajes-comments-list" id="personajes-comments-list"></div>
           <form class="personajes-comment-form" id="personajes-comment-form">
-            <textarea class="personajes-input personajes-block-textarea" id="personajes-comment-input" rows="2" maxlength="500" placeholder="Deja un comentario..." aria-label="Comentario"></textarea>
-            <button class="rules-switch-btn" type="submit">Comentar</button>
+            <textarea class="personajes-input personajes-block-textarea" id="personajes-comment-input" rows="2" maxlength="500" placeholder="Deja un comentario..." aria-label="Comentario" data-i18n-attr="placeholder:pj.commentPlaceholder|aria-label:pj.commentLabel"></textarea>
+            <button class="rules-switch-btn" type="submit" data-i18n="pj.commentSubmit">Comentar</button>
             <p class="personajes-comments-hint" id="personajes-comment-feedback" aria-live="polite"></p>
           </form>
-          <p class="personajes-comments-hint" id="personajes-comment-signin-hint" hidden>Inicia sesión para comentar.</p>
+          <p class="personajes-comments-hint" id="personajes-comment-signin-hint" hidden data-i18n="pj.commentSigninHint">Inicia sesión para comentar.</p>
         </div>
       </div>
 
       <div class="personajes-view" id="personajes-view-editor">
-        <button class="lore-nav-btn" id="personajes-editor-cancel-btn" type="button">← Cancelar</button>
+        <button class="lore-nav-btn" id="personajes-editor-cancel-btn" type="button" data-i18n="pj.editorCancel">← Cancelar</button>
 
-        <label class="personajes-field-label" for="personajes-input-nombre">Nombre del personaje</label>
-        <input class="personajes-input" id="personajes-input-nombre" type="text" maxlength="60" placeholder="Nombre">
+        <label class="personajes-field-label" for="personajes-input-nombre" data-i18n="pj.fieldName">Nombre del personaje</label>
+        <input class="personajes-input" id="personajes-input-nombre" type="text" maxlength="60" placeholder="Nombre" data-i18n-attr="placeholder:pj.fieldNamePlaceholder">
 
-        <label class="personajes-field-label" for="personajes-input-mcuser">Usuario de Minecraft (opcional)</label>
-        <input class="personajes-input" id="personajes-input-mcuser" type="text" maxlength="16" placeholder="TuUsuarioDeMinecraft">
-        <p class="personajes-field-hint">Es opcional: si lo pones, se muestra como dato extra debajo de tu nombre en la ficha.</p>
+        <label class="personajes-field-label" for="personajes-input-mcuser" data-i18n="pj.fieldMcUser">Usuario de Minecraft (opcional)</label>
+        <input class="personajes-input" id="personajes-input-mcuser" type="text" maxlength="16" placeholder="TuUsuarioDeMinecraft" data-i18n-attr="placeholder:pj.fieldMcUserPlaceholder">
+        <p class="personajes-field-hint" data-i18n="pj.fieldMcUserHint">Es opcional: si lo pones, se muestra como dato extra debajo de tu nombre en la ficha.</p>
 
-        <label class="personajes-field-label" for="personajes-input-foto">Link de foto de perfil (opcional)</label>
+        <label class="personajes-field-label" for="personajes-input-foto" data-i18n="pj.fieldPhoto">Link de foto de perfil (opcional)</label>
         <input class="personajes-input" id="personajes-input-foto" type="url" placeholder="https://...">
-        <p class="personajes-field-hint">También vale un link de Pinterest: clic derecho sobre la imagen → "copiar dirección de imagen".</p>
+        <p class="personajes-field-hint" data-i18n="pj.fieldPhotoHint">También vale un link de Pinterest: clic derecho sobre la imagen → "copiar dirección de imagen".</p>
 
         <div class="personajes-editor-blocks" id="personajes-editor-blocks"></div>
         <datalist id="personajes-nombres-datalist"></datalist>
 
         <div class="personajes-add-block">
-          <button class="rules-switch-btn" id="personajes-add-texto-btn" type="button">+ Texto</button>
-          <button class="rules-switch-btn" id="personajes-add-imagen-btn" type="button">+ Imagen</button>
+          <button class="rules-switch-btn" id="personajes-add-texto-btn" type="button" data-i18n="pj.addText">+ Texto</button>
+          <button class="rules-switch-btn" id="personajes-add-imagen-btn" type="button" data-i18n="pj.addImage">+ Imagen</button>
           <button class="rules-switch-btn" id="personajes-add-spotify-btn" type="button">+ Spotify</button>
-          <button class="rules-switch-btn" id="personajes-add-relacion-btn" type="button">+ Relación</button>
+          <button class="rules-switch-btn" id="personajes-add-relacion-btn" type="button" data-i18n="pj.addRelation">+ Relación</button>
         </div>
 
         <p class="personajes-feedback" id="personajes-feedback" aria-live="polite"></p>
 
         <div class="personajes-editor-actions">
-          <button class="btn btn-primary" id="personajes-save-btn" type="button">Guardar</button>
-          <button class="personajes-delete-btn" id="personajes-delete-btn" type="button" hidden>Eliminar personaje</button>
+          <button class="btn btn-primary" id="personajes-save-btn" type="button" data-i18n="common.save">Guardar</button>
+          <button class="personajes-delete-btn" id="personajes-delete-btn" type="button" hidden data-i18n="pj.delete">Eliminar personaje</button>
         </div>
       </div>
     </div>
@@ -329,7 +333,7 @@
        con una palabra al azar de entre las de SEARCH_ACTIONS.
        ==================================================================== -->
   <section class="password-page" id="password-page" aria-hidden="true">
-    <button class="password-back-btn" id="password-back-btn" type="button">← Volver</button>
+    <button class="password-back-btn" id="password-back-btn" type="button" data-i18n="common.back">← Volver</button>
 
     <div class="password-inner">
       <form class="password-form" id="password-form">
@@ -340,13 +344,14 @@
           autocomplete="off"
           spellcheck="false"
           placeholder="Inserta la contraseña"
-          aria-label="Inserta la contraseña">
-        <button class="password-search-btn" type="submit">Buscar</button>
+          aria-label="Inserta la contraseña"
+          data-i18n-attr="placeholder:password.placeholder|aria-label:password.placeholder">
+        <button class="password-search-btn" type="submit" data-i18n="password.search">Buscar</button>
       </form>
       <p class="password-feedback" id="password-feedback" aria-live="polite"></p>
     </div>
 
-    <button class="password-hint-btn" id="password-hint-btn" type="button">¿Una ayudita?</button>
+    <button class="password-hint-btn" id="password-hint-btn" type="button" data-i18n="password.hint">¿Una ayudita?</button>
   </section>
 
   <!-- ====================================================================
@@ -379,6 +384,7 @@
           autocomplete="off"
           spellcheck="false"
           aria-label="Responde"
+          data-i18n-attr="aria-label:adan.inputLabel"
           disabled>
       </div>
     </div>

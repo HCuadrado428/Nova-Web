@@ -20,6 +20,7 @@
 import { openAdanScene } from './adan.js';
 import { isView, setView } from './views.js';
 import { normalizeSearchTerm } from './utils.js';
+import { t } from './i18n.js';
 
 const openInNewTab = (url) => () => window.open(url, '_blank', 'noopener');
 
@@ -104,7 +105,7 @@ export function initPasswordScreen() {
     }
 
     failStreak += 1;
-    setFeedback('Nada por aquí.', 'fail');
+    setFeedback(t('password.nothing'), 'fail');
     if (failStreak % 3 === 0) {
       hintBtn.classList.add('is-visible');
     }
