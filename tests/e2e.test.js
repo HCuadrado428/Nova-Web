@@ -154,7 +154,12 @@ async function openPersonajes(page) {
   await page.click('#lore-menu-btn');
   await page.click('#lore-personajes-btn');
   await sleep(CHANNEL_MS);
-  await page.locator('.personajes-card, .personajes-empty').first().waitFor();
+  // Espera a que el directorio termine de cargar: "Cargando personajes..."
+  // también usa .personajes-empty, así que no basta con que aparezca algo.
+  await page.waitForFunction(() => {
+    const grid = document.getElementById('personajes-grid');
+    return grid.children.length > 0 && !grid.textContent.includes('Cargando');
+  });
 }
 
 async function openProfile(page, nombre) {
@@ -461,6 +466,52 @@ describe('Personajes', () => {
     assert.ok(textos.includes('Comentario mientras editas'), textos.join(' | '));
     assert.deepEqual(bob.errors, []);
     await bob.context().close();
+  });
+
+  test('cerrar sesión y volver a pulsar "Entrar con Google": el botón nunca se bloquea', async () => {
+    const page = await openPage({ signedInAs: { uid: 'bob', name: 'Bob' } });
+    // Sin la ventana de Google de verdad (no existe para un proyecto de
+    // pruebas): el intento de login falla siempre, que es justo el caso en el
+    // que antes el botón parecía bloqueado.
+    await page.context().route(/firebaseapp\.com|apis\.google\.com/, (r) => r.abort());
+    await enter(page);
+    await openPersonajes(page);
+    await page.locator('#personajes-signout-btn:visible').click();
+    const signin = page.locator('#personajes-signin-btn');
+    await signin.waitFor({ state: 'visible' });
+    // Registra cada texto por el que pasa el botón: el fallo puede ser tan
+    // rápido que "Abriendo Google..." dure solo unos milisegundos.
+    await page.evaluate(() => {
+      const btn = document.getElementById('personajes-signin-btn');
+      window.__signinLabels = [];
+      new MutationObserver(() => window.__signinLabels.push(btn.textContent)).observe(btn, {
+        childList: true,
+        characterData: true,
+        subtree: true,
+      });
+    });
+    const labels = () => page.evaluate(() => window.__signinLabels.splice(0));
+
+    for (let intento = 1; intento <= 2; intento++) {
+      await signin.click();
+      // Falla, avisa y el botón vuelve a su estado normal, listo para otro intento.
+      await page.waitForFunction(
+        () => document.getElementById('personajes-signin-btn').textContent === 'Entrar con Google',
+      );
+      assert.deepEqual(await labels(), ['Abriendo Google...', 'Entrar con Google'], `intento ${intento}`);
+      assert.ok(await page.locator('#personajes-status').isVisible(), `intento ${intento}: sin aviso`);
+      assert.ok(await signin.isEnabled());
+    }
+
+    // Pulsar dos veces seguidas: el segundo intento sustituye al primero sin
+    // dejar el botón colgado.
+    await signin.click();
+    await signin.click();
+    await page.waitForFunction(
+      () => document.getElementById('personajes-signin-btn').textContent === 'Entrar con Google',
+    );
+    assert.deepEqual(page.errors, []);
+    await page.context().close();
   });
 
   test('link directo #personaje/<uid>', async () => {
