@@ -1,0 +1,54 @@
+# Revisa el código y pasa los tests en cada push y en cada pull request.
+# La web no se compila: esto solo avisa (en rojo) si algo se ha roto.
+name: Comprobaciones
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  comprobaciones:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - name: Formato y lint (Biome)
+        run: npx biome ci .
+
+      - name: vendor/firebase.js coincide con package.json
+        run: |
+          npm run build:firebase
+          git diff --exit-code vendor/firebase.js || {
+            echo "::error::vendor/firebase.js está desactualizado: ejecuta 'npm run build:firebase' y súbelo."
+            exit 1
+          }
+
+      # Los emuladores de Firebase necesitan Java.
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Caché de los emuladores de Firebase
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/firebase/emulators
+          key: firebase-emulators-${{ hashFiles('package-lock.json') }}
+
+      - name: Chromium para Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Tests (reglas de Firestore + web en el navegador)
+        run: npm test
