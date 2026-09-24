@@ -1,0 +1,26 @@
+{
+  "name": "nova-web",
+  "private": true,
+  "description": "Web de NOVA 2 (SMP de rol). La web en sí es estática y no necesita Node: esto es solo para revisar el código y pasar los tests.",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "start": "npx serve@14 -l 8000 .",
+    "check": "biome check .",
+    "fix": "biome check --write .",
+    "test": "npm run test:rules && npm run test:e2e",
+    "test:rules": "firebase emulators:exec --only firestore --project demo-nova \"node --test tests/rules.test.js\"",
+    "test:e2e": "firebase emulators:exec --only firestore,auth --project demo-nova \"node --test tests/e2e.test.js\"",
+    "build:firebase": "esbuild tools/firebase-entry.js --bundle --format=esm --minify --platform=browser --target=es2020 --legal-comments=eof --outfile=vendor/firebase.js"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.14",
+    "@firebase/rules-unit-testing": "5.0.2",
+    "esbuild": "0.28.2",
+    "firebase": "12.19.0",
+    "firebase-tools": "15.31.0",
+    "playwright": "1.63.0"
+  }
+}
