@@ -950,6 +950,7 @@ export function initPersonajes() {
   // ---- Sesión ----
   function handleAuthState(user) {
     currentUser = user;
+    resetSigninButton();
     signinBtn.hidden = !!user;
     sessionActive.hidden = !user;
     mineBtn.hidden = true;
@@ -979,20 +980,59 @@ export function initPersonajes() {
     }
   }
 
-  // Errores de login que no son fallos: la persona cerró la ventana de Google.
-  const SIGNIN_CANCELLED = ['auth/popup-closed-by-user', 'auth/cancelled-popup-request'];
+  // Login con la ventana (popup) de Google.
+  // El botón nunca se queda bloqueado: mientras se espera muestra
+  // "Abriendo Google..." pero se puede volver a pulsar, y cada pulsación
+  // empieza un intento nuevo (Firebase cancela solo el anterior, que puede
+  // haberse quedado colgado si la ventana se cerró o no llegó a abrirse).
+  // Cada intento lleva un número para que la respuesta tardía de uno viejo
+  // no deshaga el estado del botón del intento actual.
+  const SIGNIN_LABEL = signinBtn.textContent;
+  const SIGNIN_SLOW_MS = 15000; // si tarda más, se avisa de cómo desatascarlo
+  let signinAttempt = 0;
+  let signinSlowTimer = null;
+
+  function resetSigninButton() {
+    clearTimeout(signinSlowTimer);
+    signinBtn.textContent = SIGNIN_LABEL;
+    signinBtn.removeAttribute('aria-busy');
+  }
 
   signinBtn.addEventListener('click', () => {
     if (!auth) return;
-    fb.signInWithPopup(auth, new fb.GoogleAuthProvider()).catch((err) => {
-      if (SIGNIN_CANCELLED.includes(err.code)) return;
-      reportError(
-        err.code === 'auth/popup-blocked'
-          ? 'El navegador ha bloqueado la ventana de Google. Permite las ventanas emergentes para esta web y vuelve a intentarlo.'
-          : 'No se pudo iniciar sesión con Google. Inténtalo de nuevo.',
-        err,
+    const attempt = ++signinAttempt;
+    showStatus('');
+    clearTimeout(signinSlowTimer);
+    signinBtn.textContent = 'Abriendo Google...';
+    signinBtn.setAttribute('aria-busy', 'true');
+    signinSlowTimer = setTimeout(() => {
+      if (attempt !== signinAttempt) return;
+      showStatus(
+        '¿No se abre la ventana de Google? Pulsa el botón otra vez; si sigue sin abrirse, permite las ventanas emergentes para esta web.',
       );
-    });
+    }, SIGNIN_SLOW_MS);
+
+    fb.signInWithPopup(auth, new fb.GoogleAuthProvider())
+      .then(() => {
+        if (attempt === signinAttempt) showStatus('');
+      })
+      .catch((err) => {
+        // Un intento viejo cancelado porque se pulsó otra vez: no es un fallo.
+        if (err.code === 'auth/cancelled-popup-request' || attempt !== signinAttempt) return;
+        if (err.code === 'auth/popup-closed-by-user') {
+          showStatus(''); // la persona cerró la ventana de Google: nada que avisar
+          return;
+        }
+        reportError(
+          err.code === 'auth/popup-blocked'
+            ? 'El navegador ha bloqueado la ventana de Google. Permite las ventanas emergentes para esta web y vuelve a intentarlo.'
+            : 'No se pudo iniciar sesión con Google. Inténtalo de nuevo.',
+          err,
+        );
+      })
+      .finally(() => {
+        if (attempt === signinAttempt) resetSigninButton();
+      });
   });
   signoutBtn.addEventListener('click', () => {
     if (auth) fb.signOut(auth);
