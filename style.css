@@ -157,10 +157,11 @@ input, textarea, select {
     radial-gradient(ellipse at 50% 50%, #0c0c0c, #000 70%);
 }
 
-/* Al ir a Lore o Normas, se oculta con "visibility" (nunca "display") para que sus
-   animaciones no se reinicien al volver a mostrarla */
-body.view-lore .intro-hero,
-body.view-rules .intro-hero {
+/* Al ir a una página completa (Lore, Normas, Personajes), se oculta con
+   "visibility" (nunca "display") para que sus animaciones no se reinicien al
+   volver a mostrarla. La vista activa la marca <body data-view="..."> (ver
+   js/views.js). */
+body:is([data-view="lore"], [data-view="rules"], [data-view="personajes"]) .intro-hero {
   visibility: hidden;
   pointer-events: none;
 }
@@ -201,19 +202,6 @@ body:not(.booted) .intro-content::after {
   animation-play-state: paused;
 }
 
-/* La pestaña en segundo plano, o estar viendo Lore/Normas, pausa la animación en
-   curso del intro (ahorro de batería/CPU); al volver, sigue donde se quedó */
-:is(body.tab-hidden, body.view-lore, body.view-rules) .intro-static,
-:is(body.tab-hidden, body.view-lore, body.view-rules) .intro-glitch-bars::before,
-:is(body.tab-hidden, body.view-lore, body.view-rules) .intro-glitch-bars::after,
-:is(body.tab-hidden, body.view-lore, body.view-rules) .boot-line,
-:is(body.tab-hidden, body.view-lore, body.view-rules) .intro-content,
-:is(body.tab-hidden, body.view-lore, body.view-rules) .intro-content::after,
-:is(body.tab-hidden, body.view-lore, body.view-rules) .intro-hero-inner,
-body.tab-hidden .enter-text {
-  animation-play-state: paused;
-}
-
 /* Sacudida + aberración cromática ocasional en toda la pantalla */
 @keyframes screen-glitch-flash {
   0%, 96%, 100% { transform: translate(0, 0); filter: none; }
@@ -224,6 +212,20 @@ body.tab-hidden .enter-text {
 }
 body.booted .intro-hero-inner {
   animation: screen-glitch-flash 9s steps(1) infinite 2.2s;
+}
+
+/* La pestaña en segundo plano, o estar en cualquier vista que no sea la intro,
+   pausa la animación en curso del intro (ahorro de batería/CPU); al volver,
+   sigue donde se quedó. Va DESPUÉS de "body.booted .intro-hero-inner" a
+   propósito: tienen la misma especificidad y el shorthand "animation" de esa
+   regla volvería a ponerla en "running" si esta fuera antes. Los
+   pseudo-elementos van sueltos porque no pueden ir dentro de :is(). */
+:is(body.tab-hidden, body:not([data-view="home"])) :is(.intro-static, .boot-line, .intro-content, .intro-hero-inner),
+:is(body.tab-hidden, body:not([data-view="home"])) .intro-glitch-bars::before,
+:is(body.tab-hidden, body:not([data-view="home"])) .intro-glitch-bars::after,
+:is(body.tab-hidden, body:not([data-view="home"])) .intro-content::after,
+body.tab-hidden .enter-text {
+  animation-play-state: paused;
 }
 
 /* Pantalla de entrada */
@@ -586,21 +588,14 @@ body.booted .intro-hero-inner {
   align-items: flex-end;
   gap: 10px;
 }
-/* Los contenedores ocupan la misma esquina que los botones "Volver"; aunque
-   sus botones se oculten con "visibility", el propio div seguía interceptando
-   los clics y bloqueaba el botón "← Volver" que está debajo. Se ocultan
-   enteros (submenú incluido, esté abierto o no) al entrar en cualquier
-   pantalla a página completa. */
-body.view-lore .lore-triggers,
-body.view-rules .lore-triggers,
-body.view-password .lore-triggers,
-body.view-personajes .lore-triggers,
-body.view-adan .lore-triggers,
-body.view-lore .rules-triggers,
-body.view-rules .rules-triggers,
-body.view-password .rules-triggers,
-body.view-personajes .rules-triggers,
-body.view-adan .rules-triggers {
+/* Los botones de la intro (Lore, Normas y "Inserta la contraseña") solo se
+   ven en la intro. Los contenedores ocupan la misma esquina que los botones
+   "Volver"; aunque sus botones se oculten con "visibility", el propio div
+   seguía interceptando los clics y bloqueaba el botón "← Volver" que está
+   debajo. Se ocultan enteros (submenú incluido, esté abierto o no) en
+   cualquier otra vista, y con "visibility" (no display) para no reiniciar la
+   animación de aparición al volver. */
+body:not([data-view="home"]) :is(.lore-triggers, .rules-triggers, .password-trigger-btn) {
   visibility: hidden;
   pointer-events: none;
 }
@@ -650,16 +645,6 @@ body.booted .menu-toggle-btn {
   pointer-events: auto;
   animation: intro-reveal 1s ease 2.15s 1 both;
 }
-/* Se oculta con "visibility" mientras se ve Lore/Normas/contraseña, no con
-   display, para no reiniciar la animación de aparición al volver a mostrarse */
-body.view-lore .menu-toggle-btn,
-body.view-rules .menu-toggle-btn,
-body.view-password .menu-toggle-btn,
-body.view-personajes .menu-toggle-btn,
-body.view-adan .menu-toggle-btn {
-  visibility: hidden;
-  pointer-events: none;
-}
 .menu-toggle-btn[aria-expanded="true"] {
   background: rgba(55, 240, 224, 0.12);
   color: #fff;
@@ -701,15 +686,15 @@ body.view-adan .menu-toggle-btn {
   visibility: hidden;
   pointer-events: none;
 }
-body.view-lore .lore-back-btn {
+body[data-view="lore"] .lore-back-btn {
   visibility: visible;
   pointer-events: auto;
 }
-body.view-rules .rules-back-btn {
+body[data-view="rules"] .rules-back-btn {
   visibility: visible;
   pointer-events: auto;
 }
-body.view-personajes .personajes-back-btn {
+body[data-view="personajes"] .personajes-back-btn {
   visibility: visible;
   pointer-events: auto;
 }
@@ -741,13 +726,6 @@ body.view-personajes .personajes-back-btn {
 body.booted .password-trigger-btn {
   pointer-events: auto;
   animation: intro-reveal 1s ease 2.15s 1 both;
-}
-body.view-lore .password-trigger-btn,
-body.view-rules .password-trigger-btn,
-body.view-password .password-trigger-btn,
-body.view-adan .password-trigger-btn {
-  visibility: hidden;
-  pointer-events: none;
 }
 
 /* ---------- Botón de silenciar/reactivar el audio: abajo a la izquierda, mismo
@@ -781,7 +759,7 @@ body.booted .audio-toggle-btn {
   pointer-events: auto;
   animation: intro-reveal 1s ease 2.15s 1 both;
 }
-body.view-adan .audio-toggle-btn {
+body[data-view="adan"] .audio-toggle-btn {
   visibility: hidden;
   pointer-events: none;
 }
@@ -809,18 +787,17 @@ body.view-adan .audio-toggle-btn {
   pointer-events: none;
   transition: opacity 0.25s ease;
 }
-.password-page.active {
+body[data-view="password"] .password-page {
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
 }
 /* El grano/escaneo ambiental de toda la página también se apaga aquí: esta
-   pantalla debe verse limpia, sin ningún resto de la estática del resto del sitio. */
-body.view-password .noise-overlay,
-body.view-password .scanline-overlay,
-body.view-adan .noise-overlay,
-body.view-adan .scanline-overlay {
-  opacity: 0;
+   pantalla debe verse limpia, sin ningún resto de la estática del resto del sitio.
+   "visibility" y no "opacity": noise-flicker anima la opacidad, y una
+   animación siempre gana a un "opacity: 0" normal. */
+body:is([data-view="password"], [data-view="adan"]) :is(.noise-overlay, .scanline-overlay) {
+  visibility: hidden;
 }
 
 .password-back-btn {
@@ -955,7 +932,7 @@ body.view-adan .scanline-overlay {
   /* Sin transition a propósito: el corte a negro debe ser instantáneo
      ("de golpe"), no un fundido como el resto de overlays del sitio. */
 }
-.adan-scene.active {
+body[data-view="adan"] .adan-scene {
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
@@ -970,7 +947,7 @@ body.view-adan .scanline-overlay {
   opacity: 0;
   transition: opacity 0.6s ease;
 }
-.adan-scene.active .adan-scene-static {
+body[data-view="adan"] .adan-scene-static {
   animation: intro-static-jitter 0.15s steps(1) infinite;
 }
 
@@ -1149,7 +1126,7 @@ body.view-adan .scanline-overlay {
 }
 /* Igual que .intro-hero: se alterna con "visibility", nunca "display", para
    que sus animaciones (barras de glitch) no se reinicien al volver a Lore */
-body.view-lore .lore-page {
+body[data-view="lore"] .lore-page {
   visibility: visible;
   pointer-events: auto;
 }
@@ -1377,7 +1354,7 @@ body.view-lore .lore-page {
   visibility: hidden;
   pointer-events: none;
 }
-body.view-rules .rules-page {
+body[data-view="rules"] .rules-page {
   visibility: visible;
   pointer-events: auto;
 }
@@ -1483,7 +1460,7 @@ body.view-rules .rules-page {
   visibility: hidden;
   pointer-events: none;
 }
-body.view-personajes .personajes-page {
+body[data-view="personajes"] .personajes-page {
   visibility: visible;
   pointer-events: auto;
 }
@@ -1502,6 +1479,20 @@ body.view-personajes .personajes-page {
   justify-content: center;
   gap: 12px;
   margin-bottom: 40px;
+}
+.personajes-session[hidden],
+.personajes-status[hidden] {
+  display: none;
+}
+.personajes-status {
+  margin: 0 0 28px;
+  padding: 10px 14px;
+  border: 1px solid rgba(255, 46, 99, 0.45);
+  border-radius: var(--radius);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  text-align: center;
+  color: var(--glitch-red);
 }
 .personajes-session-active {
   display: flex;
@@ -1613,7 +1604,7 @@ body.view-personajes .personajes-page {
   float: right;
 }
 /* Dato extra opcional (usuario de Minecraft), justo debajo del nombre;
-   oculto por completo (ver script.js) cuando el personaje no lo puso. */
+   oculto por completo (ver js/personajes.js) cuando el personaje no lo puso. */
 .personajes-profile-mcuser {
   margin: -8px 0 0;
   font-family: var(--font-display);
@@ -1946,8 +1937,9 @@ body.view-personajes .personajes-page {
   .boot-log { display: none; }
   .boot-fullscreen-image { display: none; }
   .intro-hero-inner { animation: none; }
-  .menu-toggle-btn { animation: none; opacity: 1; }
-  .password-trigger-btn { animation: none; opacity: 1; }
+  /* Misma especificidad que "body.booted .menu-toggle-btn" (que es quien les
+     pone la animación de aparición), y va después, así que gana. */
+  body.booted :is(.menu-toggle-btn, .password-trigger-btn, .audio-toggle-btn) { animation: none; opacity: 1; }
   .channel-transition-static { animation: none; }
   .adan-scene-static { display: none; }
   .adan-scene-cursor { animation: none; opacity: 1; }
