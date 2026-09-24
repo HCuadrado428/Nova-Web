@@ -388,7 +388,8 @@ function initCopyIpButton() {
      { type: 'text', heading, centered, paragraphs: [...] } -> bloque de texto
        (heading y centered son opcionales)
      { type: 'image', src: '...' }                  -> foto a pantalla completa
-     { type: 'video', src: '...' }                   -> vídeo con controles
+     { type: 'video', src: '...', poster }           -> vídeo con controles
+       (poster opcional: imagen que se ve antes de darle a play)
      { type: 'reveal', src: '...', text: '...' }     -> foto + texto enorme,
                                                          temblando y glitcheado
    Un párrafo puede ser un string normal, o un objeto
@@ -455,7 +456,7 @@ const LORE_TRACK_ANTES = [
       { text: 'Este mundo va a dar la respuesta', emphasis: true },
     ],
   },
-  { type: 'video', src: 'images/lv_0_20260207170013.mp4' },
+  { type: 'video', src: 'images/lv_0_20260207170013.mp4', poster: 'images/lore-video-poster.jpg' },
 ];
 
 const LORE_TRACK_NOVA = [
@@ -530,6 +531,10 @@ function buildLoreSlideElement(slide) {
     const video = document.createElement('video');
     video.className = 'lore-slide-video-el';
     video.src = slide.src;
+    // Solo los metadatos hasta que se pulse play: el vídeo pesa ~20 MB y no
+    // hace falta descargarlo entero por pasar por el pase.
+    video.preload = 'metadata';
+    if (slide.poster) video.poster = slide.poster;
     video.controls = true;
     video.playsInline = true;
     // Mientras el vídeo suena o está en pantalla completa, se baja a 0 la

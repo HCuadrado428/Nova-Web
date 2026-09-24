@@ -1,6 +1,3 @@
-Coloca aquí tus capturas del servidor (01.jpg, 02.jpg, etc.).
-
-Luego, en index.html, dentro de la sección Galería, sustituye cada
-<div class="gallery-placeholder">...</div> por:
-
-  <img src="images/gallery/01.jpg" alt="Descripción de la captura">
+Imágenes que abren algunas palabras secretas del buscador "Inserta la
+contraseña" (ver SEARCH_ACTIONS en el JS). Si añades una nueva, añade
+también su palabra en SEARCH_ACTIONS apuntando a este archivo.
