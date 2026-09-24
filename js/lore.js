@@ -85,7 +85,8 @@ export function initLore() {
   const prevBtn = document.getElementById('lore-prev-btn');
   const nextBtn = document.getElementById('lore-next-btn');
   const progressEl = document.getElementById('lore-progress');
-  if (!antesBtn || !novaBtn || !loreBackBtn || !lorePage || !loreSlidesEl || !prevBtn || !nextBtn || !progressEl) return;
+  if (!antesBtn || !novaBtn || !loreBackBtn || !lorePage || !loreSlidesEl || !prevBtn || !nextBtn || !progressEl)
+    return;
 
   let currentTrack = LORE_TRACKS.nova;
   let currentSlide = 0;
@@ -107,18 +108,19 @@ export function initLore() {
   // La vista se alterna con data-view en <body> (CSS usa "visibility", nunca
   // "display"), así que al volver del Lore la intro no repite su animación:
   // se queda tal y como estaba, ya asentada.
-  const switchTo = (showLore, trackKey) => channelSwitch(() => {
-    if (showLore) {
-      currentTrack = LORE_TRACKS[trackKey];
-      currentSlide = 0;
-      renderSlide(currentSlide);
-      setView('lore');
-    } else {
-      loreSlidesEl.innerHTML = ''; // corta el vídeo si seguía sonando
-      restoreStaticAudio();
-      setView('home');
-    }
-  });
+  const switchTo = (showLore, trackKey) =>
+    channelSwitch(() => {
+      if (showLore) {
+        currentTrack = LORE_TRACKS[trackKey];
+        currentSlide = 0;
+        renderSlide(currentSlide);
+        setView('lore');
+      } else {
+        loreSlidesEl.innerHTML = ''; // corta el vídeo si seguía sonando
+        restoreStaticAudio();
+        setView('home');
+      }
+    });
 
   const goNext = () => {
     if (currentSlide >= currentTrack.length - 1) {
@@ -160,7 +162,13 @@ export function initLore() {
     // además se llamara a goNext() se pasaría de pase dos veces.
     if (e.key === ' ' && e.target instanceof Element && e.target.closest('button')) return;
 
-    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); goNext(); }
-    if (e.key === 'ArrowLeft') { e.preventDefault(); goPrev(); }
+    if (e.key === 'ArrowRight' || e.key === ' ') {
+      e.preventDefault();
+      goNext();
+    }
+    if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      goPrev();
+    }
   });
 }

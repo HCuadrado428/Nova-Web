@@ -13,7 +13,8 @@
   font-weight: 400;
   font-display: swap;
   src: url('fonts/press-start-2p-latin-400-normal.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 @font-face {
   font-family: 'Press Start 2P';
@@ -21,7 +22,8 @@
   font-weight: 400;
   font-display: swap;
   src: url('fonts/press-start-2p-latin-ext-400-normal.woff2') format('woff2');
-  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
 @font-face {
   font-family: 'Inter';
@@ -29,7 +31,8 @@
   font-weight: 100 900;
   font-display: swap;
   src: url('fonts/inter-latin-wght-normal.woff2') format('woff2-variations');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 @font-face {
   font-family: 'Inter';
@@ -37,7 +40,8 @@
   font-weight: 100 900;
   font-display: swap;
   src: url('fonts/inter-latin-ext-wght-normal.woff2') format('woff2-variations');
-  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
 
 :root {
@@ -65,8 +69,12 @@
   --noise-static: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
 }
 
-* { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
+* {
+  box-sizing: border-box;
+}
+html {
+  scroll-behavior: smooth;
+}
 
 body {
   margin: 0;
@@ -77,20 +85,34 @@ body {
   overflow-x: hidden;
 }
 
-a { color: inherit; text-decoration: none; }
+a {
+  color: inherit;
+  text-decoration: none;
+}
 
 /* ---------- Cursor personalizado: retícula con el mismo split cian/magenta
    del resto del glitch del sitio, en vez del cursor del sistema. Los campos
    de texto reales (input/textarea) mantienen el cursor de texto normal, y
    los estados :disabled ya definidos más abajo (cursor: not-allowed) ganan
    por especificidad sobre la regla genérica de "a, button". ---------- */
-html, body {
-  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><circle cx='11' cy='11' r='6' fill='none' stroke='%2337f0e0' stroke-width='1.5'/><circle cx='13' cy='13' r='6' fill='none' stroke='%23ff2e63' stroke-width='1.5'/><circle cx='12' cy='12' r='1.3' fill='%23eae6da'/></svg>") 12 12, auto;
+html,
+body {
+  cursor:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><circle cx='11' cy='11' r='6' fill='none' stroke='%2337f0e0' stroke-width='1.5'/><circle cx='13' cy='13' r='6' fill='none' stroke='%23ff2e63' stroke-width='1.5'/><circle cx='12' cy='12' r='1.3' fill='%23eae6da'/></svg>")
+    12 12,
+    auto;
 }
-a, button, [role="button"] {
-  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='26' height='26' viewBox='0 0 26 26'><circle cx='12' cy='12' r='7' fill='none' stroke='%2337f0e0' stroke-width='2'/><circle cx='14' cy='14' r='7' fill='none' stroke='%23ff2e63' stroke-width='2'/><circle cx='13' cy='13' r='2' fill='%23eae6da'/></svg>") 13 13, pointer;
+a,
+button,
+[role='button'] {
+  cursor:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='26' height='26' viewBox='0 0 26 26'><circle cx='12' cy='12' r='7' fill='none' stroke='%2337f0e0' stroke-width='2'/><circle cx='14' cy='14' r='7' fill='none' stroke='%23ff2e63' stroke-width='2'/><circle cx='13' cy='13' r='2' fill='%23eae6da'/></svg>")
+    13 13,
+    pointer;
 }
-input, textarea, select {
+input,
+textarea,
+select {
   cursor: text;
 }
 
@@ -154,14 +176,28 @@ input, textarea, select {
 }
 
 @keyframes noise-flicker {
-  0%, 89%, 100% { opacity: 0.045; }
-  90% { opacity: 0.09; }
-  92% { opacity: 0.02; }
-  95% { opacity: 0.07; }
+  0%,
+  89%,
+  100% {
+    opacity: 0.045;
+  }
+  90% {
+    opacity: 0.09;
+  }
+  92% {
+    opacity: 0.02;
+  }
+  95% {
+    opacity: 0.07;
+  }
 }
 @keyframes scan-drift {
-  from { transform: translateY(0); }
-  to { transform: translateY(120px); }
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(120px);
+  }
 }
 
 /* ---------- Botones ---------- */
@@ -176,11 +212,19 @@ input, textarea, select {
   font-size: 0.9rem;
   border: 2px solid transparent;
   cursor: pointer;
-  transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    background 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
   white-space: nowrap;
 }
-.btn:hover { transform: translateY(-2px); }
-.btn:active { transform: translateY(0); }
+.btn:hover {
+  transform: translateY(-2px);
+}
+.btn:active {
+  transform: translateY(0);
+}
 
 .btn-primary {
   position: relative;
@@ -201,16 +245,23 @@ input, textarea, select {
   transform: translateX(-120%);
   transition: transform 0.5s ease;
 }
-.btn-primary:hover::after { transform: translateX(120%); }
+.btn-primary:hover::after {
+  transform: translateX(120%);
+}
 
 .btn-ghost {
   background: rgba(168, 85, 247, 0.12);
   border-color: var(--end-purple);
   color: #d9b8ff;
 }
-.btn-ghost:hover { background: rgba(168, 85, 247, 0.22); }
+.btn-ghost:hover {
+  background: rgba(168, 85, 247, 0.22);
+}
 
-.btn-lg { padding: 14px 28px; font-size: 1rem; }
+.btn-lg {
+  padding: 14px 28px;
+  font-size: 1rem;
+}
 
 /* ---------- Intro / Hero: arranque con estática y glitches ---------- */
 .intro-hero {
@@ -227,7 +278,7 @@ input, textarea, select {
    "visibility" (nunca "display") para que sus animaciones no se reinicien al
    volver a mostrarla. La vista activa la marca <body data-view="..."> (ver
    js/views.js). */
-body:is([data-view="lore"], [data-view="rules"], [data-view="personajes"]) .intro-hero {
+body:is([data-view='lore'], [data-view='rules'], [data-view='personajes']) .intro-hero {
   visibility: hidden;
   pointer-events: none;
 }
@@ -270,11 +321,28 @@ body:not(.booted) .intro-content::after {
 
 /* Sacudida + aberración cromática ocasional en toda la pantalla */
 @keyframes screen-glitch-flash {
-  0%, 96%, 100% { transform: translate(0, 0); filter: none; }
-  96.4% { transform: translate(-6px, 2px); filter: url(#chromatic-split) contrast(1.15); }
-  96.8% { transform: translate(5px, -3px); filter: none; }
-  97.2% { transform: translate(-3px, 1px); filter: url(#chromatic-split); }
-  97.6% { transform: translate(0, 0); filter: none; }
+  0%,
+  96%,
+  100% {
+    transform: translate(0, 0);
+    filter: none;
+  }
+  96.4% {
+    transform: translate(-6px, 2px);
+    filter: url(#chromatic-split) contrast(1.15);
+  }
+  96.8% {
+    transform: translate(5px, -3px);
+    filter: none;
+  }
+  97.2% {
+    transform: translate(-3px, 1px);
+    filter: url(#chromatic-split);
+  }
+  97.6% {
+    transform: translate(0, 0);
+    filter: none;
+  }
 }
 body.booted .intro-hero-inner {
   animation: screen-glitch-flash 9s steps(1) infinite 2.2s;
@@ -286,10 +354,10 @@ body.booted .intro-hero-inner {
    propósito: tienen la misma especificidad y el shorthand "animation" de esa
    regla volvería a ponerla en "running" si esta fuera antes. Los
    pseudo-elementos van sueltos porque no pueden ir dentro de :is(). */
-:is(body.tab-hidden, body:not([data-view="home"])) :is(.intro-static, .boot-line, .intro-content, .intro-hero-inner),
-:is(body.tab-hidden, body:not([data-view="home"])) .intro-glitch-bars::before,
-:is(body.tab-hidden, body:not([data-view="home"])) .intro-glitch-bars::after,
-:is(body.tab-hidden, body:not([data-view="home"])) .intro-content::after,
+:is(body.tab-hidden, body:not([data-view='home'])) :is(.intro-static, .boot-line, .intro-content, .intro-hero-inner),
+:is(body.tab-hidden, body:not([data-view='home'])) .intro-glitch-bars::before,
+:is(body.tab-hidden, body:not([data-view='home'])) .intro-glitch-bars::after,
+:is(body.tab-hidden, body:not([data-view='home'])) .intro-content::after,
 body.tab-hidden .enter-text {
   animation-play-state: paused;
 }
@@ -317,7 +385,9 @@ body.tab-hidden .enter-text {
   opacity: 0;
   pointer-events: none;
 }
-.enter-inner { text-align: center; }
+.enter-inner {
+  text-align: center;
+}
 /* Van en <span> (un <button> no puede llevar <p> dentro), con los mismos
    márgenes que tenían como párrafos. */
 .enter-text {
@@ -340,8 +410,13 @@ body.tab-hidden .enter-text {
   letter-spacing: 0.5px;
 }
 @keyframes enter-pulse {
-  0%, 100% { opacity: 0.55; }
-  50% { opacity: 1; }
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
 /* Capa de estática de TV, compartida por la intro, la transición de canal y
@@ -372,31 +447,71 @@ body.tab-hidden .enter-text {
 
 /* Saltos de como mucho 90px: la capa sobra 100px por cada lado. */
 @keyframes static-jitter {
-  0%   { transform: translate(0, 0); }
-  25%  { transform: translate(-70px, 40px); }
-  50%  { transform: translate(55px, -60px); }
-  75%  { transform: translate(-40px, -90px); }
-  100% { transform: translate(90px, 20px); }
+  0% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(-70px, 40px);
+  }
+  50% {
+    transform: translate(55px, -60px);
+  }
+  75% {
+    transform: translate(-40px, -90px);
+  }
+  100% {
+    transform: translate(90px, 20px);
+  }
 }
 
 @keyframes intro-boot {
-  0%   { opacity: 1; }
-  8%   { opacity: 0.82; }
-  16%  { opacity: 1; }
-  24%  { opacity: 0.55; }
-  32%  { opacity: 0.95; }
-  45%  { opacity: 0.35; }
-  55%  { opacity: 0.8; }
-  70%  { opacity: 0.2; }
-  85%  { opacity: 0.45; }
-  100% { opacity: 0.07; }
+  0% {
+    opacity: 1;
+  }
+  8% {
+    opacity: 0.82;
+  }
+  16% {
+    opacity: 1;
+  }
+  24% {
+    opacity: 0.55;
+  }
+  32% {
+    opacity: 0.95;
+  }
+  45% {
+    opacity: 0.35;
+  }
+  55% {
+    opacity: 0.8;
+  }
+  70% {
+    opacity: 0.2;
+  }
+  85% {
+    opacity: 0.45;
+  }
+  100% {
+    opacity: 0.07;
+  }
 }
 
 @keyframes intro-static-ambient {
-  0%, 80%, 100% { opacity: 0.07; }
-  85% { opacity: 0.2; }
-  90% { opacity: 0.04; }
-  95% { opacity: 0.14; }
+  0%,
+  80%,
+  100% {
+    opacity: 0.07;
+  }
+  85% {
+    opacity: 0.2;
+  }
+  90% {
+    opacity: 0.04;
+  }
+  95% {
+    opacity: 0.14;
+  }
 }
 
 /* Barras de glitch con separación de canal cian/magenta */
@@ -418,26 +533,65 @@ body.tab-hidden .enter-text {
 }
 .intro-glitch-bars::before {
   background: linear-gradient(90deg, transparent, var(--glitch-cyan), transparent);
-  animation: intro-bar-sweep 1.9s steps(1) 1 both, intro-bar-sweep-ambient 6.5s steps(1) infinite 1.9s;
+  animation:
+    intro-bar-sweep 1.9s steps(1) 1 both,
+    intro-bar-sweep-ambient 6.5s steps(1) infinite 1.9s;
 }
 .intro-glitch-bars::after {
   background: linear-gradient(90deg, transparent, var(--glitch-red), transparent);
-  animation: intro-bar-sweep 1.9s steps(1) 1 both reverse, intro-bar-sweep-ambient 6.5s steps(1) infinite 3.2s;
+  animation:
+    intro-bar-sweep 1.9s steps(1) 1 both reverse,
+    intro-bar-sweep-ambient 6.5s steps(1) infinite 3.2s;
 }
 @keyframes intro-bar-sweep {
-  0%   { top: 5%; opacity: 0.8; }
-  15%  { top: 70%; opacity: 0.5; }
-  30%  { top: 25%; opacity: 0.7; }
-  45%  { top: 85%; opacity: 0.4; }
-  60%  { top: 10%; opacity: 0.6; }
-  80%  { top: 55%; opacity: 0.2; }
-  100% { top: 40%; opacity: 0; }
+  0% {
+    top: 5%;
+    opacity: 0.8;
+  }
+  15% {
+    top: 70%;
+    opacity: 0.5;
+  }
+  30% {
+    top: 25%;
+    opacity: 0.7;
+  }
+  45% {
+    top: 85%;
+    opacity: 0.4;
+  }
+  60% {
+    top: 10%;
+    opacity: 0.6;
+  }
+  80% {
+    top: 55%;
+    opacity: 0.2;
+  }
+  100% {
+    top: 40%;
+    opacity: 0;
+  }
 }
 @keyframes intro-bar-sweep-ambient {
-  0%, 92%, 100% { top: -10%; opacity: 0; }
-  93% { top: 30%; opacity: 0.5; }
-  94% { top: 65%; opacity: 0.3; }
-  95% { top: -10%; opacity: 0; }
+  0%,
+  92%,
+  100% {
+    top: -10%;
+    opacity: 0;
+  }
+  93% {
+    top: 30%;
+    opacity: 0.5;
+  }
+  94% {
+    top: 65%;
+    opacity: 0.3;
+  }
+  95% {
+    top: -10%;
+    opacity: 0;
+  }
 }
 
 /* Texto de sintonización tipo terminal, parpadea antes de que se asiente el título */
@@ -467,20 +621,45 @@ body.tab-hidden .enter-text {
   animation: boot-cursor-blink 0.5s steps(1) infinite;
 }
 @keyframes boot-cursor-blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
 }
-.boot-line-1 { animation: boot-line-flicker 0.45s steps(1) 1 both; }
-.boot-line-2 { animation: boot-line-flicker 0.5s steps(1) 1 both 0.5s; }
-.boot-line-3 { animation: boot-line-flicker 0.4s steps(1) 1 both 1.05s; }
+.boot-line-1 {
+  animation: boot-line-flicker 0.45s steps(1) 1 both;
+}
+.boot-line-2 {
+  animation: boot-line-flicker 0.5s steps(1) 1 both 0.5s;
+}
+.boot-line-3 {
+  animation: boot-line-flicker 0.4s steps(1) 1 both 1.05s;
+}
 @keyframes boot-line-flicker {
-  0%   { opacity: 0; }
-  15%  { opacity: 1; }
-  22%  { opacity: 0.2; }
-  30%  { opacity: 1; }
-  75%  { opacity: 1; }
-  90%  { opacity: 0; }
-  100% { opacity: 0; }
+  0% {
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  22% {
+    opacity: 0.2;
+  }
+  30% {
+    opacity: 1;
+  }
+  75% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 
 /* Línea 4: el mensaje "corrupto", en rojo y con más temblor que las demás */
@@ -490,15 +669,40 @@ body.tab-hidden .enter-text {
   animation: boot-line-flicker-creepy 0.55s steps(1) 1 both 1.5s;
 }
 @keyframes boot-line-flicker-creepy {
-  0%   { opacity: 0; transform: translate(-50%, -50%); }
-  8%   { opacity: 1; transform: translate(calc(-50% - 3px), -50%); }
-  13%  { opacity: 0.1; transform: translate(-50%, -50%); }
-  18%  { opacity: 1; transform: translate(calc(-50% + 2px), calc(-50% - 1px)); }
-  24%  { opacity: 0.3; transform: translate(-50%, -50%); }
-  30%  { opacity: 1; transform: translate(-50%, -50%); }
-  78%  { opacity: 1; transform: translate(-50%, -50%); }
-  86%  { opacity: 0; }
-  100% { opacity: 0; }
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%);
+  }
+  8% {
+    opacity: 1;
+    transform: translate(calc(-50% - 3px), -50%);
+  }
+  13% {
+    opacity: 0.1;
+    transform: translate(-50%, -50%);
+  }
+  18% {
+    opacity: 1;
+    transform: translate(calc(-50% + 2px), calc(-50% - 1px));
+  }
+  24% {
+    opacity: 0.3;
+    transform: translate(-50%, -50%);
+  }
+  30% {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+  78% {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+  86% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 
 /* Variante "imagen" de la línea 4: en vez de la frase pequeña, la foto ocupa
@@ -519,13 +723,27 @@ body.tab-hidden .enter-text {
   animation: boot-fullscreen-flicker 0.7s steps(1) 1 both 1.5s;
 }
 @keyframes boot-fullscreen-flicker {
-  0%   { opacity: 0; }
-  8%   { opacity: 1; }
-  13%  { opacity: 0.15; }
-  18%  { opacity: 1; }
-  75%  { opacity: 1; }
-  88%  { opacity: 0; }
-  100% { opacity: 0; }
+  0% {
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  13% {
+    opacity: 0.15;
+  }
+  18% {
+    opacity: 1;
+  }
+  75% {
+    opacity: 1;
+  }
+  88% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 .boot-fullscreen-caption {
   position: relative;
@@ -534,7 +752,10 @@ body.tab-hidden .enter-text {
   font-size: clamp(1.4rem, 6vw, 3.2rem);
   letter-spacing: 3px;
   color: var(--glitch-red);
-  text-shadow: 0 0 12px #000, 0 0 24px #000, 0 0 20px rgba(255, 46, 99, 0.8);
+  text-shadow:
+    0 0 12px #000,
+    0 0 24px #000,
+    0 0 20px rgba(255, 46, 99, 0.8);
 }
 
 .intro-content {
@@ -548,16 +769,44 @@ body.tab-hidden .enter-text {
     intro-content-jitter 8s steps(1) infinite 3.15s;
 }
 @keyframes intro-reveal {
-  0%   { opacity: 0; transform: translateY(10px) scale(0.98); filter: blur(3px); }
-  100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+    filter: blur(3px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
 }
 @keyframes intro-content-jitter {
-  0%, 90%, 100% { transform: translate(0, 0); filter: none; }
-  91% { transform: translate(-3px, 1px); filter: contrast(1.4) brightness(1.3); }
-  92% { transform: translate(2px, -2px); filter: contrast(0.8); }
-  93% { transform: translate(0, 0); filter: none; }
-  96% { transform: translate(3px, 0); filter: brightness(1.5); }
-  97% { transform: translate(-2px, 1px); filter: none; }
+  0%,
+  90%,
+  100% {
+    transform: translate(0, 0);
+    filter: none;
+  }
+  91% {
+    transform: translate(-3px, 1px);
+    filter: contrast(1.4) brightness(1.3);
+  }
+  92% {
+    transform: translate(2px, -2px);
+    filter: contrast(0.8);
+  }
+  93% {
+    transform: translate(0, 0);
+    filter: none;
+  }
+  96% {
+    transform: translate(3px, 0);
+    filter: brightness(1.5);
+  }
+  97% {
+    transform: translate(-2px, 1px);
+    filter: none;
+  }
 }
 .intro-content::after {
   content: '';
@@ -570,12 +819,26 @@ body.tab-hidden .enter-text {
   animation: intro-content-static-flash 8s steps(1) infinite 3.15s;
 }
 @keyframes intro-content-static-flash {
-  0%, 90%, 100% { opacity: 0; }
-  91% { opacity: 0.7; }
-  92% { opacity: 0.15; }
-  93% { opacity: 0; }
-  96% { opacity: 0.55; }
-  97% { opacity: 0; }
+  0%,
+  90%,
+  100% {
+    opacity: 0;
+  }
+  91% {
+    opacity: 0.7;
+  }
+  92% {
+    opacity: 0.15;
+  }
+  93% {
+    opacity: 0;
+  }
+  96% {
+    opacity: 0.55;
+  }
+  97% {
+    opacity: 0;
+  }
 }
 
 .intro-title {
@@ -585,8 +848,13 @@ body.tab-hidden .enter-text {
   margin: 0 0 32px;
   line-height: 1.15;
   color: var(--text-main);
-  text-shadow: 0 0 24px rgba(55, 240, 224, 0.3), 4px 4px 0 rgba(255, 46, 99, 0.25);
-  transition: font-size 0.3s ease, padding 0.3s ease, color 0.3s ease;
+  text-shadow:
+    0 0 24px rgba(55, 240, 224, 0.3),
+    4px 4px 0 rgba(255, 46, 99, 0.25);
+  transition:
+    font-size 0.3s ease,
+    padding 0.3s ease,
+    color 0.3s ease;
 }
 
 /* Efecto glitch: dos capas de color (cian/magenta) que se desalinean en ráfagas breves */
@@ -608,20 +876,58 @@ body.tab-hidden .enter-text {
   animation: glitch-2 5s infinite steps(1);
 }
 @keyframes glitch-1 {
-  0%, 100% { clip-path: inset(0 0 100% 0); transform: translate(0, 0); }
-  4% { clip-path: inset(10% 0 60% 0); transform: translate(-4px, 1px); }
-  5% { clip-path: inset(40% 0 30% 0); transform: translate(3px, -1px); }
-  6% { clip-path: inset(0 0 100% 0); transform: translate(0, 0); }
-  62% { clip-path: inset(60% 0 5% 0); transform: translate(-3px, 0); }
-  63% { clip-path: inset(0 0 100% 0); transform: translate(0, 0); }
+  0%,
+  100% {
+    clip-path: inset(0 0 100% 0);
+    transform: translate(0, 0);
+  }
+  4% {
+    clip-path: inset(10% 0 60% 0);
+    transform: translate(-4px, 1px);
+  }
+  5% {
+    clip-path: inset(40% 0 30% 0);
+    transform: translate(3px, -1px);
+  }
+  6% {
+    clip-path: inset(0 0 100% 0);
+    transform: translate(0, 0);
+  }
+  62% {
+    clip-path: inset(60% 0 5% 0);
+    transform: translate(-3px, 0);
+  }
+  63% {
+    clip-path: inset(0 0 100% 0);
+    transform: translate(0, 0);
+  }
 }
 @keyframes glitch-2 {
-  0%, 100% { clip-path: inset(100% 0 0 0); transform: translate(0, 0); }
-  4% { clip-path: inset(60% 0 10% 0); transform: translate(4px, -1px); }
-  5% { clip-path: inset(20% 0 50% 0); transform: translate(-3px, 1px); }
-  6% { clip-path: inset(100% 0 0 0); transform: translate(0, 0); }
-  62% { clip-path: inset(5% 0 70% 0); transform: translate(3px, 0); }
-  63% { clip-path: inset(100% 0 0 0); transform: translate(0, 0); }
+  0%,
+  100% {
+    clip-path: inset(100% 0 0 0);
+    transform: translate(0, 0);
+  }
+  4% {
+    clip-path: inset(60% 0 10% 0);
+    transform: translate(4px, -1px);
+  }
+  5% {
+    clip-path: inset(20% 0 50% 0);
+    transform: translate(-3px, 1px);
+  }
+  6% {
+    clip-path: inset(100% 0 0 0);
+    transform: translate(0, 0);
+  }
+  62% {
+    clip-path: inset(5% 0 70% 0);
+    transform: translate(3px, 0);
+  }
+  63% {
+    clip-path: inset(100% 0 0 0);
+    transform: translate(0, 0);
+  }
 }
 
 .intro-actions {
@@ -686,7 +992,7 @@ body.tab-hidden .enter-text {
    debajo. Se ocultan enteros (submenú incluido, esté abierto o no) en
    cualquier otra vista, y con "visibility" (no display) para no reiniciar la
    animación de aparición al volver. */
-body:not([data-view="home"]) :is(.lore-triggers, .rules-triggers, .password-trigger-btn) {
+body:not([data-view='home']) :is(.lore-triggers, .rules-triggers, .password-trigger-btn) {
   visibility: hidden;
   pointer-events: none;
 }
@@ -717,7 +1023,10 @@ body:not([data-view="home"]) :is(.lore-triggers, .rules-triggers, .password-trig
   padding: 9px 16px;
   border-radius: var(--radius);
   cursor: pointer;
-  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease,
+    background 0.15s ease;
 }
 :is(
   .menu-toggle-btn,
@@ -755,7 +1064,7 @@ body.booted .menu-toggle-btn {
   pointer-events: auto;
   animation: intro-reveal 1s ease 2.15s 1 both;
 }
-.menu-toggle-btn[aria-expanded="true"] {
+.menu-toggle-btn[aria-expanded='true'] {
   background: rgba(55, 240, 224, 0.12);
   color: #fff;
 }
@@ -771,7 +1080,10 @@ body.booted .menu-toggle-btn {
   opacity: 0;
   transform: translateY(-6px);
   pointer-events: none;
-  transition: max-height 0.3s ease, opacity 0.25s ease, transform 0.25s ease;
+  transition:
+    max-height 0.3s ease,
+    opacity 0.25s ease,
+    transform 0.25s ease;
 }
 .lore-triggers .submenu {
   align-items: flex-start;
@@ -796,15 +1108,15 @@ body.booted .menu-toggle-btn {
   visibility: hidden;
   pointer-events: none;
 }
-body[data-view="lore"] .lore-back-btn {
+body[data-view='lore'] .lore-back-btn {
   visibility: visible;
   pointer-events: auto;
 }
-body[data-view="rules"] .rules-back-btn {
+body[data-view='rules'] .rules-back-btn {
   visibility: visible;
   pointer-events: auto;
 }
-body[data-view="personajes"] .personajes-back-btn {
+body[data-view='personajes'] .personajes-back-btn {
   visibility: visible;
   pointer-events: auto;
 }
@@ -839,7 +1151,7 @@ body.booted .audio-toggle-btn {
   pointer-events: auto;
   animation: intro-reveal 1s ease 2.15s 1 both;
 }
-body[data-view="adan"] .audio-toggle-btn {
+body[data-view='adan'] .audio-toggle-btn {
   visibility: hidden;
   pointer-events: none;
 }
@@ -867,7 +1179,7 @@ body[data-view="adan"] .audio-toggle-btn {
   pointer-events: none;
   transition: opacity 0.25s ease;
 }
-body[data-view="password"] .password-page {
+body[data-view='password'] .password-page {
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
@@ -876,7 +1188,7 @@ body[data-view="password"] .password-page {
    pantalla debe verse limpia, sin ningún resto de la estática del resto del sitio.
    "visibility" y no "opacity": noise-flicker anima la opacidad, y una
    animación siempre gana a un "opacity: 0" normal. */
-body:is([data-view="password"], [data-view="adan"]) :is(.noise-overlay, .scanline-overlay) {
+body:is([data-view='password'], [data-view='adan']) :is(.noise-overlay, .scanline-overlay) {
   visibility: hidden;
 }
 
@@ -957,7 +1269,11 @@ body:is([data-view="password"], [data-view="adan"]) :is(.noise-overlay, .scanlin
   cursor: pointer;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.3s ease, transform 0.3s ease, border-color 0.15s ease, color 0.15s ease;
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
 }
 .password-hint-btn.is-visible {
   opacity: 1;
@@ -985,7 +1301,7 @@ body:is([data-view="password"], [data-view="adan"]) :is(.noise-overlay, .scanlin
   /* Sin transition a propósito: el corte a negro debe ser instantáneo
      ("de golpe"), no un fundido como el resto de overlays del sitio. */
 }
-body[data-view="adan"] .adan-scene {
+body[data-view='adan'] .adan-scene {
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
@@ -996,7 +1312,7 @@ body[data-view="adan"] .adan-scene {
   opacity: 0;
   transition: opacity 0.6s ease;
 }
-body[data-view="adan"] .adan-scene-static {
+body[data-view='adan'] .adan-scene-static {
   animation: static-jitter 0.15s steps(1) infinite;
 }
 
@@ -1068,11 +1384,22 @@ body[data-view="adan"] .adan-scene-static {
   animation: adan-row-jitter 0.18s steps(1) 1;
 }
 @keyframes adan-row-jitter {
-  0%, 100% { transform: translate(0, 0); }
-  20% { transform: translate(-3px, 1px); }
-  40% { transform: translate(2px, -1px); }
-  60% { transform: translate(-2px, 0); }
-  80% { transform: translate(1px, 1px); }
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  20% {
+    transform: translate(-3px, 1px);
+  }
+  40% {
+    transform: translate(2px, -1px);
+  }
+  60% {
+    transform: translate(-2px, 0);
+  }
+  80% {
+    transform: translate(1px, 1px);
+  }
 }
 .adan-scene-caret {
   margin-right: 6px;
@@ -1097,8 +1424,14 @@ body[data-view="adan"] .adan-scene-static {
   animation: adan-cursor-blink 1s steps(1) infinite;
 }
 @keyframes adan-cursor-blink {
-  0%, 49% { opacity: 1; }
-  50%, 100% { opacity: 0; }
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
 }
 .adan-scene-input {
   position: absolute;
@@ -1140,11 +1473,18 @@ body[data-view="adan"] .adan-scene-static {
 }
 
 .channel-transition.active .channel-transition-static {
-  animation: static-jitter 0.15s steps(1) infinite, channel-static-pulse 1.4s steps(2, end) infinite;
+  animation:
+    static-jitter 0.15s steps(1) infinite,
+    channel-static-pulse 1.4s steps(2, end) infinite;
 }
 @keyframes channel-static-pulse {
-  0%, 100% { opacity: 0.9; }
-  50% { opacity: 0.6; }
+  0%,
+  100% {
+    opacity: 0.9;
+  }
+  50% {
+    opacity: 0.6;
+  }
 }
 .channel-transition-text {
   position: relative;
@@ -1165,15 +1505,14 @@ body[data-view="adan"] .adan-scene-static {
   overflow-y: auto;
   background:
     radial-gradient(ellipse at 15% 10%, rgba(55, 240, 224, 0.05), transparent 55%),
-    radial-gradient(ellipse at 85% 90%, rgba(255, 46, 99, 0.05), transparent 55%),
-    #050505;
+    radial-gradient(ellipse at 85% 90%, rgba(255, 46, 99, 0.05), transparent 55%), #050505;
   padding: 110px 24px 100px;
   visibility: hidden;
   pointer-events: none;
 }
 /* Igual que .intro-hero: se alterna con "visibility", nunca "display", para
    que sus animaciones (barras de glitch) no se reinicien al volver a Lore */
-body[data-view="lore"] .lore-page {
+body[data-view='lore'] .lore-page {
   visibility: visible;
   pointer-events: auto;
 }
@@ -1222,8 +1561,16 @@ body[data-view="lore"] .lore-page {
   animation: lore-slide-in 0.5s ease both;
 }
 @keyframes lore-slide-in {
-  0%   { opacity: 0; transform: translateY(10px); filter: blur(4px); }
-  100% { opacity: 1; transform: translateY(0); filter: blur(0); }
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+    filter: blur(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
 }
 
 .lore-slide-title {
@@ -1252,7 +1599,9 @@ body[data-view="lore"] .lore-page {
   color: rgba(234, 230, 218, 0.78);
   margin: 0 0 22px;
 }
-.lore-slide-text .lore-paragraph:last-child { margin-bottom: 0; }
+.lore-slide-text .lore-paragraph:last-child {
+  margin-bottom: 0;
+}
 
 /* Modificador: capítulos tipo "manifiesto" con líneas cortas centradas */
 .lore-slide-text.is-centered .lore-paragraph {
@@ -1331,26 +1680,54 @@ body[data-view="lore"] .lore-page {
   font-size: clamp(1.3rem, 6vw, 3.2rem);
   line-height: 1.35;
   color: var(--glitch-red);
-  text-shadow: 0 0 20px rgba(255, 46, 99, 0.9), 0 0 45px #000;
+  text-shadow:
+    0 0 20px rgba(255, 46, 99, 0.9),
+    0 0 45px #000;
   animation:
     lore-reveal-shake 0.22s infinite,
     lore-reveal-glitch-cut 1.8s steps(1) infinite;
 }
 @keyframes lore-reveal-shake {
-  0%   { transform: translate(0, 0) rotate(0deg); }
-  20%  { transform: translate(-4px, 3px) rotate(-0.7deg); }
-  40%  { transform: translate(4px, -3px) rotate(0.6deg); }
-  60%  { transform: translate(-3px, -4px) rotate(-0.5deg); }
-  80%  { transform: translate(3px, 4px) rotate(0.7deg); }
-  100% { transform: translate(0, 0) rotate(0deg); }
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  20% {
+    transform: translate(-4px, 3px) rotate(-0.7deg);
+  }
+  40% {
+    transform: translate(4px, -3px) rotate(0.6deg);
+  }
+  60% {
+    transform: translate(-3px, -4px) rotate(-0.5deg);
+  }
+  80% {
+    transform: translate(3px, 4px) rotate(0.7deg);
+  }
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
 }
 @keyframes lore-reveal-glitch-cut {
-  0%, 85%, 100% { clip-path: inset(0 0 0 0); }
-  86% { clip-path: inset(10% 0 60% 0); }
-  87% { clip-path: inset(60% 0 5% 0); }
-  88% { clip-path: inset(0 0 0 0); }
-  92% { clip-path: inset(40% 0 30% 0); }
-  93% { clip-path: inset(0 0 0 0); }
+  0%,
+  85%,
+  100% {
+    clip-path: inset(0 0 0 0);
+  }
+  86% {
+    clip-path: inset(10% 0 60% 0);
+  }
+  87% {
+    clip-path: inset(60% 0 5% 0);
+  }
+  88% {
+    clip-path: inset(0 0 0 0);
+  }
+  92% {
+    clip-path: inset(40% 0 30% 0);
+  }
+  93% {
+    clip-path: inset(0 0 0 0);
+  }
 }
 
 .lore-nav {
@@ -1379,7 +1756,7 @@ body[data-view="lore"] .lore-page {
 }
 
 /* ---------- Página de Normas: mismo tratamiento visual que la de Lore ---------- */
-body[data-view="rules"] .rules-page {
+body[data-view='rules'] .rules-page {
   visibility: visible;
   pointer-events: auto;
 }
@@ -1459,7 +1836,7 @@ body[data-view="rules"] .rules-page {
 }
 
 /* ---------- Personajes (dentro de Lore): mismo tratamiento que Normas ---------- */
-body[data-view="personajes"] .personajes-page {
+body[data-view='personajes'] .personajes-page {
   visibility: visible;
   pointer-events: auto;
 }
@@ -1567,7 +1944,9 @@ body[data-view="personajes"] .personajes-page {
   border-radius: var(--radius);
   padding: 14px;
   cursor: pointer;
-  transition: background 0.15s ease, transform 0.15s ease;
+  transition:
+    background 0.15s ease,
+    transform 0.15s ease;
 }
 .personajes-card:hover {
   background: rgba(55, 240, 224, 0.1);
@@ -1818,7 +2197,9 @@ body[data-view="personajes"] .personajes-page {
   padding: 11px 20px;
   border-radius: var(--radius);
   cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
 }
 .personajes-delete-btn:hover {
   background: rgba(255, 46, 99, 0.12);
@@ -1928,25 +2309,73 @@ body[data-view="personajes"] .personajes-page {
 
 /* ---------- Accesibilidad: respeta "reducir movimiento" ---------- */
 @media (prefers-reduced-motion: reduce) {
-  .noise-overlay, .scanline-overlay, .intro-static, .intro-glitch-bars { display: none; }
-  .glitch::before, .glitch::after { display: none; }
-  .intro-content { opacity: 1; animation: none; }
-  .intro-content::after { display: none; }
-  .enter-text { animation: none; opacity: 1; }
-  .boot-log { display: none; }
-  .boot-fullscreen-image { display: none; }
-  body.booted .intro-hero-inner { animation: none; } /* la sacudida de pantalla: gana a la regla que la pone */
+  .noise-overlay,
+  .scanline-overlay,
+  .intro-static,
+  .intro-glitch-bars {
+    display: none;
+  }
+  .glitch::before,
+  .glitch::after {
+    display: none;
+  }
+  .intro-content {
+    opacity: 1;
+    animation: none;
+  }
+  .intro-content::after {
+    display: none;
+  }
+  .enter-text {
+    animation: none;
+    opacity: 1;
+  }
+  .boot-log {
+    display: none;
+  }
+  .boot-fullscreen-image {
+    display: none;
+  }
+  body.booted .intro-hero-inner {
+    animation: none;
+  } /* la sacudida de pantalla: gana a la regla que la pone */
   /* Misma especificidad que "body.booted .menu-toggle-btn" (que es quien les
      pone la animación de aparición), y va después, así que gana. */
-  body.booted :is(.menu-toggle-btn, .password-trigger-btn, .audio-toggle-btn) { animation: none; opacity: 1; }
-  .channel-transition.active .channel-transition-static { animation: none; }
-  .adan-scene-static { display: none; }
-  .adan-scene-cursor { animation: none; opacity: 1; }
-  .adan-scene-input-row.is-jittering { animation: none; }
-  .lore-page::before, .lore-page::after { animation: none; }
-  .rules-panel { animation: none; }
-  .personajes-view { animation: none; }
-  .lore-slide { animation: none; opacity: 1; }
-  .lore-reveal-text { animation: none; }
-  .btn-primary::after { display: none; }
+  body.booted :is(.menu-toggle-btn, .password-trigger-btn, .audio-toggle-btn) {
+    animation: none;
+    opacity: 1;
+  }
+  .channel-transition.active .channel-transition-static {
+    animation: none;
+  }
+  .adan-scene-static {
+    display: none;
+  }
+  .adan-scene-cursor {
+    animation: none;
+    opacity: 1;
+  }
+  .adan-scene-input-row.is-jittering {
+    animation: none;
+  }
+  .lore-page::before,
+  .lore-page::after {
+    animation: none;
+  }
+  .rules-panel {
+    animation: none;
+  }
+  .personajes-view {
+    animation: none;
+  }
+  .lore-slide {
+    animation: none;
+    opacity: 1;
+  }
+  .lore-reveal-text {
+    animation: none;
+  }
+  .btn-primary::after {
+    display: none;
+  }
 }

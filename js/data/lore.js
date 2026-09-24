@@ -87,7 +87,11 @@ export const LORE_TRACK_ANTES = [
 
 export const LORE_TRACK_NOVA = [
   { type: 'title' },
-  { type: 'image', src: 'images/Lore-1.webp', alt: 'Dos figuras humanoides con capucha blanca en una sala oscura: una con ojos brillantes en cian, la otra con ojos rojos sosteniendo un arma.' },
+  {
+    type: 'image',
+    src: 'images/Lore-1.webp',
+    alt: 'Dos figuras humanoides con capucha blanca en una sala oscura: una con ojos brillantes en cian, la otra con ojos rojos sosteniendo un arma.',
+  },
   {
     // Lore-1
     type: 'text',
@@ -96,7 +100,11 @@ export const LORE_TRACK_NOVA = [
       'La Federación lo tenía claro, solo aquellos que actuaron bajo el propósito, para lo que fueron creados, un experimento lleno de memorias, matanzas que llegaron a consecuencias atroces, hijos - si es que se les podía llamar así- llevados al límite en donde el amor paternal llegaba a corromperse, eso era algo sentimental, los sentimientos aquí eran cruciales para que todo estuviera controlado, humanos, solo la mente humana es débil ante lo que se desconoce y te produce miedo, pero.. ¿Qué ocurriría si algo que no era humano llegara a suceder en esa mente?',
     ],
   },
-  { type: 'image', src: 'images/Lore-2.webp', alt: 'Tres personajes sentados en el borde de un acantilado, mirando la puesta de sol sobre el océano.' },
+  {
+    type: 'image',
+    src: 'images/Lore-2.webp',
+    alt: 'Tres personajes sentados en el borde de un acantilado, mirando la puesta de sol sobre el océano.',
+  },
   {
     // Lore-2
     type: 'text',

@@ -9,14 +9,24 @@ let env;
 before(async () => {
   env = await initializeTestEnvironment({
     projectId: 'demo-nova',
-    firestore: { rules: readFileSync(new URL('../firestore.rules', import.meta.url), 'utf8'), host: '127.0.0.1', port: 8080 },
+    firestore: {
+      rules: readFileSync(new URL('../firestore.rules', import.meta.url), 'utf8'),
+      host: '127.0.0.1',
+      port: 8080,
+    },
   });
 });
 after(() => env.cleanup());
 beforeEach(() => env.clearFirestore());
 
 const db = (uid) => (uid ? env.authenticatedContext(uid) : env.unauthenticatedContext()).firestore();
-const base = () => ({ nombre: 'Alicia', minecraftUsername: null, fotoUrl: null, bloques: [], actualizadoEn: serverTimestamp() });
+const base = () => ({
+  nombre: 'Alicia',
+  minecraftUsername: null,
+  fotoUrl: null,
+  bloques: [],
+  actualizadoEn: serverTimestamp(),
+});
 const nuevo = (extra = {}) => ({ ...base(), creadoEn: serverTimestamp(), ...extra });
 const seed = (path, data) => env.withSecurityRulesDisabled((ctx) => setDoc(doc(ctx.firestore(), path), data));
 const seedPersonaje = (uid, extra = {}) =>
@@ -64,7 +74,9 @@ describe('personajes', () => {
   });
   test('NO: editar reescribiendo creadoEn', async () => {
     await seedPersonaje('alice');
-    await assertFails(updateDoc(doc(db('alice'), 'personajes/alice'), { ...base(), creadoEn: Timestamp.fromMillis(0) }));
+    await assertFails(
+      updateDoc(doc(db('alice'), 'personajes/alice'), { ...base(), creadoEn: Timestamp.fromMillis(0) }),
+    );
   });
   test('NO: editar el de otra persona', async () => {
     await seedPersonaje('alice');
@@ -89,8 +101,7 @@ describe('comentarios', () => {
     creadoEn: serverTimestamp(),
     ...extra,
   });
-  const seedComentario = () =>
-    seed('personajes/alice/comentarios/c1', { ...comentario(), creadoEn: Timestamp.now() });
+  const seedComentario = () => seed('personajes/alice/comentarios/c1', { ...comentario(), creadoEn: Timestamp.now() });
   const c1 = (uid) => doc(db(uid), 'personajes/alice/comentarios/c1');
 
   test('comentar (como la web)', () => assertSucceeds(addDoc(comentarios('bob'), comentario())));

@@ -168,7 +168,7 @@ export function initAdanScene() {
   function freezeCurrentEcho() {
     const line = document.createElement('p');
     line.className = 'adan-scene-line adan-scene-line-player';
-    line.textContent = '> ' + current.phrase;
+    line.textContent = `> ${current.phrase}`;
     logEl.appendChild(line);
     inputRow.hidden = true;
     echoEl.textContent = '';
@@ -250,7 +250,11 @@ export function initAdanScene() {
 
     phase = 'dead';
     scene.classList.add('is-dead');
-    try { window.close(); } catch (err) { /* bloqueado por el navegador: se queda en negro */ }
+    try {
+      window.close();
+    } catch (_err) {
+      /* bloqueado por el navegador: se queda en negro */
+    }
     // Si seguimos aquí, el cierre falló (normal: esta pestaña no se abrió
     // por script). No hay forma de volver desde aquí salvo recargar.
   }
@@ -293,4 +297,3 @@ export function initAdanScene() {
     })();
   };
 }
-

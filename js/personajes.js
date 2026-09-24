@@ -60,7 +60,9 @@ export function openPersonajeFromHash(uid) {
 }
 
 function spotifyUrlToEmbed(url) {
-  const match = /open\.spotify\.com\/(?:intl-[a-z]{2}\/)?(track|album|playlist|episode|show)\/([a-zA-Z0-9]+)/.exec(url || '');
+  const match = /open\.spotify\.com\/(?:intl-[a-z]{2}\/)?(track|album|playlist|episode|show)\/([a-zA-Z0-9]+)/.exec(
+    url || '',
+  );
   if (!match) return null;
   return `https://open.spotify.com/embed/${match[1]}/${match[2]}`;
 }
@@ -85,7 +87,9 @@ function buildPersonajeBlockElement(bloque, options = {}) {
     img.src = bloque.contenido;
     img.alt = '';
     img.loading = 'lazy';
-    img.addEventListener('error', () => { wrap.hidden = true; });
+    img.addEventListener('error', () => {
+      wrap.hidden = true;
+    });
     wrap.appendChild(img);
   } else if (bloque.tipo === 'spotify') {
     const embedUrl = spotifyUrlToEmbed(bloque.contenido);
@@ -190,13 +194,48 @@ export function initPersonajes() {
   const saveBtn = document.getElementById('personajes-save-btn');
   const deleteBtn = document.getElementById('personajes-delete-btn');
 
-  if (!menuBtn || !backBtn || !page || !sessionEl || !statusEl || !signinBtn || !sessionActive || !sessionName
-    || !editNameBtn || !mineBtn || !signoutBtn || !views.directory || !views.profile || !views.editor
-    || !grid || !searchInput || !profileBackBtn || !editBtn || !profileNameEl || !profileMcUserEl || !profileBlocksEl
-    || !commentsListEl || !commentForm || !commentInput || !commentSigninHint || !commentFeedbackEl
-    || !editorCancelBtn || !nombreInput || !mcUserInput || !fotoInput || !editorBlocksEl || !nombresDatalist
-    || !addTextoBtn || !addImagenBtn || !addSpotifyBtn || !addRelacionBtn || !feedbackEl || !saveBtn
-    || !deleteBtn) return;
+  if (
+    !menuBtn ||
+    !backBtn ||
+    !page ||
+    !sessionEl ||
+    !statusEl ||
+    !signinBtn ||
+    !sessionActive ||
+    !sessionName ||
+    !editNameBtn ||
+    !mineBtn ||
+    !signoutBtn ||
+    !views.directory ||
+    !views.profile ||
+    !views.editor ||
+    !grid ||
+    !searchInput ||
+    !profileBackBtn ||
+    !editBtn ||
+    !profileNameEl ||
+    !profileMcUserEl ||
+    !profileBlocksEl ||
+    !commentsListEl ||
+    !commentForm ||
+    !commentInput ||
+    !commentSigninHint ||
+    !commentFeedbackEl ||
+    !editorCancelBtn ||
+    !nombreInput ||
+    !mcUserInput ||
+    !fotoInput ||
+    !editorBlocksEl ||
+    !nombresDatalist ||
+    !addTextoBtn ||
+    !addImagenBtn ||
+    !addSpotifyBtn ||
+    !addRelacionBtn ||
+    !feedbackEl ||
+    !saveBtn ||
+    !deleteBtn
+  )
+    return;
 
   if (!isFirebaseConfigured()) {
     menuBtn.disabled = true;
@@ -246,7 +285,7 @@ export function initPersonajes() {
   const setProfileHash = (uid) => {
     const hash = uid ? `#personaje/${uid}` : '';
     if (location.hash === hash) return;
-    history.replaceState(null, '', hash || (location.pathname + location.search));
+    history.replaceState(null, '', hash || location.pathname + location.search);
   };
 
   // Carga Firebase (solo la primera vez) y engancha la sesión.
@@ -261,24 +300,27 @@ export function initPersonajes() {
   }
 
   // `uid`: abrir directamente ese perfil (link directo) en vez del directorio.
-  const switchTo = (showPersonajes, uid = null) => channelSwitch(() => {
-    if (!showPersonajes) {
-      stopWatchingComments();
-      setProfileHash(null);
-      setView('home');
-      return;
-    }
-    setView('personajes');
-    showView('directory');
-    if (!auth) setGridMessage('Cargando personajes...');
-    connect().then(() => {
-      const directoryLoaded = renderDirectory();
-      if (uid) directoryLoaded.then(() => goToProfile(uid));
-    }).catch((err) => {
-      grid.innerHTML = ''; // quita el "Cargando..."; el aviso va arriba
-      reportError('No se pudo conectar con Personajes. Revisa la conexión y recarga la página.', err);
+  const switchTo = (showPersonajes, uid = null) =>
+    channelSwitch(() => {
+      if (!showPersonajes) {
+        stopWatchingComments();
+        setProfileHash(null);
+        setView('home');
+        return;
+      }
+      setView('personajes');
+      showView('directory');
+      if (!auth) setGridMessage('Cargando personajes...');
+      connect()
+        .then(() => {
+          const directoryLoaded = renderDirectory();
+          if (uid) directoryLoaded.then(() => goToProfile(uid));
+        })
+        .catch((err) => {
+          grid.innerHTML = ''; // quita el "Cargando..."; el aviso va arriba
+          reportError('No se pudo conectar con Personajes. Revisa la conexión y recarga la página.', err);
+        });
     });
-  });
 
   // ---- Directorio ----
   function setGridMessage(text) {
@@ -296,9 +338,11 @@ export function initPersonajes() {
       : allPersonajes;
 
     if (!filtered.length) {
-      setGridMessage(allPersonajes.length
-        ? 'Ningún personaje coincide con la búsqueda.'
-        : 'Todavía no hay personajes. ¡Sé el primero!');
+      setGridMessage(
+        allPersonajes.length
+          ? 'Ningún personaje coincide con la búsqueda.'
+          : 'Todavía no hay personajes. ¡Sé el primero!',
+      );
       return;
     }
     grid.innerHTML = '';
@@ -334,21 +378,24 @@ export function initPersonajes() {
   function renderDirectory() {
     setProfileHash(null);
     const directorio = fb.query(fb.collection(db, 'personajes'), fb.orderBy('actualizadoEn', 'desc'));
-    return fb.getDocs(directorio).then((snapshot) => {
-      allPersonajes = snapshot.docs.map((doc) => ({ id: doc.id, data: doc.data() }));
+    return fb
+      .getDocs(directorio)
+      .then((snapshot) => {
+        allPersonajes = snapshot.docs.map((doc) => ({ id: doc.id, data: doc.data() }));
 
-      nombresDatalist.innerHTML = '';
-      allPersonajes.forEach(({ data }) => {
-        const opt = document.createElement('option');
-        opt.value = data.nombre || '';
-        nombresDatalist.appendChild(opt);
+        nombresDatalist.innerHTML = '';
+        allPersonajes.forEach(({ data }) => {
+          const opt = document.createElement('option');
+          opt.value = data.nombre || '';
+          nombresDatalist.appendChild(opt);
+        });
+
+        renderGrid();
+      })
+      .catch((err) => {
+        console.error('No se pudieron cargar los personajes:', err);
+        setGridMessage('No se pudieron cargar los personajes. Vuelve a entrar para reintentarlo.');
       });
-
-      renderGrid();
-    }).catch((err) => {
-      console.error('No se pudieron cargar los personajes:', err);
-      setGridMessage('No se pudieron cargar los personajes. Vuelve a entrar para reintentarlo.');
-    });
   }
 
   searchInput.addEventListener('input', renderGrid);
@@ -359,10 +406,12 @@ export function initPersonajes() {
       openProfile(uid, cached.data);
       return;
     }
-    fb.getDoc(personajeDoc(uid)).then((doc) => {
-      if (doc.exists()) openProfile(uid, doc.data());
-      else showStatus('Ese personaje ya no existe.');
-    }).catch((err) => reportError('No se pudo abrir ese personaje.', err));
+    fb.getDoc(personajeDoc(uid))
+      .then((doc) => {
+        if (doc.exists()) openProfile(uid, doc.data());
+        else showStatus('Ese personaje ya no existe.');
+      })
+      .catch((err) => reportError('No se pudo abrir ese personaje.', err));
   }
 
   // ---- Perfil (solo lectura) ----
@@ -387,10 +436,12 @@ export function initPersonajes() {
     }
     profileBlocksEl.innerHTML = '';
     for (const bloque of data.bloques || []) {
-      profileBlocksEl.appendChild(buildPersonajeBlockElement(bloque, {
-        onRelacionClick: goToProfile,
-        lookupFoto: (relUid) => allPersonajes.find((p) => p.id === relUid)?.data.fotoUrl,
-      }));
+      profileBlocksEl.appendChild(
+        buildPersonajeBlockElement(bloque, {
+          onRelacionClick: goToProfile,
+          lookupFoto: (relUid) => allPersonajes.find((p) => p.id === relUid)?.data.fotoUrl,
+        }),
+      );
     }
     editBtn.hidden = !(currentUser && currentUser.uid === uid);
     if (currentUser && currentUser.uid === uid) {
@@ -418,16 +469,18 @@ export function initPersonajes() {
 
   function checkUnreadComments(uid) {
     const lastSeen = Number(storageGet(commentsSeenKey(uid))) || 0;
-    fb.getDocs(comentariosCol(uid)).then((snapshot) => {
-      let hayNuevos = false;
-      snapshot.forEach((doc) => {
-        const data = doc.data();
-        if (data.autorUid !== uid && toMillis(data.creadoEn) > lastSeen) hayNuevos = true;
+    fb.getDocs(comentariosCol(uid))
+      .then((snapshot) => {
+        let hayNuevos = false;
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          if (data.autorUid !== uid && toMillis(data.creadoEn) > lastSeen) hayNuevos = true;
+        });
+        mineBtn.classList.toggle('personajes-has-badge', hayNuevos);
+      })
+      .catch(() => {
+        // si falla (p.ej. las reglas de comentarios aún no están publicadas), simplemente no se muestra aviso
       });
-      mineBtn.classList.toggle('personajes-has-badge', hayNuevos);
-    }).catch(() => {
-      // si falla (p.ej. las reglas de comentarios aún no están publicadas), simplemente no se muestra aviso
-    });
   }
 
   /* Comentarios en tiempo real: mientras se ve un perfil, onSnapshot avisa
@@ -605,15 +658,18 @@ export function initPersonajes() {
       autorNombre: (currentUser.displayName || currentUser.email || 'Alguien').slice(0, 60),
       texto,
       creadoEn: fb.serverTimestamp(),
-    }).then(() => {
-      commentInput.value = ''; // el comentario ya lo pinta onSnapshot
-    }).catch((err) => {
-      console.error('No se pudo publicar el comentario:', err);
-      commentFeedbackEl.textContent = 'No se pudo publicar el comentario. Inténtalo de nuevo.';
-      commentFeedbackEl.classList.add('is-fail');
-    }).finally(() => {
-      submitBtn.disabled = false;
-    });
+    })
+      .then(() => {
+        commentInput.value = ''; // el comentario ya lo pinta onSnapshot
+      })
+      .catch((err) => {
+        console.error('No se pudo publicar el comentario:', err);
+        commentFeedbackEl.textContent = 'No se pudo publicar el comentario. Inténtalo de nuevo.';
+        commentFeedbackEl.classList.add('is-fail');
+      })
+      .finally(() => {
+        submitBtn.disabled = false;
+      });
   });
 
   profileBackBtn.addEventListener('click', () => {
@@ -627,9 +683,11 @@ export function initPersonajes() {
   function openOwnEditor() {
     if (!currentUser) return;
     currentProfileUid = currentUser.uid;
-    fb.getDoc(personajeDoc(currentUser.uid)).then((doc) => {
-      openEditor(doc.exists() ? doc.data() : null);
-    }).catch((err) => reportError('No se pudo abrir tu personaje. Inténtalo de nuevo.', err));
+    fb.getDoc(personajeDoc(currentUser.uid))
+      .then((doc) => {
+        openEditor(doc.exists() ? doc.data() : null);
+      })
+      .catch((err) => reportError('No se pudo abrir tu personaje. Inténtalo de nuevo.', err));
   }
 
   editBtn.addEventListener('click', () => {
@@ -694,7 +752,9 @@ export function initPersonajes() {
         nombreField.setAttribute('list', 'personajes-nombres-datalist');
         nombreField.value = bloque.nombre || '';
         const resolveUid = () => {
-          const match = allPersonajes.find((p) => normalizeSearchTerm(p.data.nombre || '') === normalizeSearchTerm(nombreField.value));
+          const match = allPersonajes.find(
+            (p) => normalizeSearchTerm(p.data.nombre || '') === normalizeSearchTerm(nombreField.value),
+          );
           bloque.nombre = nombreField.value;
           bloque.uid = match ? match.id : null;
           nombreField.classList.toggle('is-invalid', !!nombreField.value.trim() && !match);
@@ -709,7 +769,9 @@ export function initPersonajes() {
         etiquetaField.placeholder = 'Relación (ej. hermano)';
         etiquetaField.setAttribute('aria-label', 'Tipo de relación');
         etiquetaField.value = bloque.etiqueta || '';
-        etiquetaField.addEventListener('input', () => { bloque.etiqueta = etiquetaField.value; });
+        etiquetaField.addEventListener('input', () => {
+          bloque.etiqueta = etiquetaField.value;
+        });
 
         relWrap.append(nombreField, etiquetaField);
         row.appendChild(relWrap);
@@ -724,13 +786,19 @@ export function initPersonajes() {
           field = document.createElement('input');
           field.className = 'personajes-input';
           field.type = 'url';
-          field.placeholder = bloque.tipo === 'imagen'
-            ? 'Link de imagen (https://...)'
-            : 'Link de Spotify (https://open.spotify.com/...)';
+          field.placeholder =
+            bloque.tipo === 'imagen'
+              ? 'Link de imagen (https://...)'
+              : 'Link de Spotify (https://open.spotify.com/...)';
         }
-        field.setAttribute('aria-label', { texto: 'Texto del bloque', imagen: 'Link de la imagen', spotify: 'Link de Spotify' }[bloque.tipo]);
+        field.setAttribute(
+          'aria-label',
+          { texto: 'Texto del bloque', imagen: 'Link de la imagen', spotify: 'Link de Spotify' }[bloque.tipo],
+        );
         field.value = bloque.contenido || '';
-        field.addEventListener('input', () => { bloque.contenido = field.value; });
+        field.addEventListener('input', () => {
+          bloque.contenido = field.value;
+        });
         row.appendChild(field);
       }
 
@@ -740,7 +808,9 @@ export function initPersonajes() {
 
   function addBlock(tipo) {
     const base = { id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, tipo };
-    editorBloques.push(tipo === 'relacion' ? { ...base, uid: null, nombre: '', etiqueta: '' } : { ...base, contenido: '' });
+    editorBloques.push(
+      tipo === 'relacion' ? { ...base, uid: null, nombre: '', etiqueta: '' } : { ...base, contenido: '' },
+    );
     renderEditorBlocks();
   }
   addTextoBtn.addEventListener('click', () => addBlock('texto'));
@@ -751,9 +821,9 @@ export function initPersonajes() {
   function openEditor(data) {
     setProfileHash(null);
     editingExisting = !!data;
-    nombreInput.value = data ? (data.nombre || '') : '';
-    mcUserInput.value = data ? (data.minecraftUsername || '') : '';
-    fotoInput.value = data ? (data.fotoUrl || '') : '';
+    nombreInput.value = data ? data.nombre || '' : '';
+    mcUserInput.value = data ? data.minecraftUsername || '' : '';
+    fotoInput.value = data ? data.fotoUrl || '' : '';
     editorBloques = data && Array.isArray(data.bloques) ? data.bloques.map((b) => ({ ...b })) : [];
     renderEditorBlocks();
     setFeedback('', null);
@@ -763,17 +833,19 @@ export function initPersonajes() {
 
   editorCancelBtn.addEventListener('click', () => {
     if (currentUser && currentProfileUid === currentUser.uid) {
-      fb.getDoc(personajeDoc(currentUser.uid)).then((doc) => {
-        if (doc.exists()) {
-          openProfile(currentUser.uid, doc.data());
-        } else {
+      fb.getDoc(personajeDoc(currentUser.uid))
+        .then((doc) => {
+          if (doc.exists()) {
+            openProfile(currentUser.uid, doc.data());
+          } else {
+            showView('directory');
+            renderDirectory();
+          }
+        })
+        .catch(() => {
           showView('directory');
           renderDirectory();
-        }
-      }).catch(() => {
-        showView('directory');
-        renderDirectory();
-      });
+        });
     } else {
       showView('directory');
       renderDirectory();
@@ -808,9 +880,11 @@ export function initPersonajes() {
     }
 
     const bloques = editorBloques
-      .map((b) => (b.tipo === 'relacion'
-        ? { id: b.id, tipo: b.tipo, uid: b.uid, nombre: (b.nombre || '').trim(), etiqueta: (b.etiqueta || '').trim() }
-        : { id: b.id, tipo: b.tipo, contenido: (b.contenido || '').trim() }))
+      .map((b) =>
+        b.tipo === 'relacion'
+          ? { id: b.id, tipo: b.tipo, uid: b.uid, nombre: (b.nombre || '').trim(), etiqueta: (b.etiqueta || '').trim() }
+          : { id: b.id, tipo: b.tipo, contenido: (b.contenido || '').trim() },
+      )
       .filter((b) => (b.tipo === 'relacion' ? !!b.uid : !!b.contenido));
 
     saveBtn.disabled = true;
@@ -828,17 +902,25 @@ export function initPersonajes() {
       ? fb.updateDoc(docRef, payload)
       : fb.setDoc(docRef, { ...payload, creadoEn: fb.serverTimestamp() });
 
-    write.then(() => {
-      editingExisting = true;
-      mineBtn.textContent = 'Mi personaje';
-      currentProfileUid = currentUser.uid;
-      openProfile(currentUser.uid, { nombre, minecraftUsername: minecraftUsername || null, fotoUrl: fotoUrl || null, bloques });
-    }).catch((err) => {
-      console.error('No se pudo guardar el personaje:', err);
-      setFeedback('No se pudo guardar. Inténtalo de nuevo.', 'fail');
-    }).finally(() => {
-      saveBtn.disabled = false;
-    });
+    write
+      .then(() => {
+        editingExisting = true;
+        mineBtn.textContent = 'Mi personaje';
+        currentProfileUid = currentUser.uid;
+        openProfile(currentUser.uid, {
+          nombre,
+          minecraftUsername: minecraftUsername || null,
+          fotoUrl: fotoUrl || null,
+          bloques,
+        });
+      })
+      .catch((err) => {
+        console.error('No se pudo guardar el personaje:', err);
+        setFeedback('No se pudo guardar. Inténtalo de nuevo.', 'fail');
+      })
+      .finally(() => {
+        saveBtn.disabled = false;
+      });
   });
 
   deleteBtn.addEventListener('click', () => {
@@ -849,17 +931,20 @@ export function initPersonajes() {
     deleteBtn.disabled = true;
     setFeedback('Eliminando...', null);
 
-    fb.deleteDoc(personajeDoc(currentUser.uid)).then(() => {
-      editingExisting = false;
-      mineBtn.textContent = 'Crear personaje';
-      showView('directory');
-      renderDirectory();
-    }).catch((err) => {
-      console.error('No se pudo eliminar el personaje:', err);
-      setFeedback('No se pudo eliminar. Inténtalo de nuevo.', 'fail');
-    }).finally(() => {
-      deleteBtn.disabled = false;
-    });
+    fb.deleteDoc(personajeDoc(currentUser.uid))
+      .then(() => {
+        editingExisting = false;
+        mineBtn.textContent = 'Crear personaje';
+        showView('directory');
+        renderDirectory();
+      })
+      .catch((err) => {
+        console.error('No se pudo eliminar el personaje:', err);
+        setFeedback('No se pudo eliminar. Inténtalo de nuevo.', 'fail');
+      })
+      .finally(() => {
+        deleteBtn.disabled = false;
+      });
   });
 
   // ---- Sesión ----
@@ -871,17 +956,20 @@ export function initPersonajes() {
     mineBtn.classList.remove('personajes-has-badge');
     if (user) {
       sessionName.textContent = user.displayName || user.email || 'Cuenta de Google';
-      fb.getDoc(personajeDoc(user.uid)).then((doc) => {
-        mineBtn.textContent = doc.exists() ? 'Mi personaje' : 'Crear personaje';
-        if (doc.exists()) checkUnreadComments(user.uid);
-      }).catch((err) => {
-        // Sin saber si ya tiene personaje: el botón se enseña igual y, al
-        // pulsarlo, openOwnEditor() vuelve a comprobarlo.
-        console.error('No se pudo comprobar tu personaje:', err);
-        mineBtn.textContent = 'Mi personaje';
-      }).finally(() => {
-        mineBtn.hidden = false;
-      });
+      fb.getDoc(personajeDoc(user.uid))
+        .then((doc) => {
+          mineBtn.textContent = doc.exists() ? 'Mi personaje' : 'Crear personaje';
+          if (doc.exists()) checkUnreadComments(user.uid);
+        })
+        .catch((err) => {
+          // Sin saber si ya tiene personaje: el botón se enseña igual y, al
+          // pulsarlo, openOwnEditor() vuelve a comprobarlo.
+          console.error('No se pudo comprobar tu personaje:', err);
+          mineBtn.textContent = 'Mi personaje';
+        })
+        .finally(() => {
+          mineBtn.hidden = false;
+        });
     }
     if (views.profile.classList.contains('is-active')) {
       editBtn.hidden = !(user && currentProfileUid === user.uid);
@@ -898,9 +986,12 @@ export function initPersonajes() {
     if (!auth) return;
     fb.signInWithPopup(auth, new fb.GoogleAuthProvider()).catch((err) => {
       if (SIGNIN_CANCELLED.includes(err.code)) return;
-      reportError(err.code === 'auth/popup-blocked'
-        ? 'El navegador ha bloqueado la ventana de Google. Permite las ventanas emergentes para esta web y vuelve a intentarlo.'
-        : 'No se pudo iniciar sesión con Google. Inténtalo de nuevo.', err);
+      reportError(
+        err.code === 'auth/popup-blocked'
+          ? 'El navegador ha bloqueado la ventana de Google. Permite las ventanas emergentes para esta web y vuelve a intentarlo.'
+          : 'No se pudo iniciar sesión con Google. Inténtalo de nuevo.',
+        err,
+      );
     });
   });
   signoutBtn.addEventListener('click', () => {
@@ -913,9 +1004,11 @@ export function initPersonajes() {
     if (nuevo === null) return;
     const nombre = nuevo.trim().slice(0, 60); // máx. que aceptan los comentarios (firestore.rules)
     if (!nombre) return;
-    fb.updateProfile(currentUser, { displayName: nombre }).then(() => {
-      sessionName.textContent = nombre;
-    }).catch((err) => reportError('No se pudo cambiar el nombre.', err));
+    fb.updateProfile(currentUser, { displayName: nombre })
+      .then(() => {
+        sessionName.textContent = nombre;
+      })
+      .catch((err) => reportError('No se pudo cambiar el nombre.', err));
   });
 
   mineBtn.addEventListener('click', openOwnEditor);

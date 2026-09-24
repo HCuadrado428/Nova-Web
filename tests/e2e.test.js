@@ -411,7 +411,10 @@ describe('Personajes', () => {
     assert.equal(await lector.locator('.personajes-comment-author').nth(1).textContent(), 'Bob');
 
     // Y ve también cuando el autor lo borra.
-    await autor.locator('.personajes-comment', { hasText: 'Hola desde otra pestaña' }).locator('.personajes-comment-remove-btn').click();
+    await autor
+      .locator('.personajes-comment', { hasText: 'Hola desde otra pestaña' })
+      .locator('.personajes-comment-remove-btn')
+      .click();
     await lector.waitForFunction(() => document.querySelectorAll('.personajes-comment').length === 1);
 
     assert.deepEqual(lector.errors, []);

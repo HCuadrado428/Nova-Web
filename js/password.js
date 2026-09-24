@@ -95,9 +95,7 @@ export function initPasswordScreen() {
     const term = normalizeSearchTerm(rawValue);
     if (!term) return;
 
-    const action = Object.hasOwn(SEARCH_ACTIONS, term)
-      ? SEARCH_ACTIONS[term]
-      : SECRET_ACTIONS[await sha256Hex(term)];
+    const action = Object.hasOwn(SEARCH_ACTIONS, term) ? SEARCH_ACTIONS[term] : SECRET_ACTIONS[await sha256Hex(term)];
     if (action) {
       failStreak = 0;
       hintBtn.classList.remove('is-visible');
