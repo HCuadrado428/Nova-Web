@@ -27,20 +27,20 @@ export function initRules() {
     minecraft: document.getElementById('rules-switch-minecraft'),
     objetos: document.getElementById('rules-switch-objetos'),
   };
-  if (!backBtn || !rulesPage || Object.values(openBtns).some((b) => !b) || Object.values(panels).some((p) => !p)) return;
+  if (!backBtn || !rulesPage || Object.values(openBtns).some((b) => !b) || Object.values(panels).some((p) => !p))
+    return;
 
   const showPanel = (key) => {
-    Object.entries(panels).forEach(([k, el]) => el.classList.toggle('is-active', k === key));
-    Object.entries(switchBtns).forEach(([k, btn]) => {
-      if (btn) btn.classList.toggle('is-active', k === key);
-    });
+    for (const [k, el] of Object.entries(panels)) el.classList.toggle('is-active', k === key);
+    for (const [k, btn] of Object.entries(switchBtns)) btn?.classList.toggle('is-active', k === key);
     rulesPage.scrollTop = 0;
   };
 
-  const switchTo = (showRules, panelKey) => channelSwitch(() => {
-    if (showRules) showPanel(panelKey);
-    setView(showRules ? 'rules' : 'home');
-  });
+  const switchTo = (showRules, panelKey) =>
+    channelSwitch(() => {
+      if (showRules) showPanel(panelKey);
+      setView(showRules ? 'rules' : 'home');
+    });
 
   Object.entries(openBtns).forEach(([key, btn]) => {
     btn.addEventListener('click', () => {

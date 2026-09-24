@@ -28,7 +28,7 @@ export function normalizeSearchTerm(raw) {
     .trim()
     .toLowerCase()
     .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '');
+    .replace(/[\u0300-\u036f]/g, '');
 }
 
 // localStorage puede no estar disponible (modo privado, cookies bloqueadas...):
@@ -36,7 +36,7 @@ export function normalizeSearchTerm(raw) {
 export function storageGet(key) {
   try {
     return localStorage.getItem(key);
-  } catch (err) {
+  } catch (_err) {
     return null;
   }
 }
@@ -44,7 +44,7 @@ export function storageGet(key) {
 export function storageSet(key, value) {
   try {
     localStorage.setItem(key, value);
-  } catch (err) {
+  } catch (_err) {
     // no disponible: no se recordará la próxima vez
   }
 }
@@ -53,5 +53,7 @@ export function storageSet(key, value) {
 // campo de texto...)? En ese caso los atajos de teclado globales no deben
 // "robársela" (p.ej. espacio = pausar el vídeo, no pasar de pase).
 export function isTypingOrMediaTarget(target) {
-  return target instanceof Element && !!target.closest('video, audio, input, textarea, select, [contenteditable="true"]');
+  return (
+    target instanceof Element && !!target.closest('video, audio, input, textarea, select, [contenteditable="true"]')
+  );
 }

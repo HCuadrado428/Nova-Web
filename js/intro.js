@@ -43,9 +43,7 @@ const BOOT_LINE_4_PHRASES = [
 // Variante "imagen" de la línea 4: en vez de frase, aparece esta imagen con un
 // texto rojo debajo. Añade más objetos aquí para tener más imágenes en el sorteo
 // (guarda cada archivo en images/creepy/).
-const BOOT_LINE_4_IMAGES = [
-  { src: 'images/creepy/eyes-1.jpg', caption: '⟟ ⌇⟒⟒ ⊬⍜⎍' },
-];
+const BOOT_LINE_4_IMAGES = [{ src: 'images/creepy/eyes-1.jpg', caption: '⟟ ⌇⟒⟒ ⊬⍜⎍' }];
 
 export function initEnterGate() {
   const gate = document.getElementById('enter-gate');
@@ -62,6 +60,7 @@ export function initEnterGate() {
       setBootLine4Variant(bootLine4, fullscreenImage);
     }
 
+    for (const el of document.querySelectorAll('[data-until-boot]')) el.inert = false;
     gate.classList.add('hidden');
     gate.addEventListener('transitionend', () => gate.remove(), { once: true });
     document.body.classList.add('booted');
@@ -78,13 +77,8 @@ export function initEnterGate() {
     }
   };
 
+  // Es un <button>: Enter y Espacio ya lanzan "click" solos.
   gate.addEventListener('click', enter);
-  gate.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      enter();
-    }
-  });
 
   document.addEventListener('visibilitychange', () => {
     document.body.classList.toggle('tab-hidden', document.hidden);
@@ -136,7 +130,7 @@ function copyWithTextarea(text) {
   let ok = false;
   try {
     ok = document.execCommand('copy');
-  } catch (err) {
+  } catch (_err) {
     ok = false;
   }
   textarea.remove();
@@ -144,7 +138,7 @@ function copyWithTextarea(text) {
 }
 
 function copyText(text) {
-  if (navigator.clipboard && navigator.clipboard.writeText) {
+  if (navigator.clipboard?.writeText) {
     return navigator.clipboard.writeText(text).catch(() => {
       if (!copyWithTextarea(text)) throw new Error('No se pudo copiar');
     });

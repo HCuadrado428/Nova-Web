@@ -10,7 +10,7 @@
 //   rules       -> página de Normas
 //   personajes  -> directorio / perfil / editor de Personajes
 //   password    -> buscador "Inserta la contraseña"
-//   adan        -> easter egg 4D4N
+//   adan        -> easter egg de Adán (palabra secreta del buscador)
 // Aparte quedan dos clases que NO son vistas y se combinan con cualquiera:
 // "booted" (ya se pulsó la pantalla de entrada) y "tab-hidden" (pestaña en
 // segundo plano).

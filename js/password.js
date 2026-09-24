@@ -11,7 +11,7 @@
 // Ejemplo:
 //   'iris': ({ setFeedback }) => setFeedback('IRIS está despierta.', 'ok'),
 //
-// Cada 3 búsquedas fallidas seguidas aparece el botón "Una ayudita?", que
+// Cada 3 búsquedas fallidas seguidas aparece el botón "¿Una ayudita?", que
 // rellena el buscador con una palabra al azar de entre las que hay en
 // SEARCH_ACTIONS (no hace falta mantener una lista aparte). En cuanto se
 // acierta una palabra (a mano o con la ayudita) o se manda una búsqueda,
@@ -33,13 +33,31 @@ const SEARCH_ACTIONS = {
   house: openInNewTab('images/gallery/646390b727116f4c2c5eee161238ff86.jpg'),
   jojos: openInNewTab('images/gallery/c2d391b2b3f1142f75c555aca8808667.jpg'),
   tuff: openInNewTab('images/gallery/f9aeebe83fee27a41c31c3ebdaa7793f.jpg'),
-  // Se cierra el buscador antes de abrir la escena: las dos son vistas y
-  // solo puede haber una activa a la vez.
-  '4d4n': ({ close }) => {
+};
+
+// Palabras secretas: no se guardan en claro sino su huella SHA-256 (de la
+// palabra ya normalizada, en minúsculas y sin tildes), así no se leen con
+// "ver código fuente". Para añadir una, calcula su huella, p.ej. con
+//   printf 'palabra' | sha256sum
+// Ojo: esto solo la esconde de quien mira la web; en el repo de GitHub sigue
+// apareciendo en los tests y en el historial. Tampoco entran en el sorteo
+// de "¿Una ayudita?", que solo usa SEARCH_ACTIONS.
+const SECRET_ACTIONS = {
+  // La escena de Adán. Se cierra el buscador antes de abrirla: las dos son
+  // vistas y solo puede haber una activa a la vez.
+  ec168423b51025aa822ff088a98ae5abe048860793e5411d895667430c8357f0: ({ close }) => {
     close();
     openAdanScene();
   },
 };
+
+// crypto.subtle solo existe en HTTPS (y en localhost): sin él, las palabras
+// secretas simplemente no se encuentran.
+async function sha256Hex(text) {
+  if (!globalThis.crypto?.subtle) return null;
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, '0')).join('');
+}
 
 export function initPasswordScreen() {
   const triggerBtn = document.getElementById('password-trigger-btn');
@@ -73,11 +91,11 @@ export function initPasswordScreen() {
     setView('home');
   };
 
-  const runSearch = (rawValue) => {
+  const runSearch = async (rawValue) => {
     const term = normalizeSearchTerm(rawValue);
     if (!term) return;
 
-    const action = SEARCH_ACTIONS[term];
+    const action = Object.hasOwn(SEARCH_ACTIONS, term) ? SEARCH_ACTIONS[term] : SECRET_ACTIONS[await sha256Hex(term)];
     if (action) {
       failStreak = 0;
       hintBtn.classList.remove('is-visible');
@@ -98,9 +116,9 @@ export function initPasswordScreen() {
   });
 
   hintBtn.addEventListener('click', () => {
-    // "4d4n" se queda fuera del sorteo a propósito: no es una gracia como
-    // el resto, es un final de página entero, no algo que dar de pista.
-    const words = Object.keys(SEARCH_ACTIONS).filter((word) => word !== '4d4n');
+    // Las palabras secretas (SECRET_ACTIONS) no están aquí a propósito: no
+    // son una gracia como el resto sino algo que hay que descubrir.
+    const words = Object.keys(SEARCH_ACTIONS);
     if (!words.length) return;
     const word = words[Math.floor(Math.random() * words.length)];
     input.value = word;
