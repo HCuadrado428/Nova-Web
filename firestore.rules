@@ -10,36 +10,75 @@ rules_version = '2';
 // uid de Firebase Auth). Esto es lo que de verdad impide que alguien edite
 // el personaje de otra persona -- no los botones de la interfaz, que solo
 // ocultan la opción por comodidad visual.
+//
+// Además de quién escribe, se valida QUÉ se escribe: solo los campos que usa
+// script.js, con su tipo y tamaño, y las fechas tienen que ser la hora real
+// del servidor (request.time), no una que se invente el navegador.
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    // "null o texto de como mucho `max` caracteres"
+    function optionalString(value, max) {
+      return value == null || (value is string && value.size() <= max);
+    }
+
+    function isSignedInAs(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
     match /personajes/{uid} {
+      function validPersonaje(data) {
+        return data.keys().hasOnly(['nombre', 'minecraftUsername', 'fotoUrl', 'bloques', 'actualizadoEn', 'creadoEn'])
+          && data.nombre is string
+          && data.nombre.size() > 0
+          && data.nombre.size() <= 60
+          && (data.get('minecraftUsername', null) == null
+              || (data.minecraftUsername is string && data.minecraftUsername.matches('^[A-Za-z0-9_]{1,16}$')))
+          && (data.get('fotoUrl', null) == null
+              || (data.fotoUrl is string && data.fotoUrl.size() <= 1000 && data.fotoUrl.matches('^https?://.+')))
+          && data.bloques is list
+          && data.bloques.size() <= 30
+          && data.actualizadoEn == request.time;
+      }
+
       allow read: if true;
-      allow create, update: if request.auth != null
-                    && request.auth.uid == uid
-                    && request.resource.data.nombre is string
-                    && request.resource.data.nombre.size() > 0
-                    && request.resource.data.nombre.size() <= 60
-                    && request.resource.data.bloques is list
-                    && request.resource.data.bloques.size() <= 30;
-      allow delete: if request.auth != null && request.auth.uid == uid;
+      allow create: if isSignedInAs(uid)
+                    && validPersonaje(request.resource.data)
+                    && request.resource.data.creadoEn == request.time;
+      // creadoEn no se puede reescribir al editar (update() no lo manda, así
+      // que el documento resultante conserva el original).
+      allow update: if isSignedInAs(uid)
+                    && validPersonaje(request.resource.data)
+                    && request.resource.data.get('creadoEn', null) == resource.data.get('creadoEn', null);
+      allow delete: if isSignedInAs(uid);
 
       // Comentarios de texto en el perfil de un personaje. Lectura pública,
       // escritura solo autenticado y siendo tú mismo el autor (evita postear
       // en nombre de otro); borrar lo puede hacer el autor o el dueño del
       // perfil (moderación básica sin tener que entrar a la consola).
       match /comentarios/{comentarioId} {
+        function validTexto(data) {
+          return data.texto is string
+            && data.texto.size() > 0
+            && data.texto.size() <= 500;
+        }
+
         allow read: if true;
         allow create: if request.auth != null
-                      && request.auth.uid == request.resource.data.autorUid
-                      && request.resource.data.texto is string
-                      && request.resource.data.texto.size() > 0
-                      && request.resource.data.texto.size() <= 500;
+                      && request.resource.data.keys().hasOnly(['autorUid', 'autorNombre', 'texto', 'creadoEn'])
+                      && request.resource.data.autorUid == request.auth.uid
+                      && request.resource.data.autorNombre is string
+                      && request.resource.data.autorNombre.size() > 0
+                      && request.resource.data.autorNombre.size() <= 60
+                      && validTexto(request.resource.data)
+                      && request.resource.data.creadoEn == request.time;
+        // Al editar solo pueden cambiar el texto y la marca de "editado":
+        // autor, nombre del autor y fecha original quedan fijos.
         allow update: if request.auth != null
                       && request.auth.uid == resource.data.autorUid
-                      && request.resource.data.autorUid == resource.data.autorUid
-                      && request.resource.data.texto is string
-                      && request.resource.data.texto.size() > 0
-                      && request.resource.data.texto.size() <= 500;
+                      && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['texto', 'editadoEn'])
+                      && validTexto(request.resource.data)
+                      && request.resource.data.editadoEn == request.time;
         allow delete: if request.auth != null
                       && (request.auth.uid == resource.data.autorUid || request.auth.uid == uid);
       }
