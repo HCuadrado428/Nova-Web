@@ -120,9 +120,12 @@ async function openPage({
   signedInAs = null,
   serverStatus = STATUS_ONLINE, // respuesta falsa de api.mcsrvstat.us; null = la API no responde
   locale = 'es-ES', // idioma del navegador: decide el idioma inicial de la web
+  timezoneId = 'Europe/Madrid', // zona horaria del navegador
+  now = null, // fecha falsa del navegador (el reloj sigue corriendo desde ahí)
 } = {}) {
   const context = await browser.newContext({
     locale,
+    timezoneId,
     reducedMotion,
     permissions: ['clipboard-read', 'clipboard-write'],
   });
@@ -138,6 +141,8 @@ async function openPage({
   await context.addInitScript((emulators) => {
     window.NOVA_FIREBASE_EMULATORS = emulators;
   }, EMULATORS);
+
+  if (now) await context.clock.install({ time: new Date(now) });
 
   const page = await context.newPage();
   page.errors = [];
@@ -195,6 +200,34 @@ describe('web sin Firebase', () => {
     assert.equal(page.firebaseRequests, 0);
     assert.deepEqual(page.errors, []);
     await page.context().close();
+  });
+
+  test('cuenta atrás "Be The Boss": hasta el 10 oct 20:00 UTC, con la hora local', async () => {
+    const units = (page) => page.locator('#countdown [data-unit]').allTextContents();
+    // Quedan 1 d 1 h 29 min 45 s. Desde México (UTC-6): 14:00 en su hora.
+    const page = await openPage({ now: '2026-10-09T18:30:15Z', timezoneId: 'America/Mexico_City' });
+    await enter(page);
+    assert.equal(await page.isVisible('#countdown'), true);
+    assert.equal(await text(page, '.countdown-title'), 'Be The Boss');
+    const [days, hours, minutes, seconds] = (await units(page)).map(Number);
+    assert.deepEqual([days, hours, minutes], [1, 1, 29]);
+    assert.ok(seconds > 30 && seconds <= 45, `segundos: ${seconds}`); // el reloj corre durante enter()
+    const date = await text(page, '#countdown-date');
+    assert.match(date, /20:00 UTC/);
+    assert.match(date, /14:00/);
+    await page.click('.lang-btn[data-lang="en"]');
+    assert.match(await text(page, '#countdown-date'), /20:00 UTC · Your time: .*14:00/);
+    assert.equal(await text(page, '.countdown-label'), 'days');
+    assert.deepEqual(page.errors, []);
+    await page.context().close();
+
+    // Ya pasada la hora: aviso en vez de números.
+    const late = await openPage({ now: '2026-10-10T20:00:01Z' });
+    await enter(late);
+    assert.equal(await late.isVisible('#countdown-timer'), false);
+    assert.equal(await late.isVisible('#countdown-done'), true);
+    assert.equal(await text(late, '#countdown-done'), '¡Ha llegado la hora!');
+    await late.context().close();
   });
 
   test('teclado: antes de entrar, Tab solo llega a la pantalla de entrada', async () => {
