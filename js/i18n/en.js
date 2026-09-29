@@ -19,6 +19,13 @@ export default {
   'intro.ipCopied': 'IP copied',
   // ---- Language selector ----
   'lang.label': 'Language',
+  // ---- Cuenta atrás "Be The Boss" ----
+  'countdown.days': 'days',
+  'countdown.hours': 'hours',
+  'countdown.minutes': 'min',
+  'countdown.seconds': 'sec',
+  'countdown.date': '{utc} UTC · Your time: {local}',
+  'countdown.done': 'The time has come!',
   // ---- Server status ----
   'status.online': 'Online · {online}/{max} players',
   'status.onlineOne': 'Online · {online}/{max} player',

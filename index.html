@@ -112,6 +112,20 @@
           <button class="lang-btn" type="button" data-lang="en" lang="en" aria-label="English">EN</button>
           <button class="lang-btn" type="button" data-lang="pt" lang="pt" aria-label="Português">PT</button>
         </fieldset>
+        <!-- Cuenta atrás "Be The Boss" (js/countdown.js). data-end va en UTC: las 22:00
+             del 10 de octubre en España (CEST, UTC+2) son las 20:00 UTC. Para otra
+             fecha, cambia solo data-end. Oculta hasta que la arranca el JS. -->
+        <div class="countdown" id="countdown" data-end="2026-10-10T20:00:00Z" hidden>
+          <p class="countdown-title glitch" data-text="Be The Boss">Be The Boss</p>
+          <div class="countdown-timer" id="countdown-timer" role="timer">
+            <span class="countdown-unit"><span class="countdown-num" data-unit="days">00</span><span class="countdown-label" data-i18n="countdown.days">días</span></span>
+            <span class="countdown-unit"><span class="countdown-num" data-unit="hours">00</span><span class="countdown-label" data-i18n="countdown.hours">horas</span></span>
+            <span class="countdown-unit"><span class="countdown-num" data-unit="minutes">00</span><span class="countdown-label" data-i18n="countdown.minutes">min</span></span>
+            <span class="countdown-unit"><span class="countdown-num" data-unit="seconds">00</span><span class="countdown-label" data-i18n="countdown.seconds">seg</span></span>
+          </div>
+          <p class="countdown-date" id="countdown-date"></p>
+          <p class="countdown-done" id="countdown-done" hidden data-i18n="countdown.done">¡Ha llegado la hora!</p>
+        </div>
       </div>
     </div>
 

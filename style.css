@@ -1005,6 +1005,67 @@ body.tab-hidden .enter-text {
   background: rgba(55, 240, 224, 0.1);
 }
 
+/* Cuenta atrás "Be The Boss" (js/countdown.js): abajo del todo en la intro */
+.countdown {
+  margin: 26px auto 0;
+  padding-top: 18px;
+  border-top: 1px solid rgba(234, 230, 218, 0.12);
+  max-width: 420px;
+}
+.countdown[hidden],
+.countdown [hidden] {
+  display: none;
+}
+.countdown-title {
+  margin: 0 0 12px;
+  font-family: var(--font-display);
+  font-size: clamp(0.75rem, 2vw, 1rem);
+  letter-spacing: 2px;
+  color: var(--glitch-red);
+  text-shadow: 0 0 10px rgba(255, 46, 99, 0.45);
+}
+.countdown-timer {
+  display: flex;
+  justify-content: center;
+  gap: clamp(8px, 2.5vw, 16px);
+}
+.countdown-unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 3.4em;
+  padding: 8px 6px 6px;
+  border: 1px solid rgba(55, 240, 224, 0.35);
+  border-radius: 6px;
+  background: rgba(55, 240, 224, 0.06);
+}
+.countdown-num {
+  font-family: var(--font-display);
+  font-size: clamp(0.95rem, 3vw, 1.35rem);
+  color: var(--glitch-cyan);
+  font-variant-numeric: tabular-nums;
+}
+/* Fuente normal, no la pixel: esta no tiene "Í" mayúscula (DÍAS). */
+.countdown-label {
+  margin-top: 4px;
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.countdown-date {
+  margin: 10px 0 0;
+  font-size: 0.75rem;
+  color: var(--text-dim);
+}
+.countdown-done {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(0.7rem, 1.8vw, 0.9rem);
+  color: var(--glitch-cyan);
+}
+
 .server-status[data-state='online'] .server-status-dot {
   background: var(--emerald);
   box-shadow: 0 0 6px rgba(46, 204, 113, 0.8);

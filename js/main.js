@@ -20,6 +20,7 @@ import { initPersonajes } from './personajes.js';
 import { initPasswordScreen } from './password.js';
 import { initAdanScene } from './adan.js';
 import { initServerStatus } from './server-status.js';
+import { initCountdown } from './countdown.js';
 
 // Idioma primero: traduce la página antes de que se vea nada más.
 initLanguageSwitch();
@@ -34,3 +35,4 @@ initPasswordScreen();
 initAdanScene();
 initAudioToggleButton();
 initServerStatus();
+initCountdown();
