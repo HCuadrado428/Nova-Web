@@ -67,6 +67,12 @@ export function buildGraph(personajes) {
   };
 }
 
+// Ancho aproximado (px) de la línea más larga de las etiquetas de una
+// relación, a 14px. Sin DOM: lo usa la colocación, que se prueba en Node.
+export function estimateLabelWidth(labels) {
+  return Math.max(0, ...labels.map((l) => l.length)) * 7.5;
+}
+
 // Devuelve { positions: Map(id -> {x, y}), width, height } con los nodos ya
 // colocados y el tamaño del lienzo que los contiene (con margen).
 export function layoutGraph(graph, { iterations = 400, spacing = 140 } = {}) {
@@ -79,7 +85,9 @@ export function layoutGraph(graph, { iterations = 400, spacing = 140 } = {}) {
     pos.set(node.id, { x: Math.cos(angle) * radius, y: Math.sin(angle) * radius });
   });
 
-  const neighbors = graph.edges.map((e) => [e.a, e.b]);
+  // Cada relación es un muelle; si tiene etiquetas largas, más largo, para
+  // que el texto quepa entre los dos círculos.
+  const neighbors = graph.edges.map((e) => [e.a, e.b, Math.max(spacing, estimateLabelWidth(e.labels) + 90)]);
   for (let step = 0; step < iterations; step++) {
     const cooling = 1 - step / iterations; // los movimientos se van calmando
     const force = new Map(graph.nodes.map((node) => [node.id, { x: 0, y: 0 }]));
@@ -107,13 +115,13 @@ export function layoutGraph(graph, { iterations = 400, spacing = 140 } = {}) {
       }
     }
     // Atracción de las relaciones (muelles de longitud "spacing").
-    for (const [a, b] of neighbors) {
+    for (const [a, b, length] of neighbors) {
       const p = pos.get(a);
       const q = pos.get(b);
       const dx = q.x - p.x;
       const dy = q.y - p.y;
       const dist = Math.max(Math.hypot(dx, dy), 0.01);
-      const pull = ((dist - spacing) * dist) / spacing;
+      const pull = ((dist - length) * dist) / length;
       const fx = (dx / dist) * pull * 0.5;
       const fy = (dy / dist) * pull * 0.5;
       force.get(a).x += fx;
@@ -136,18 +144,22 @@ export function layoutGraph(graph, { iterations = 400, spacing = 140 } = {}) {
     }
   }
 
-  // Encuadre: se desplaza todo para que empiece en (margin, margin).
+  // Encuadre: se desplaza todo para que quepa con margen, contando también
+  // lo que asoma el nombre de cada personaje a los lados (fuente pixelada,
+  // ~13px por letra), para que los nombres largos no queden cortados.
   const margin = 70;
-  const xs = [...pos.values()].map((p) => p.x);
+  const half = new Map(graph.nodes.map((node) => [node.id, Math.max(margin, [...node.name].length * 6.5 + 10)]));
+  const lefts = graph.nodes.map((node) => pos.get(node.id).x - half.get(node.id));
+  const rights = graph.nodes.map((node) => pos.get(node.id).x + half.get(node.id));
   const ys = [...pos.values()].map((p) => p.y);
-  const minX = n ? Math.min(...xs) : 0;
+  const minX = n ? Math.min(...lefts) : 0;
   const minY = n ? Math.min(...ys) : 0;
+  const width = n ? Math.max(...rights) - minX : margin * 2;
+  const height = (n ? Math.max(...ys) - minY : 0) + margin * 2;
   for (const p of pos.values()) {
-    p.x = p.x - minX + margin;
+    p.x -= minX;
     p.y = p.y - minY + margin;
   }
-  const width = (n ? Math.max(...xs) - minX : 0) + margin * 2;
-  const height = (n ? Math.max(...ys) - minY : 0) + margin * 2;
   return { positions: pos, width, height };
 }
 
@@ -178,6 +190,11 @@ export function renderRelationsGraph(
 
   const edgesLayer = svgEl('g', { class: 'relations-edges' });
   const labelsLayer = svgEl('g', { class: 'relations-edge-labels' });
+  const nodesLayer = svgEl('g', { class: 'relations-nodes' });
+  svg.append(edgesLayer, labelsLayer, nodesLayer);
+  // Ya en la página: hace falta para medir los textos (getBBox) al colocarlos.
+  container.append(svg);
+
   for (const edge of graph.edges) {
     const p = positions.get(edge.a);
     const q = positions.get(edge.b);
@@ -185,21 +202,8 @@ export function renderRelationsGraph(
     line.dataset.a = edge.a;
     line.dataset.b = edge.b;
     edgesLayer.append(line);
-    if (edge.labels.length) {
-      const label = svgEl('text', {
-        x: (p.x + q.x) / 2,
-        y: (p.y + q.y) / 2 - 6,
-        class: 'relations-edge-label',
-        'text-anchor': 'middle',
-      });
-      label.textContent = edge.labels.join(' · ');
-      label.dataset.a = edge.a;
-      label.dataset.b = edge.b;
-      labelsLayer.append(label);
-    }
   }
 
-  const nodesLayer = svgEl('g', { class: 'relations-nodes' });
   graph.nodes.forEach((node, i) => {
     const { x, y } = positions.get(node.id);
     const g = svgEl('g', {
@@ -258,8 +262,97 @@ export function renderRelationsGraph(
     nodesLayer.append(g);
   });
 
-  svg.append(edgesLayer, labelsLayer, nodesLayer);
-  container.append(svg, setupZoom(svg, width, height, zoomLabels));
+  placeEdgeLabels(labelsLayer, nodesLayer, graph, positions, r);
+  // Los nombres usan la fuente pixelada, más ancha: si aún no había cargado,
+  // se miden mal. Se vuelven a colocar cuando llega.
+  if (document.fonts && document.fonts.status !== 'loaded') {
+    document.fonts.ready.then(() => {
+      if (svg.isConnected) placeEdgeLabels(labelsLayer, nodesLayer, graph, positions, r);
+    });
+  }
+  container.append(setupZoom(svg, width, height, zoomLabels));
+}
+
+// Etiquetas de las relaciones: una línea por etiqueta (si las dos partes
+// pusieron una, salen las dos, una encima de otra), con fondo oscuro para
+// leerse sobre las líneas. Cada una se coloca en el primer punto de su línea
+// (del centro hacia los extremos) donde no pisa ningún círculo, ningún nombre
+// ni otra etiqueta; si no hay ninguno libre, donde menos pisa.
+function placeEdgeLabels(labelsLayer, nodesLayer, graph, positions, r) {
+  labelsLayer.replaceChildren();
+  const boxOf = (el, fallback) => {
+    try {
+      const b = el.getBBox();
+      if (b.width) return { x: b.x, y: b.y, w: b.width, h: b.height };
+    } catch {
+      // Sin medir (p. ej. aún oculto): se usa la estimación.
+    }
+    return fallback;
+  };
+
+  // Lo que ya ocupa sitio: círculos y nombres de los personajes.
+  const taken = [];
+  for (const g of nodesLayer.querySelectorAll('.relations-node')) {
+    const { x, y } = positions.get(g.dataset.id);
+    taken.push({ x: x - r - 4, y: y - r - 4, w: 2 * r + 8, h: 2 * r + 8 });
+    const name = g.querySelector('.relations-node-name');
+    // Nunca menos que lo que ocuparía con la fuente pixelada (~13px por letra).
+    const minW = [...name.textContent].length * 13;
+    const b = boxOf(name, { x: -minW / 2, y: r + 4, w: minW, h: 18 });
+    const w = Math.max(b.w, minW);
+    taken.push({ x: x - w / 2 - 4, y: y + b.y - 2, w: w + 8, h: b.h + 4 });
+  }
+  const overlap = (a, b) =>
+    Math.max(0, Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x)) *
+    Math.max(0, Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y));
+
+  const LINE = 17;
+  const STEPS = [0.5, 0.4, 0.6, 0.3, 0.7, 0.22, 0.78];
+  // Primero las etiquetas más grandes: son las que menos sitios tienen.
+  const edges = graph.edges
+    .filter((e) => e.labels.length)
+    .sort((x, y) => y.labels.length - x.labels.length || estimateLabelWidth(y.labels) - estimateLabelWidth(x.labels));
+
+  for (const edge of edges) {
+    const group = svgEl('g', { class: 'relations-edge-label' });
+    group.dataset.a = edge.a;
+    group.dataset.b = edge.b;
+    const bg = svgEl('rect', { class: 'relations-edge-label-bg', rx: 4 });
+    const text = svgEl('text', { 'text-anchor': 'middle' });
+    edge.labels.forEach((label, i) => {
+      const tspan = svgEl('tspan', {
+        x: 0,
+        dy: i === 0 ? `${0.35 - ((edge.labels.length - 1) * LINE) / 2 / 14}em` : LINE,
+      });
+      tspan.textContent = label;
+      text.append(tspan);
+    });
+    group.append(bg, text);
+    labelsLayer.append(group);
+
+    const w = estimateLabelWidth(edge.labels);
+    const h = edge.labels.length * LINE;
+    const t = boxOf(text, { x: -w / 2, y: -h / 2, w, h });
+    const box = { x: t.x - 5, y: t.y - 2, w: t.w + 10, h: t.h + 4 };
+    bg.setAttribute('x', box.x);
+    bg.setAttribute('y', box.y);
+    bg.setAttribute('width', box.w);
+    bg.setAttribute('height', box.h);
+
+    const p = positions.get(edge.a);
+    const q = positions.get(edge.b);
+    let best = null;
+    for (const step of STEPS) {
+      const cx = p.x + (q.x - p.x) * step;
+      const cy = p.y + (q.y - p.y) * step;
+      const at = { x: cx + box.x, y: cy + box.y, w: box.w, h: box.h };
+      const cost = taken.reduce((sum, o) => sum + overlap(at, o), 0);
+      if (!best || cost < best.cost) best = { cost, cx, cy, at };
+      if (!cost) break;
+    }
+    group.setAttribute('transform', `translate(${best.cx} ${best.cy})`);
+    taken.push(best.at);
+  }
 }
 
 const MAX_ZOOM = 4;

@@ -104,6 +104,17 @@ describe('layoutGraph', () => {
     }
   });
 
+  test('una relación con etiqueta larga separa más a los dos personajes', () => {
+    const dist = (etiqueta) => {
+      const { positions } = layoutGraph(buildGraph([pj('a', [rel('b', etiqueta)]), pj('b')]));
+      const [p, q] = [...positions.values()];
+      return Math.hypot(p.x - q.x, p.y - q.y);
+    };
+    // El texto (~180px) tiene que caber entre los dos círculos (60px de diámetro cada uno).
+    assert.ok(dist('Persona más cercana a él') > 180 + 60, `${dist('Persona más cercana a él')}`);
+    assert.ok(dist('Persona más cercana a él') > dist('hijo'));
+  });
+
   test('un grafo vacío no rompe nada', () => {
     const { positions, width, height } = layoutGraph({ nodes: [], edges: [] });
     assert.equal(positions.size, 0);

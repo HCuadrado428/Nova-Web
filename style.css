@@ -2184,13 +2184,17 @@ body[data-view='personajes'] .personajes-page {
     stroke 0.15s ease;
 }
 .relations-edge-label {
+  transition: opacity 0.15s ease;
+}
+.relations-edge-label text {
   font-family: var(--font-body);
   font-size: 14px;
-  fill: rgba(234, 230, 218, 0.8);
-  paint-order: stroke;
-  stroke: #050505;
-  stroke-width: 4px;
-  transition: opacity 0.15s ease;
+  fill: rgba(234, 230, 218, 0.85);
+}
+.relations-edge-label-bg {
+  fill: rgba(5, 5, 5, 0.85);
+  stroke: rgba(55, 240, 224, 0.25);
+  stroke-width: 1;
 }
 .relations-node {
   cursor: pointer;
