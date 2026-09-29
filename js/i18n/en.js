@@ -171,7 +171,7 @@ export default {
   'pj.mcUser': 'Minecraft username: {name}',
   'pj.treeBtn': 'Relationship tree',
   'pj.treeTitle': 'RELATIONSHIPS',
-  'pj.treeHint': 'Tap a character to see their profile. To zoom: + / − buttons, pinch or Ctrl + wheel.',
+  'pj.treeHint': 'Tap a character to see their profile. To zoom: + / − buttons, pinch or the mouse wheel.',
   'pj.treeZoomIn': 'Zoom in',
   'pj.treeZoomOut': 'Zoom out',
   'pj.treeZoomReset': 'Reset zoom',

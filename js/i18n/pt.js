@@ -172,7 +172,7 @@ export default {
   'pj.mcUser': 'Usuário do Minecraft: {name}',
   'pj.treeBtn': 'Árvore de relações',
   'pj.treeTitle': 'RELAÇÕES',
-  'pj.treeHint': 'Toque em um personagem para ver o perfil. Para ampliar: botões + / −, pinça ou Ctrl + roda.',
+  'pj.treeHint': 'Toque em um personagem para ver o perfil. Para ampliar: botões + / −, pinça ou a roda do mouse.',
   'pj.treeZoomIn': 'Ampliar',
   'pj.treeZoomOut': 'Reduzir',
   'pj.treeZoomReset': 'Remover o zoom',
