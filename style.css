@@ -2124,8 +2124,9 @@ body[data-view='personajes'] .personajes-page {
 .relations-graph {
   display: block;
   width: 100%;
-  height: auto;
-  max-height: 70vh;
+  /* Alto fijo (no el del dibujo): con pocos personajes el dibujo sale muy
+     apaisado y en el móvil quedaba una franja donde no se podía hacer zoom. */
+  height: clamp(300px, 55vh, 600px);
   touch-action: pan-x pan-y; /* el pellizco lo gestiona js/relations-graph.js */
   user-select: none;
   -webkit-user-select: none;
