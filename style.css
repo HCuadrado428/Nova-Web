@@ -2112,6 +2112,7 @@ body[data-view='personajes'] .personajes-page {
   margin: 0 0 16px;
 }
 .relations-graph-wrap {
+  position: relative;
   border: 1px solid rgba(55, 240, 224, 0.2);
   border-radius: var(--radius);
   background: rgba(0, 0, 0, 0.3);
@@ -2125,6 +2126,54 @@ body[data-view='personajes'] .personajes-page {
   width: 100%;
   height: auto;
   max-height: 70vh;
+  touch-action: pan-x pan-y; /* el pellizco lo gestiona js/relations-graph.js */
+  user-select: none;
+  -webkit-user-select: none;
+}
+/* Con zoom, arrastrar mueve el dibujo en vez de la página. */
+.relations-graph.is-zoomed {
+  touch-action: none;
+  cursor: grab;
+}
+.relations-graph.is-dragging {
+  cursor: grabbing;
+}
+.relations-zoom {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.relations-zoom-btn {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid rgba(55, 240, 224, 0.45);
+  border-radius: 6px;
+  background: rgba(5, 5, 5, 0.85);
+  color: var(--glitch-cyan);
+  font-family: var(--font-display);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease,
+    opacity 0.15s ease;
+}
+.relations-zoom-reset {
+  font-size: 9px;
+}
+.relations-zoom-btn:hover:not(:disabled),
+.relations-zoom-btn:focus-visible {
+  color: #fff;
+  border-color: var(--glitch-cyan);
+}
+.relations-zoom-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
 }
 .relations-edge {
   stroke: rgba(55, 240, 224, 0.5);

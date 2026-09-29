@@ -425,6 +425,7 @@ export function initPersonajes() {
     renderRelationsGraph(relationsGraphEl, graph, {
       onSelect: goToProfile,
       nodeLabel: (name) => t('pj.treeNodeLabel', { name: name || t('pj.noName') }),
+      zoomLabels: { in: t('pj.treeZoomIn'), out: t('pj.treeZoomOut'), reset: t('pj.treeZoomReset') },
     });
     relationsHintEl.hidden = !hasEdges;
     relationsListTitleEl.hidden = !hasEdges;

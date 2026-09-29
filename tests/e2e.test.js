@@ -664,6 +664,24 @@ describe('Personajes', () => {
     assert.equal(await text(page, '.relations-list li'), 'Kira → hermano → Zed');
     assert.ok(await page.locator('#personajes-relations-empty').isHidden()); // todos tienen relación
 
+    // Zoom con los botones: acerca (viewBox más pequeño), y 1:1 lo deja como estaba.
+    const viewBox = () => page.locator('.relations-graph').getAttribute('viewBox');
+    const size = async () => (await viewBox()).split(' ').map(Number)[2];
+    const initialViewBox = await viewBox();
+    assert.ok(await page.locator('.relations-zoom-out').isDisabled());
+    await page.click('.relations-zoom-in');
+    assert.ok((await size()) < Number(initialViewBox.split(' ')[2]));
+    assert.ok(await page.locator('.relations-graph.is-zoomed').isVisible());
+    // Arrastrar con zoom mueve el dibujo y no abre ningún perfil.
+    const box = await page.locator('.relations-graph').boundingBox();
+    await page.mouse.move(box.x + 20, box.y + 20);
+    await page.mouse.down();
+    await page.mouse.move(box.x + 120, box.y + 80, { steps: 5 });
+    await page.mouse.up();
+    assert.ok(await page.locator('#personajes-view-relations.is-active').isVisible());
+    await page.click('.relations-zoom-reset');
+    assert.equal(await viewBox(), initialViewBox);
+
     // Pulsar un personaje del árbol abre su perfil.
     await page.locator('.relations-node[aria-label="Ver el perfil de Zed"]').click();
     await page.waitForFunction(() => document.getElementById('personajes-profile-name').textContent === 'Zed');
