@@ -667,6 +667,12 @@ describe('Personajes', () => {
     // Zoom con los botones: acerca (viewBox más pequeño), y 1:1 lo deja como estaba.
     const viewBox = () => page.locator('.relations-graph').getAttribute('viewBox');
     const size = async () => (await viewBox()).split(' ').map(Number)[2];
+    // Sin zoom, el dibujo se ajusta a la forma de la caja (se ve entero y la llena).
+    await page.waitForFunction(() => {
+      const svg = document.querySelector('.relations-graph');
+      const [, , w, h] = svg.getAttribute('viewBox').split(' ').map(Number);
+      return Math.abs(w / h - svg.clientWidth / svg.clientHeight) < 0.01;
+    });
     const initialViewBox = await viewBox();
     assert.ok(await page.locator('.relations-zoom-out').isDisabled());
     await page.click('.relations-zoom-in');

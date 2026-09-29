@@ -285,16 +285,34 @@ function setupZoom(svg, width, height, labels) {
     controls.append(btn);
     return btn;
   };
-  const center = () => ({ x: x + width / scale / 2, y: y + height / scale / 2 });
+  // Zona que se ve sin zoom: el dibujo entero, ensanchado (o alargado) para
+  // tener la misma forma que la caja. Así el dibujo ocupa toda la caja y al
+  // acercar no quedan franjas vacías a los lados.
+  let base = { x: 0, y: 0, w: width, h: height };
+  function fitBase() {
+    const boxW = svg.clientWidth;
+    const boxH = svg.clientHeight;
+    if (!boxW || !boxH) return; // aún no se ve: se recalcula al mostrarse
+    const aspect = boxW / boxH;
+    const w = Math.max(width, height * aspect);
+    const h = w / aspect;
+    const c = center();
+    base = { x: (width - w) / 2, y: (height - h) / 2, w, h };
+    x = c.x - base.w / scale / 2;
+    y = c.y - base.h / scale / 2;
+    apply();
+  }
+
+  const center = () => ({ x: x + base.w / scale / 2, y: y + base.h / scale / 2 });
   const zoomInBtn = button('relations-zoom-in', '+', labels.in, () => zoomTo(scale * BUTTON_STEP, center()));
   const zoomOutBtn = button('relations-zoom-out', '−', labels.out, () => zoomTo(scale / BUTTON_STEP, center()));
   const resetBtn = button('relations-zoom-reset', '1:1', labels.reset, () => zoomTo(1, center()));
 
   function apply() {
-    const w = width / scale;
-    const h = height / scale;
-    x = Math.min(Math.max(x, 0), width - w);
-    y = Math.min(Math.max(y, 0), height - h);
+    const w = base.w / scale;
+    const h = base.h / scale;
+    x = Math.min(Math.max(x, base.x), base.x + base.w - w);
+    y = Math.min(Math.max(y, base.y), base.y + base.h - h);
     svg.setAttribute('viewBox', `${x} ${y} ${w} ${h}`);
     const zoomed = scale > 1;
     svg.classList.toggle('is-zoomed', zoomed);
@@ -354,6 +372,11 @@ function setupZoom(svg, width, height, labels) {
   svg.addEventListener('pointermove', (e) => {
     const prev = pointers.get(e.pointerId);
     if (!prev) return;
+    if (e.pointerType === 'mouse' && !e.buttons) {
+      // Se soltó el botón fuera del árbol: pasar el ratón por encima no arrastra.
+      pointers.delete(e.pointerId);
+      return;
+    }
     const now = { x: e.clientX, y: e.clientY };
     pointers.set(e.pointerId, now);
 
@@ -399,6 +422,10 @@ function setupZoom(svg, width, height, labels) {
     true,
   );
 
+  x = base.x;
+  y = base.y;
   apply();
+  // La forma de la caja cambia al girar el móvil o redimensionar la ventana.
+  if (typeof ResizeObserver === 'function') new ResizeObserver(fitBase).observe(svg);
   return controls;
 }
