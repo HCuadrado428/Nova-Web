@@ -15,9 +15,9 @@
 // tests/graph.test.js); renderRelationsGraph() es la que dibuja el SVG.
 //
 // Zoom: se cambia el viewBox del SVG (así las letras y las fotos se ven más
-// grandes y nítidas). Se acerca con los botones + / −, con Ctrl (o ⌘) +
-// rueda, pellizcando en móvil o con el gesto de pellizco del touchpad; con
-// zoom se arrastra para moverse. La rueda sola sigue bajando la página.
+// grandes y nítidas). Se acerca con los botones + / −, con la rueda del
+// ratón, pellizcando en móvil o con el gesto de pellizco del touchpad; con
+// zoom se arrastra para moverse. Sin zoom, bajar la rueda baja la página.
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -338,13 +338,16 @@ function setupZoom(svg, width, height, labels) {
     return { x: p.x, y: p.y };
   }
 
-  // Ctrl/⌘ + rueda (y el pellizco del touchpad, que llega así).
+  // Rueda (y el pellizco del touchpad, que llega como Ctrl + rueda). Sin zoom,
+  // bajar la rueda no hace nada aquí: así el árbol no atrapa el scroll y se
+  // puede seguir bajando la página por encima de él.
   svg.addEventListener(
     'wheel',
     (e) => {
-      if (!e.ctrlKey && !e.metaKey) return;
+      const deltaY = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY; // Firefox a veces cuenta en líneas
+      if (!deltaY || (deltaY > 0 && scale <= 1 && !e.ctrlKey && !e.metaKey)) return;
       e.preventDefault();
-      zoomTo(scale * Math.exp(-e.deltaY * 0.002), toGraph(e.clientX, e.clientY));
+      zoomTo(scale * Math.exp(-deltaY * 0.002), toGraph(e.clientX, e.clientY));
     },
     { passive: false },
   );

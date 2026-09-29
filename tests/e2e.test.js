@@ -688,6 +688,18 @@ describe('Personajes', () => {
     await page.click('.relations-zoom-reset');
     assert.equal(await viewBox(), initialViewBox);
 
+    // Rueda: hacia arriba acerca; sin zoom, hacia abajo no hace nada (baja la página).
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.wheel(0, 200);
+    assert.equal(await viewBox(), initialViewBox);
+    await page.mouse.wheel(0, -200);
+    await page.waitForFunction(
+      (vb) => document.querySelector('.relations-graph').getAttribute('viewBox') !== vb,
+      initialViewBox,
+    );
+    assert.ok((await size()) < Number(initialViewBox.split(' ')[2]));
+    await page.click('.relations-zoom-reset');
+
     // Pulsar un personaje del árbol abre su perfil.
     await page.locator('.relations-node[aria-label="Ver el perfil de Zed"]').click();
     await page.waitForFunction(() => document.getElementById('personajes-profile-name').textContent === 'Zed');
