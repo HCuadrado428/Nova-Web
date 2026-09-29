@@ -13,6 +13,11 @@
 // así que el dibujo sale siempre igual para los mismos datos. Las funciones
 // buildGraph() y layoutGraph() no tocan el DOM (se prueban en
 // tests/graph.test.js); renderRelationsGraph() es la que dibuja el SVG.
+//
+// Zoom: se cambia el viewBox del SVG (así las letras y las fotos se ven más
+// grandes y nítidas). Se acerca con los botones + / −, con Ctrl (o ⌘) +
+// rueda, pellizcando en móvil o con el gesto de pellizco del touchpad; con
+// zoom se arrastra para moverse. La rueda sola sigue bajando la página.
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -154,7 +159,12 @@ function svgEl(name, attrs = {}) {
 
 // Dibuja el grafo dentro de "container" (se vacía antes). onSelect(id) se
 // llama al pulsar (o Enter/Espacio) sobre un personaje.
-export function renderRelationsGraph(container, graph, { onSelect, nodeLabel = (name) => name } = {}) {
+// zoomLabels: textos (ya traducidos) de los botones { in, out, reset }.
+export function renderRelationsGraph(
+  container,
+  graph,
+  { onSelect, nodeLabel = (name) => name, zoomLabels = { in: '+', out: '−', reset: '1:1' } } = {},
+) {
   container.innerHTML = '';
   if (!graph.nodes.length) return;
   const { positions, width, height } = layoutGraph(graph);
@@ -249,5 +259,146 @@ export function renderRelationsGraph(container, graph, { onSelect, nodeLabel = (
   });
 
   svg.append(edgesLayer, labelsLayer, nodesLayer);
-  container.append(svg);
+  container.append(svg, setupZoom(svg, width, height, zoomLabels));
+}
+
+const MAX_ZOOM = 4;
+const BUTTON_STEP = 1.5;
+const DRAG_THRESHOLD = 6; // px: menos que esto es un clic, no un arrastre
+
+// Zoom y desplazamiento sobre el viewBox. Devuelve la botonera (+ / − / 1:1).
+function setupZoom(svg, width, height, labels) {
+  let scale = 1;
+  let x = 0; // esquina superior izquierda de lo que se ve, en coordenadas del dibujo
+  let y = 0;
+
+  const controls = document.createElement('div');
+  controls.className = 'relations-zoom';
+  const button = (cls, text, label, onClick) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = `relations-zoom-btn ${cls}`;
+    btn.textContent = text;
+    btn.setAttribute('aria-label', label);
+    btn.title = label;
+    btn.addEventListener('click', onClick);
+    controls.append(btn);
+    return btn;
+  };
+  const center = () => ({ x: x + width / scale / 2, y: y + height / scale / 2 });
+  const zoomInBtn = button('relations-zoom-in', '+', labels.in, () => zoomTo(scale * BUTTON_STEP, center()));
+  const zoomOutBtn = button('relations-zoom-out', '−', labels.out, () => zoomTo(scale / BUTTON_STEP, center()));
+  const resetBtn = button('relations-zoom-reset', '1:1', labels.reset, () => zoomTo(1, center()));
+
+  function apply() {
+    const w = width / scale;
+    const h = height / scale;
+    x = Math.min(Math.max(x, 0), width - w);
+    y = Math.min(Math.max(y, 0), height - h);
+    svg.setAttribute('viewBox', `${x} ${y} ${w} ${h}`);
+    const zoomed = scale > 1;
+    svg.classList.toggle('is-zoomed', zoomed);
+    zoomInBtn.disabled = scale >= MAX_ZOOM;
+    zoomOutBtn.disabled = !zoomed;
+    resetBtn.disabled = !zoomed;
+  }
+
+  // Cambia el zoom dejando quieto el punto "at" (coordenadas del dibujo).
+  function zoomTo(newScale, at) {
+    newScale = Math.min(Math.max(newScale, 1), MAX_ZOOM);
+    x = at.x - ((at.x - x) * scale) / newScale;
+    y = at.y - ((at.y - y) * scale) / newScale;
+    scale = newScale;
+    apply();
+  }
+
+  // Punto de la pantalla -> coordenadas del dibujo.
+  function toGraph(clientX, clientY) {
+    const ctm = svg.getScreenCTM();
+    if (!ctm) return center();
+    const p = new DOMPoint(clientX, clientY).matrixTransform(ctm.inverse());
+    return { x: p.x, y: p.y };
+  }
+
+  // Ctrl/⌘ + rueda (y el pellizco del touchpad, que llega así).
+  svg.addEventListener(
+    'wheel',
+    (e) => {
+      if (!e.ctrlKey && !e.metaKey) return;
+      e.preventDefault();
+      zoomTo(scale * Math.exp(-e.deltaY * 0.002), toGraph(e.clientX, e.clientY));
+    },
+    { passive: false },
+  );
+  // Safari (iOS/macOS) manda sus propios eventos de gesto: que no haga zoom a la página.
+  svg.addEventListener('gesturestart', (e) => e.preventDefault());
+
+  // Arrastrar (con zoom) y pellizcar, con Pointer Events (ratón y dedos).
+  const pointers = new Map(); // pointerId -> { x, y } en pantalla
+  let pinch = null; // { dist, scale }
+  let dragged = false;
+  let moved = 0;
+
+  svg.addEventListener('pointerdown', (e) => {
+    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pointers.size === 1) {
+      dragged = false;
+      moved = 0;
+    }
+    if (pointers.size === 2) {
+      const [a, b] = [...pointers.values()];
+      pinch = { dist: Math.hypot(a.x - b.x, a.y - b.y) || 1, scale };
+    }
+  });
+
+  svg.addEventListener('pointermove', (e) => {
+    const prev = pointers.get(e.pointerId);
+    if (!prev) return;
+    const now = { x: e.clientX, y: e.clientY };
+    pointers.set(e.pointerId, now);
+
+    if (pointers.size >= 2 && pinch) {
+      const [a, b] = [...pointers.values()];
+      const mid = toGraph((a.x + b.x) / 2, (a.y + b.y) / 2);
+      zoomTo((pinch.scale * Math.hypot(a.x - b.x, a.y - b.y)) / pinch.dist, mid);
+      dragged = true;
+      return;
+    }
+    if (scale <= 1) return; // sin zoom no hay nada que mover: se deja bajar la página
+    moved += Math.hypot(now.x - prev.x, now.y - prev.y);
+    if (!dragged && moved < DRAG_THRESHOLD) return;
+    if (!dragged) {
+      dragged = true;
+      svg.setPointerCapture(e.pointerId);
+      svg.classList.add('is-dragging');
+    }
+    const from = toGraph(prev.x, prev.y);
+    const to = toGraph(now.x, now.y);
+    x -= to.x - from.x;
+    y -= to.y - from.y;
+    apply();
+  });
+
+  const release = (e) => {
+    pointers.delete(e.pointerId);
+    if (pointers.size < 2) pinch = null;
+    if (!pointers.size) svg.classList.remove('is-dragging');
+  };
+  svg.addEventListener('pointerup', release);
+  svg.addEventListener('pointercancel', release);
+
+  // Soltar tras arrastrar o pellizcar no cuenta como pulsar un personaje.
+  svg.addEventListener(
+    'click',
+    (e) => {
+      if (!dragged) return;
+      dragged = false;
+      e.stopPropagation();
+      e.preventDefault();
+    },
+    true,
+  );
+
+  apply();
+  return controls;
 }
