@@ -8,6 +8,7 @@
 //   home        -> la intro (lo normal)
 //   lore        -> página de Lore (pases)
 //   rules       -> página de Normas
+//   guides      -> página de Guías
 //   personajes  -> directorio / perfil / editor de Personajes
 //   password    -> buscador "Inserta la contraseña"
 //   adan        -> easter egg de Adán (palabra secreta del buscador)

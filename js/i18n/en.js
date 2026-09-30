@@ -180,6 +180,67 @@ export default {
   'pj.treeIsolated': '{n} characters without relationships are not shown in the tree.',
   'pj.treeIsolatedOne': '1 character without relationships is not shown in the tree.',
   'pj.treeNodeLabel': "View {name}'s profile",
+  // ---- Guías (admiten <strong>) ----
+  'guides.open': 'Guides',
+  'guides.tabStart': 'Getting started',
+  'guides.tabWeb': 'The website',
+  'guides.tabPj': 'Characters',
+  'guides.tabRel': 'Relationships',
+  'guides.start.title': 'GUIDE · GETTING STARTED',
+  'guides.start.intro': 'The basics to start playing on the server.',
+  'guides.start.1':
+    '<strong>Modpack:</strong> Press "Download Modpack" on the intro. The server runs Forge 1.20.1, so you need that Forge version with the modpack\'s mods.',
+  'guides.start.2':
+    '<strong>Server IP:</strong> Press "Copy IP" and paste it in Minecraft, under Multiplayer → Add Server.',
+  'guides.start.3':
+    '<strong>Server status:</strong> The intro shows whether the server is Online and how many players are on. It refreshes every minute; if it does not show up, it could not be checked.',
+  'guides.start.4':
+    '<strong>Rules:</strong> Before playing, read the Discord, Minecraft and Items rules under the "Rules" button (top right).',
+  'guides.web.title': 'GUIDE · THE WEBSITE',
+  'guides.web.intro': 'How to get around the website.',
+  'guides.web.1':
+    '<strong>Entering:</strong> The website starts with the "Tap to enter" screen. Tapping it starts the intro, with sound.',
+  'guides.web.2':
+    '<strong>Sound:</strong> The bottom-left button mutes or unmutes the sound. The website remembers your choice.',
+  'guides.web.3':
+    '<strong>Language:</strong> Use the ES · EN · PT buttons on the intro to change the language. What players write (profiles and comments) is not translated.',
+  'guides.web.4': '<strong>Countdown:</strong> Below the numbers you can see the date in UTC and in your local time.',
+  'guides.web.5':
+    '<strong>Lore:</strong> The "Lore" button (top left) opens "Before Nova", "Nova" and "Characters". Move through the story with Previous / Next or the ← → arrow keys.',
+  'guides.web.6': '<strong>Going back:</strong> On any page, "← Back" or the Esc key takes you back to the intro.',
+  'guides.web.7':
+    '<strong>Password:</strong> The "Enter the password" button (bottom right) hides secrets. We will not tell you which ones, but if you fail three times in a row a hint appears.',
+  'guides.pj.title': 'GUIDE · CHARACTERS',
+  'guides.pj.intro': "How to create and edit your character's profile.",
+  'guides.pj.1':
+    '<strong>Browsing:</strong> Under Lore → Characters anyone can see every character and search them by name, no account needed.',
+  'guides.pj.2':
+    '<strong>Signing in:</strong> To have your own profile, press "Sign in with Google". If the Google window does not open, allow pop-ups for this website. Each Google account has one character.',
+  'guides.pj.3':
+    '<strong>Creating and editing:</strong> Press "Create character" (or "My character" if you already have one) to open the editor. Only you can edit your profile.',
+  'guides.pj.4':
+    '<strong>Details:</strong> Name (required, up to 60 characters), Minecraft username (optional) and a photo link (optional). Pinterest works: right-click the image → "copy image address".',
+  'guides.pj.5':
+    '<strong>Blocks:</strong> Add Text, Image, Spotify or Relationship blocks (up to 30) and reorder them with the arrows. For Spotify, paste the link to a song, album or playlist.',
+  'guides.pj.6':
+    '<strong>Saving and deleting:</strong> "Save" publishes your changes. "Delete character" removes the profile for good.',
+  'guides.pj.7':
+    '<strong>Your name:</strong> The ✎ pencil next to your name changes how others see you, for example when you sign comments.',
+  'guides.pj.8':
+    '<strong>Comments:</strong> Once signed in you can comment on any profile (up to 500 characters) and edit or delete your own comments. On your own profile you can delete any comment. When you get new comments, "My character" shows a badge.',
+  'guides.pj.9':
+    "<strong>Sharing:</strong> When you open a profile, the link in the browser's address bar goes straight to that character. Copy it to share it.",
+  'guides.rel.title': 'GUIDE · RELATIONSHIPS',
+  'guides.rel.intro': 'How the relationship tree works.',
+  'guides.rel.1':
+    '<strong>Adding a relationship:</strong> In your profile editor press "+ Relationship", type the other character\'s name (it autocompletes) and the kind of relationship, for example "brother". The other character must already exist on the website.',
+  'guides.rel.2':
+    '<strong>On both profiles:</strong> The relationship shows on your profile. If the other player wants it on theirs too, they have to add it themselves.',
+  'guides.rel.3':
+    '<strong>The tree:</strong> Under Characters, "Relationship tree" draws the relationships from every profile. Characters with no relationships are left out of the drawing.',
+  'guides.rel.4':
+    '<strong>Moving around:</strong> Zoom in or out with the + / − buttons, by pinching on mobile or with the mouse wheel. Tap a character to open their profile.',
+  'guides.rel.5': '<strong>List:</strong> Below the tree is the list of every relationship, as each player wrote it.',
   // ---- "Enter the password" search ----
   'password.trigger': 'Enter the password',
   'password.placeholder': 'Enter the password',
