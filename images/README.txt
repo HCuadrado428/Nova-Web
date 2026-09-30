@@ -16,7 +16,11 @@ lv_0_20260207170013.mp4 / lore-video-poster.jpg
 -----------------------------------------------
 Vídeo del final de "Antes del Nova" (720p, comprimido con "faststart" para
 que empiece a reproducirse sin descargarse entero) y el fotograma que se ve
-antes de darle a play.
+antes de darle a play. Recomprimido a ~11 MB (H.264 a 330 kb/s en dos
+pasadas, audio AAC a 64 kb/s); si se cambia el vídeo, conviene dejarlo igual:
+  ffmpeg -i original.mp4 -c:v libx264 -preset slower -b:v 330k -pass 1 -an -f null /dev/null
+  ffmpeg -i original.mp4 -c:v libx264 -preset slower -b:v 330k -pass 2 \
+         -c:a aac -b:a 64k -movflags +faststart lv_0_20260207170013.mp4
 
 creepy/
 -------
