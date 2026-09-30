@@ -183,6 +183,69 @@ export default {
   'pj.treeIsolated': '{n} personajes sin relaciones no aparecen en el árbol.',
   'pj.treeIsolatedOne': '1 personaje sin relaciones no aparece en el árbol.',
   'pj.treeNodeLabel': 'Ver el perfil de {name}',
+  // ---- Guías (admiten <strong>) ----
+  'guides.open': 'Guías',
+  'guides.tabStart': 'Empezar',
+  'guides.tabWeb': 'La web',
+  'guides.tabPj': 'Personajes',
+  'guides.tabRel': 'Relaciones',
+  'guides.start.title': 'GUÍA · EMPEZAR',
+  'guides.start.intro': 'Lo básico para entrar a jugar al servidor.',
+  'guides.start.1':
+    '<strong>Modpack:</strong> Pulsa «Descargar Modpack» en la intro. El servidor usa Forge 1.20.1, así que necesitas esa versión de Forge con los mods del modpack.',
+  'guides.start.2':
+    '<strong>IP del servidor:</strong> Pulsa «Copiar IP» y pégala en Minecraft, en Multijugador → Añadir servidor.',
+  'guides.start.3':
+    '<strong>Estado del servidor:</strong> En la intro verás si el servidor está Online y cuántos jugadores hay. Se actualiza solo cada minuto; si no aparece, es que no se ha podido consultar.',
+  'guides.start.4':
+    '<strong>Normas:</strong> Antes de jugar, lee las normas de Discord, Minecraft y Objetos en el botón «Normas» (arriba a la derecha).',
+  'guides.web.title': 'GUÍA · LA WEB',
+  'guides.web.intro': 'Cómo moverte por la web.',
+  'guides.web.1':
+    '<strong>Entrar:</strong> La web empieza con la pantalla «Toca para entrar». Al pulsarla arranca la intro, con sonido.',
+  'guides.web.2':
+    '<strong>Sonido:</strong> El botón de abajo a la izquierda silencia o vuelve a activar el sonido. La web recuerda lo que elijas.',
+  'guides.web.3':
+    '<strong>Idioma:</strong> Con los botones ES · EN · PT de la intro cambias el idioma. Lo que escribe cada jugador (fichas y comentarios) no se traduce.',
+  'guides.web.4':
+    '<strong>Cuenta atrás:</strong> Debajo de los números sale la fecha en UTC y también en tu hora local.',
+  'guides.web.5':
+    '<strong>Lore:</strong> El botón «Lore» (arriba a la izquierda) abre «Antes del Nova», «Nova» y «Personajes». La historia se pasa con Anterior / Siguiente o con las flechas ← → del teclado.',
+  'guides.web.6': '<strong>Volver:</strong> En cualquier página, «← Volver» o la tecla Esc te devuelven a la intro.',
+  'guides.web.7':
+    '<strong>Contraseña:</strong> El botón «Inserta la contraseña» (abajo a la derecha) esconde secretos. No te vamos a decir cuáles, pero si fallas tres veces seguidas aparece una ayudita.',
+  'guides.pj.title': 'GUÍA · PERSONAJES',
+  'guides.pj.intro': 'Cómo crear y editar la ficha de tu personaje.',
+  'guides.pj.1':
+    '<strong>Ver fichas:</strong> En Lore → Personajes cualquiera puede ver todos los personajes y buscarlos por nombre, sin cuenta.',
+  'guides.pj.2':
+    '<strong>Iniciar sesión:</strong> Para tener ficha propia pulsa «Entrar con Google». Si no se abre la ventana de Google, permite las ventanas emergentes para esta web. Cada cuenta de Google tiene un personaje.',
+  'guides.pj.3':
+    '<strong>Crear y editar:</strong> Pulsa «Crear personaje» (o «Mi personaje» si ya lo tienes) para abrir el editor. Solo tú puedes editar tu ficha.',
+  'guides.pj.4':
+    '<strong>Datos:</strong> Nombre (obligatorio, hasta 60 caracteres), usuario de Minecraft (opcional) y link de foto (opcional). De Pinterest vale: clic derecho sobre la imagen → «copiar dirección de imagen».',
+  'guides.pj.5':
+    '<strong>Bloques:</strong> Añade bloques de Texto, Imagen, Spotify o Relación (hasta 30) y cámbialos de orden con las flechas. En Spotify pega el link de una canción, álbum o playlist.',
+  'guides.pj.6':
+    '<strong>Guardar y eliminar:</strong> «Guardar» publica los cambios. «Eliminar personaje» borra la ficha para siempre.',
+  'guides.pj.7':
+    '<strong>Tu nombre:</strong> El lápiz ✎ junto a tu nombre cambia cómo te ven los demás, por ejemplo al firmar comentarios.',
+  'guides.pj.8':
+    '<strong>Comentarios:</strong> Con sesión iniciada puedes comentar cualquier ficha (hasta 500 caracteres) y editar o borrar tus comentarios. En tu propia ficha puedes borrar cualquier comentario. Si te han comentado algo nuevo, «Mi personaje» lleva un aviso.',
+  'guides.pj.9':
+    '<strong>Compartir:</strong> Al abrir una ficha, el enlace de la barra del navegador lleva directo a ese personaje. Cópialo para compartirlo.',
+  'guides.rel.title': 'GUÍA · RELACIONES',
+  'guides.rel.intro': 'Cómo funciona el árbol de relaciones.',
+  'guides.rel.1':
+    '<strong>Añadir una relación:</strong> En el editor de tu ficha pulsa «+ Relación», escribe el nombre del otro personaje (se autocompleta) y el tipo de relación, por ejemplo «hermano». El otro personaje tiene que existir ya en la web.',
+  'guides.rel.2':
+    '<strong>En las dos fichas:</strong> La relación sale en tu ficha. Si el otro jugador también quiere tenerla en la suya, tiene que añadirla él.',
+  'guides.rel.3':
+    '<strong>El árbol:</strong> En Personajes, «Árbol de relaciones» dibuja las relaciones de todas las fichas. Los personajes sin ninguna relación no salen en el dibujo.',
+  'guides.rel.4':
+    '<strong>Moverse:</strong> Acerca o aleja con los botones + / −, pellizcando en el móvil o con la rueda del ratón. Pulsa un personaje para abrir su ficha.',
+  'guides.rel.5':
+    '<strong>Lista:</strong> Debajo del árbol está la lista de todas las relaciones, tal como las escribió cada jugador.',
   // ---- Buscador "Inserta la contraseña" ----
   'password.trigger': 'Inserta la contraseña',
   'password.placeholder': 'Inserta la contraseña',

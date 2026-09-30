@@ -106,6 +106,8 @@
           <span class="server-status-text" id="server-status-text"></span>
         </p>
         <button class="btn btn-ghost intro-copy-ip" id="copy-ip-btn" type="button" data-i18n="intro.copyIp">Copiar IP</button>
+        <!-- Abre la página de Guías (js/guides.js). -->
+        <button class="btn btn-ghost intro-guides-btn" id="guides-open-btn" type="button" data-i18n="guides.open">Guías</button>
         <!-- Selector de idioma (js/i18n.js). Cada botón lleva el nombre en su propio idioma. -->
         <fieldset class="lang-switch" aria-label="Idioma" data-i18n-attr="aria-label:lang.label">
           <button class="lang-btn" type="button" data-lang="es" lang="es" aria-label="Español">ES</button>
@@ -249,6 +251,73 @@
       <div class="rules-footer">
         <p class="rules-item rules-footer-item" data-i18n="rules.footer.1">Gracias por leer y formar parte de este servidor, queremos darte una buena experiencia.</p>
         <p class="rules-item rules-footer-item" data-i18n="rules.footer.2">Es importante recordar que estas medidas se implementan para mantener un ambiente de rol seguro y respetuoso para todos los participantes. ¡Gracias por su comprensión y colaboración!</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== GUÍAS ====================
+       Cómo funciona cada parte de la web, para los jugadores. Mismo patrón
+       que Normas (reutiliza sus estilos): pestañas con "guides-switch-btn"
+       y un panel por guía. Los textos están en js/i18n/*.js (claves guides.*);
+       el español de aquí es solo el respaldo y tiene que coincidir con es.js. -->
+  <section class="guides-page" id="guides-page">
+    <button class="guides-back-btn" id="guides-back-btn" type="button" data-i18n="common.back">← Volver</button>
+
+    <div class="rules-viewer">
+      <div class="rules-switch">
+        <button class="rules-switch-btn guides-switch-btn is-active" id="guides-switch-start" data-guides-target="start" type="button" data-i18n="guides.tabStart">Empezar</button>
+        <button class="rules-switch-btn guides-switch-btn" id="guides-switch-web" data-guides-target="web" type="button" data-i18n="guides.tabWeb">La web</button>
+        <button class="rules-switch-btn guides-switch-btn" id="guides-switch-pj" data-guides-target="pj" type="button" data-i18n="guides.tabPj">Personajes</button>
+        <button class="rules-switch-btn guides-switch-btn" id="guides-switch-rel" data-guides-target="rel" type="button" data-i18n="guides.tabRel">Relaciones</button>
+      </div>
+
+      <div class="rules-panel is-active" id="guides-panel-start">
+        <h2 class="rules-title glitch" data-text="GUÍA · EMPEZAR" data-i18n="guides.start.title">GUÍA · EMPEZAR</h2>
+        <p class="rules-intro" data-i18n="guides.start.intro">Lo básico para entrar a jugar al servidor.</p>
+
+        <p class="rules-item" data-i18n-html="guides.start.1"><strong>Modpack:</strong> Pulsa «Descargar Modpack» en la intro. El servidor usa Forge 1.20.1, así que necesitas esa versión de Forge con los mods del modpack.</p>
+        <p class="rules-item" data-i18n-html="guides.start.2"><strong>IP del servidor:</strong> Pulsa «Copiar IP» y pégala en Minecraft, en Multijugador → Añadir servidor.</p>
+        <p class="rules-item" data-i18n-html="guides.start.3"><strong>Estado del servidor:</strong> En la intro verás si el servidor está Online y cuántos jugadores hay. Se actualiza solo cada minuto; si no aparece, es que no se ha podido consultar.</p>
+        <p class="rules-item" data-i18n-html="guides.start.4"><strong>Normas:</strong> Antes de jugar, lee las normas de Discord, Minecraft y Objetos en el botón «Normas» (arriba a la derecha).</p>
+      </div>
+
+      <div class="rules-panel" id="guides-panel-web">
+        <h2 class="rules-title glitch" data-text="GUÍA · LA WEB" data-i18n="guides.web.title">GUÍA · LA WEB</h2>
+        <p class="rules-intro" data-i18n="guides.web.intro">Cómo moverte por la web.</p>
+
+        <p class="rules-item" data-i18n-html="guides.web.1"><strong>Entrar:</strong> La web empieza con la pantalla «Toca para entrar». Al pulsarla arranca la intro, con sonido.</p>
+        <p class="rules-item" data-i18n-html="guides.web.2"><strong>Sonido:</strong> El botón de abajo a la izquierda silencia o vuelve a activar el sonido. La web recuerda lo que elijas.</p>
+        <p class="rules-item" data-i18n-html="guides.web.3"><strong>Idioma:</strong> Con los botones ES · EN · PT de la intro cambias el idioma. Lo que escribe cada jugador (fichas y comentarios) no se traduce.</p>
+        <p class="rules-item" data-i18n-html="guides.web.4"><strong>Cuenta atrás:</strong> Debajo de los números sale la fecha en UTC y también en tu hora local.</p>
+        <p class="rules-item" data-i18n-html="guides.web.5"><strong>Lore:</strong> El botón «Lore» (arriba a la izquierda) abre «Antes del Nova», «Nova» y «Personajes». La historia se pasa con Anterior / Siguiente o con las flechas ← → del teclado.</p>
+        <p class="rules-item" data-i18n-html="guides.web.6"><strong>Volver:</strong> En cualquier página, «← Volver» o la tecla Esc te devuelven a la intro.</p>
+        <p class="rules-item" data-i18n-html="guides.web.7"><strong>Contraseña:</strong> El botón «Inserta la contraseña» (abajo a la derecha) esconde secretos. No te vamos a decir cuáles, pero si fallas tres veces seguidas aparece una ayudita.</p>
+      </div>
+
+      <div class="rules-panel" id="guides-panel-pj">
+        <h2 class="rules-title glitch" data-text="GUÍA · PERSONAJES" data-i18n="guides.pj.title">GUÍA · PERSONAJES</h2>
+        <p class="rules-intro" data-i18n="guides.pj.intro">Cómo crear y editar la ficha de tu personaje.</p>
+
+        <p class="rules-item" data-i18n-html="guides.pj.1"><strong>Ver fichas:</strong> En Lore → Personajes cualquiera puede ver todos los personajes y buscarlos por nombre, sin cuenta.</p>
+        <p class="rules-item" data-i18n-html="guides.pj.2"><strong>Iniciar sesión:</strong> Para tener ficha propia pulsa «Entrar con Google». Si no se abre la ventana de Google, permite las ventanas emergentes para esta web. Cada cuenta de Google tiene un personaje.</p>
+        <p class="rules-item" data-i18n-html="guides.pj.3"><strong>Crear y editar:</strong> Pulsa «Crear personaje» (o «Mi personaje» si ya lo tienes) para abrir el editor. Solo tú puedes editar tu ficha.</p>
+        <p class="rules-item" data-i18n-html="guides.pj.4"><strong>Datos:</strong> Nombre (obligatorio, hasta 60 caracteres), usuario de Minecraft (opcional) y link de foto (opcional). De Pinterest vale: clic derecho sobre la imagen → «copiar dirección de imagen».</p>
+        <p class="rules-item" data-i18n-html="guides.pj.5"><strong>Bloques:</strong> Añade bloques de Texto, Imagen, Spotify o Relación (hasta 30) y cámbialos de orden con las flechas. En Spotify pega el link de una canción, álbum o playlist.</p>
+        <p class="rules-item" data-i18n-html="guides.pj.6"><strong>Guardar y eliminar:</strong> «Guardar» publica los cambios. «Eliminar personaje» borra la ficha para siempre.</p>
+        <p class="rules-item" data-i18n-html="guides.pj.7"><strong>Tu nombre:</strong> El lápiz ✎ junto a tu nombre cambia cómo te ven los demás, por ejemplo al firmar comentarios.</p>
+        <p class="rules-item" data-i18n-html="guides.pj.8"><strong>Comentarios:</strong> Con sesión iniciada puedes comentar cualquier ficha (hasta 500 caracteres) y editar o borrar tus comentarios. En tu propia ficha puedes borrar cualquier comentario. Si te han comentado algo nuevo, «Mi personaje» lleva un aviso.</p>
+        <p class="rules-item" data-i18n-html="guides.pj.9"><strong>Compartir:</strong> Al abrir una ficha, el enlace de la barra del navegador lleva directo a ese personaje. Cópialo para compartirlo.</p>
+      </div>
+
+      <div class="rules-panel" id="guides-panel-rel">
+        <h2 class="rules-title glitch" data-text="GUÍA · RELACIONES" data-i18n="guides.rel.title">GUÍA · RELACIONES</h2>
+        <p class="rules-intro" data-i18n="guides.rel.intro">Cómo funciona el árbol de relaciones.</p>
+
+        <p class="rules-item" data-i18n-html="guides.rel.1"><strong>Añadir una relación:</strong> En el editor de tu ficha pulsa «+ Relación», escribe el nombre del otro personaje (se autocompleta) y el tipo de relación, por ejemplo «hermano». El otro personaje tiene que existir ya en la web.</p>
+        <p class="rules-item" data-i18n-html="guides.rel.2"><strong>En las dos fichas:</strong> La relación sale en tu ficha. Si el otro jugador también quiere tenerla en la suya, tiene que añadirla él.</p>
+        <p class="rules-item" data-i18n-html="guides.rel.3"><strong>El árbol:</strong> En Personajes, «Árbol de relaciones» dibuja las relaciones de todas las fichas. Los personajes sin ninguna relación no salen en el dibujo.</p>
+        <p class="rules-item" data-i18n-html="guides.rel.4"><strong>Moverse:</strong> Acerca o aleja con los botones + / −, pellizcando en el móvil o con la rueda del ratón. Pulsa un personaje para abrir su ficha.</p>
+        <p class="rules-item" data-i18n-html="guides.rel.5"><strong>Lista:</strong> Debajo del árbol está la lista de todas las relaciones, tal como las escribió cada jugador.</p>
       </div>
     </div>
   </section>

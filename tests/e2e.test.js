@@ -292,6 +292,22 @@ describe('web sin Firebase', () => {
     await page.context().close();
   });
 
+  test('Guías: abrir, cambiar de pestaña y volver', async () => {
+    const page = await openPage();
+    await enter(page);
+    await page.click('#guides-open-btn');
+    await sleep(CHANNEL_MS);
+    assert.equal(await view(page), 'guides');
+    assert.ok(await page.locator('#guides-panel-start').isVisible());
+    await page.click('#guides-switch-rel');
+    assert.ok(await page.locator('#guides-panel-rel').isVisible());
+    assert.ok(!(await page.locator('#guides-panel-start').isVisible()));
+    await page.keyboard.press('Escape');
+    await sleep(CHANNEL_MS);
+    assert.equal(await view(page), 'home');
+    await page.context().close();
+  });
+
   test('Normas: abrir, cambiar de panel y volver', async () => {
     const page = await openPage();
     await enter(page);
