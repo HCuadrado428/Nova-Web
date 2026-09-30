@@ -1,0 +1,638 @@
+/* ---------- Personajes (dentro de Lore): mismo tratamiento que Normas ---------- */
+body[data-view='personajes'] .personajes-page {
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.personajes-viewer {
+  position: relative;
+  z-index: 2;
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.personajes-session {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 40px;
+}
+.personajes-session[hidden],
+.personajes-status[hidden] {
+  display: none;
+}
+.personajes-status {
+  margin: 0 0 28px;
+  padding: 10px 14px;
+  border: 1px solid rgba(255, 46, 99, 0.45);
+  border-radius: var(--radius);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  text-align: center;
+  color: var(--glitch-red);
+}
+.personajes-session-active {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+.personajes-session-active[hidden] {
+  display: none;
+}
+.personajes-session-name {
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  color: rgba(234, 230, 218, 0.7);
+}
+.personajes-edit-name-btn {
+  background: transparent;
+  border: 1px solid rgba(55, 240, 224, 0.35);
+  color: var(--glitch-cyan);
+  border-radius: 6px;
+  width: 26px;
+  height: 26px;
+  line-height: 1;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+.personajes-edit-name-btn:hover {
+  background: rgba(55, 240, 224, 0.12);
+}
+
+/* Aviso de comentarios nuevos en tu propio personaje: puntito en "Mi personaje" */
+.personajes-has-badge {
+  position: relative;
+}
+.personajes-has-badge::after {
+  content: '';
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--glitch-red);
+  box-shadow: 0 0 6px rgba(255, 46, 99, 0.8);
+}
+
+.personajes-view {
+  display: none;
+  animation: lore-slide-in 0.5s ease both;
+}
+.personajes-view.is-active {
+  display: block;
+}
+
+/* ---- Directorio ---- */
+.personajes-search-input {
+  max-width: 320px;
+  margin: 0 auto 24px;
+}
+.personajes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 18px;
+}
+.personajes-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  background: transparent;
+  border: 1px solid var(--glitch-cyan);
+  border-radius: var(--radius);
+  padding: 14px;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    transform 0.15s ease;
+}
+.personajes-card:hover {
+  background: rgba(55, 240, 224, 0.1);
+  transform: translateY(-2px);
+}
+.personajes-card-photo {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: calc(var(--radius) - 2px);
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+}
+.personajes-card.is-photoless {
+  justify-content: center;
+  min-height: 120px;
+}
+.personajes-card-name {
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  letter-spacing: 1px;
+  text-align: center;
+  color: var(--text-main);
+}
+.personajes-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  font-family: var(--font-body);
+  color: rgba(234, 230, 218, 0.5);
+}
+
+/* ---- Árbol de relaciones (js/relations-graph.js) ---- */
+.personajes-directory-tools {
+  display: flex;
+  justify-content: center;
+  margin: -8px 0 24px;
+}
+.relations-hint {
+  text-align: center;
+  margin: 0 0 16px;
+}
+.relations-graph-wrap {
+  position: relative;
+  border: 1px solid rgba(55, 240, 224, 0.2);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+}
+.relations-graph-wrap:empty {
+  display: none;
+}
+.relations-graph {
+  display: block;
+  width: 100%;
+  /* Alto fijo (no el del dibujo): con pocos personajes el dibujo sale muy
+     apaisado y en el móvil quedaba una franja donde no se podía hacer zoom. */
+  height: clamp(300px, 55vh, 600px);
+  touch-action: pan-x pan-y; /* el pellizco lo gestiona js/relations-graph.js */
+  user-select: none;
+  -webkit-user-select: none;
+}
+/* Con zoom, arrastrar mueve el dibujo en vez de la página. */
+.relations-graph.is-zoomed {
+  touch-action: none;
+  cursor: grab;
+}
+.relations-graph.is-dragging {
+  cursor: grabbing;
+}
+.relations-zoom {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.relations-zoom-btn {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid rgba(55, 240, 224, 0.45);
+  border-radius: 6px;
+  background: rgba(5, 5, 5, 0.85);
+  color: var(--glitch-cyan);
+  font-family: var(--font-display);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease,
+    opacity 0.15s ease;
+}
+.relations-zoom-reset {
+  font-size: 9px;
+}
+.relations-zoom-btn:hover:not(:disabled),
+.relations-zoom-btn:focus-visible {
+  color: #fff;
+  border-color: var(--glitch-cyan);
+}
+.relations-zoom-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.relations-edge {
+  stroke: rgba(55, 240, 224, 0.5);
+  stroke-width: 2;
+  transition:
+    opacity 0.15s ease,
+    stroke 0.15s ease;
+}
+.relations-edge-label {
+  transition: opacity 0.15s ease;
+}
+.relations-edge-label text {
+  font-family: var(--font-body);
+  font-size: 14px;
+  fill: rgba(234, 230, 218, 0.85);
+}
+.relations-edge-label-bg {
+  fill: rgba(5, 5, 5, 0.85);
+  stroke: rgba(55, 240, 224, 0.25);
+  stroke-width: 1;
+}
+.relations-node {
+  cursor: pointer;
+  outline: none; /* el foco se marca con el aro (abajo) */
+}
+.relations-node-bg {
+  fill: #0d0d0d;
+}
+.relations-node-ring {
+  fill: none;
+  stroke: var(--glitch-cyan);
+  stroke-width: 2;
+  transition:
+    stroke 0.15s ease,
+    stroke-width 0.15s ease;
+}
+.relations-node:hover .relations-node-ring,
+.relations-node:focus-visible .relations-node-ring {
+  stroke: var(--glitch-red);
+  stroke-width: 3;
+}
+.relations-node-initial {
+  font-family: var(--font-display);
+  font-size: 18px;
+  fill: var(--text-main);
+}
+.relations-node-name {
+  font-family: var(--font-display);
+  font-size: 13px;
+  fill: var(--text-main);
+  paint-order: stroke;
+  stroke: #050505;
+  stroke-width: 4px;
+}
+/* Al pasar por un personaje, se apagan las relaciones que no son suyas. */
+.relations-graph.is-highlighting .relations-edge:not(.is-related),
+.relations-graph.is-highlighting .relations-edge-label:not(.is-related) {
+  opacity: 0.15;
+}
+.relations-edge.is-related {
+  stroke: var(--glitch-cyan);
+}
+.relations-list-title {
+  margin-top: 36px;
+}
+.relations-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-family: var(--font-body);
+  color: rgba(234, 230, 218, 0.78);
+}
+.relations-list-label {
+  color: rgba(234, 230, 218, 0.55);
+}
+.relations-list-person {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: var(--glitch-cyan);
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: rgba(55, 240, 224, 0.35);
+  text-underline-offset: 3px;
+}
+.relations-list-person:hover {
+  color: #fff;
+}
+
+/* ---- Perfil (solo lectura) ---- */
+.personajes-edit-btn {
+  float: right;
+}
+/* Dato extra opcional (usuario de Minecraft), justo debajo del nombre;
+   oculto por completo (ver js/personajes.js) cuando el personaje no lo puso. */
+.personajes-profile-mcuser {
+  margin: -8px 0 0;
+  font-family: var(--font-display);
+  font-size: 0.65rem;
+  letter-spacing: 1px;
+  color: rgba(234, 230, 218, 0.45);
+}
+.personajes-blocks {
+  clear: both;
+  margin-top: 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.personaje-block-texto-text {
+  font-family: var(--font-body);
+  font-size: 1.02rem;
+  line-height: 1.85;
+  color: rgba(234, 230, 218, 0.78);
+  white-space: pre-wrap;
+  margin: 0;
+}
+.personaje-block-imagen {
+  border-radius: var(--radius);
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+}
+.personaje-block-imagen-img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.personaje-block-spotify {
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.personaje-block-spotify-frame {
+  display: block;
+  border: none;
+}
+.personaje-block-relacion-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: transparent;
+  border: 1px solid var(--glitch-cyan);
+  border-radius: var(--radius);
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.personaje-block-relacion-card:hover {
+  background: rgba(55, 240, 224, 0.1);
+}
+.personaje-block-relacion-photo {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.personaje-block-relacion-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  text-align: left;
+}
+.personaje-block-relacion-info strong {
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  color: var(--text-main);
+}
+.personaje-block-relacion-etiqueta {
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  color: rgba(234, 230, 218, 0.55);
+}
+
+/* ---- Editor ---- */
+.personajes-field-label {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 0.65rem;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(234, 230, 218, 0.55);
+  margin: 22px 0 8px;
+}
+.personajes-input {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(55, 240, 224, 0.35);
+  border-radius: var(--radius);
+  color: var(--text-main);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  padding: 10px 14px;
+}
+.personajes-input:focus {
+  outline: none;
+  border-color: var(--glitch-cyan);
+}
+.personajes-input.is-invalid {
+  border-color: var(--glitch-red);
+}
+.personajes-block-textarea {
+  resize: vertical;
+}
+.personajes-field-hint {
+  margin: 6px 0 0;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  color: rgba(234, 230, 218, 0.45);
+}
+
+.personajes-editor-blocks {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 26px;
+}
+.personajes-editor-block {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.personajes-editor-block-relacion {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  flex: 1;
+}
+.personajes-editor-block-relacion .personajes-input {
+  flex: 1;
+  min-width: 160px;
+}
+.personajes-editor-block-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.personajes-block-move-btn,
+.personajes-block-remove-btn {
+  background: transparent;
+  border: 1px solid rgba(55, 240, 224, 0.35);
+  color: var(--glitch-cyan);
+  border-radius: 6px;
+  width: 26px;
+  height: 26px;
+  line-height: 1;
+  cursor: pointer;
+  font-size: 0.7rem;
+}
+.personajes-block-move-btn:hover,
+.personajes-block-remove-btn:hover {
+  background: rgba(55, 240, 224, 0.12);
+}
+.personajes-block-move-btn:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+}
+.personajes-block-remove-btn {
+  border-color: rgba(255, 46, 99, 0.45);
+  color: var(--glitch-red);
+}
+.personajes-block-remove-btn:hover {
+  background: rgba(255, 46, 99, 0.12);
+}
+
+.personajes-add-block {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.personajes-feedback {
+  min-height: 1.2em;
+  margin: 16px 0 0;
+  font-family: var(--font-display);
+  font-size: 0.65rem;
+  letter-spacing: 1px;
+  color: rgba(234, 230, 218, 0.5);
+}
+.personajes-feedback.is-fail {
+  color: var(--glitch-red);
+}
+.personajes-feedback.is-ok {
+  color: var(--emerald);
+}
+
+.personajes-editor-actions {
+  margin-top: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.personajes-delete-btn {
+  background: transparent;
+  border: 1px solid rgba(255, 46, 99, 0.45);
+  color: var(--glitch-red);
+  font-family: var(--font-display);
+  font-size: 0.65rem;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 11px 20px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+.personajes-delete-btn:hover {
+  background: rgba(255, 46, 99, 0.12);
+  color: #fff;
+}
+
+/* ---- Comentarios ---- */
+.personajes-comments {
+  margin-top: 50px;
+  padding-top: 30px;
+  border-top: 1px solid rgba(55, 240, 224, 0.15);
+}
+.personajes-comments-title {
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  color: var(--text-main);
+  margin: 0 0 20px;
+}
+.personajes-comments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.personajes-comments-hint {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  color: rgba(234, 230, 218, 0.45);
+}
+.personajes-comments-hint.is-fail {
+  color: var(--glitch-red);
+}
+.personajes-comment {
+  border-left: 2px solid rgba(55, 240, 224, 0.3);
+  padding-left: 14px;
+}
+.personajes-comment-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.personajes-comment-author {
+  font-family: var(--font-display);
+  font-size: 0.65rem;
+  letter-spacing: 1px;
+  color: var(--glitch-cyan);
+}
+.personajes-comment-remove-btn {
+  background: transparent;
+  border: 1px solid rgba(255, 46, 99, 0.45);
+  color: var(--glitch-red);
+  border-radius: 6px;
+  width: 22px;
+  height: 22px;
+  line-height: 1;
+  cursor: pointer;
+  font-size: 0.65rem;
+}
+.personajes-comment-remove-btn:hover {
+  background: rgba(255, 46, 99, 0.12);
+}
+.personajes-comment-edit-btn {
+  background: transparent;
+  border: 1px solid rgba(55, 240, 224, 0.35);
+  color: var(--glitch-cyan);
+  border-radius: 6px;
+  padding: 3px 10px;
+  line-height: 1.4;
+  cursor: pointer;
+  font-family: var(--font-display);
+  font-size: 0.6rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.personajes-comment-edit-btn:hover {
+  background: rgba(55, 240, 224, 0.12);
+}
+.personajes-comment-edit-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+.personajes-comment-text {
+  margin: 4px 0 0;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: rgba(234, 230, 218, 0.78);
+  white-space: pre-wrap;
+}
+.personajes-comment-edited-tag {
+  font-size: 0.78rem;
+  color: rgba(234, 230, 218, 0.4);
+  font-style: italic;
+}
+.personajes-comment-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+}
+.personajes-comment-form[hidden] {
+  display: none;
+}

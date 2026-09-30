@@ -1,0 +1,42 @@
+/* ---------- Transición de canal: estática de pantalla completa entre secciones ---------- */
+.channel-transition {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+.channel-transition.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.channel-transition.active .channel-transition-static {
+  animation:
+    static-jitter 0.15s steps(1) infinite,
+    channel-static-pulse 1.4s steps(2, end) infinite;
+}
+@keyframes channel-static-pulse {
+  0%,
+  100% {
+    opacity: 0.9;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+.channel-transition-text {
+  position: relative;
+  z-index: 1;
+  font-family: var(--font-display);
+  font-size: clamp(0.85rem, 3vw, 1.25rem);
+  letter-spacing: 3px;
+  color: var(--glitch-cyan);
+  text-shadow: 0 0 12px rgba(55, 240, 224, 0.6);
+}

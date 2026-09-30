@@ -8,7 +8,8 @@ Firebase) y algún secreto. Se publica con GitHub Pages tal cual está en
 
 | Ruta | Qué es |
 |---|---|
-| `index.html`, `style.css` | La página y sus estilos |
+| `index.html` | La página |
+| `css/` | Los estilos, un archivo por sección (`base.css` con fuentes, colores y botones comunes; `intro.css`, `lore.css`, `rules.css` con Normas y Guías, `personajes.css`...). Se cargan en el orden de `index.html` |
 | `js/main.js` | Punto de entrada: arranca cada sección |
 | `js/intro.js`, `lore.js`, `rules.js`, `guides.js`, `personajes.js`, `password.js`, `adan.js` | Una sección cada uno |
 | `js/audio.js`, `views.js`, `utils.js` | Sonido, cambio de pantalla y utilidades compartidas |

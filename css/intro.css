@@ -1,0 +1,829 @@
+/* ---------- Intro / Hero: arranque con estática y glitches ---------- */
+.intro-hero {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 20% 15%, rgba(55, 240, 224, 0.07), transparent 55%),
+    radial-gradient(ellipse at 80% 85%, rgba(255, 46, 99, 0.07), transparent 55%),
+    radial-gradient(ellipse at 50% 50%, #0c0c0c, #000 70%);
+}
+
+/* Al ir a una página completa (Lore, Normas, Guías, Personajes), se oculta con
+   "visibility" (nunca "display") para que sus animaciones no se reinicien al
+   volver a mostrarla. La vista activa la marca <body data-view="..."> (ver
+   js/views.js). */
+body:is([data-view='lore'], [data-view='rules'], [data-view='guides'], [data-view='personajes']) .intro-hero {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Rejilla apenas visible para que se intuya algo detrás de la estática */
+.intro-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+  background-size: 46px 46px;
+  mask-image: radial-gradient(ellipse at center, black, transparent 75%);
+}
+
+/* Envoltorio que recibe la sacudida + aberración cromática de pantalla completa;
+   sobredimensionado para que el desplazamiento nunca revele el borde */
+.intro-hero-inner {
+  position: absolute;
+  inset: -20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+/* El boot (estática + barras + contenido) queda pausado en su fotograma inicial
+   hasta que se pulsa la pantalla de entrada y JS añade "booted" al body */
+body:not(.booted) .intro-static,
+body:not(.booted) .intro-glitch-bars::before,
+body:not(.booted) .intro-glitch-bars::after,
+body:not(.booted) .boot-line,
+body:not(.booted) .intro-content,
+body:not(.booted) .intro-content::after {
+  animation-play-state: paused;
+}
+
+/* Sacudida + aberración cromática ocasional en toda la pantalla */
+@keyframes screen-glitch-flash {
+  0%,
+  96%,
+  100% {
+    transform: translate(0, 0);
+    filter: none;
+  }
+  96.4% {
+    transform: translate(-6px, 2px);
+    filter: url(#chromatic-split) contrast(1.15);
+  }
+  96.8% {
+    transform: translate(5px, -3px);
+    filter: none;
+  }
+  97.2% {
+    transform: translate(-3px, 1px);
+    filter: url(#chromatic-split);
+  }
+  97.6% {
+    transform: translate(0, 0);
+    filter: none;
+  }
+}
+body.booted .intro-hero-inner {
+  animation: screen-glitch-flash 9s steps(1) infinite 2.2s;
+}
+
+/* La pestaña en segundo plano, o estar en cualquier vista que no sea la intro,
+   pausa la animación en curso del intro (ahorro de batería/CPU); al volver,
+   sigue donde se quedó. Va DESPUÉS de "body.booted .intro-hero-inner" a
+   propósito: tienen la misma especificidad y el shorthand "animation" de esa
+   regla volvería a ponerla en "running" si esta fuera antes. Los
+   pseudo-elementos van sueltos porque no pueden ir dentro de :is(). */
+:is(body.tab-hidden, body:not([data-view='home'])) :is(.intro-static, .boot-line, .intro-content, .intro-hero-inner),
+:is(body.tab-hidden, body:not([data-view='home'])) .intro-glitch-bars::before,
+:is(body.tab-hidden, body:not([data-view='home'])) .intro-glitch-bars::after,
+:is(body.tab-hidden, body:not([data-view='home'])) .intro-content::after,
+body.tab-hidden .enter-text {
+  animation-play-state: paused;
+}
+
+/* Pantalla de entrada */
+.enter-gate {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font: inherit;
+  color: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+  cursor: pointer;
+  transition: opacity 0.5s ease;
+}
+.enter-gate.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+.enter-inner {
+  text-align: center;
+}
+/* Van en <span> (un <button> no puede llevar <p> dentro), con los mismos
+   márgenes que tenían como párrafos. */
+.enter-text {
+  display: block;
+  margin: 1em 0;
+  position: relative;
+  font-family: var(--font-display);
+  font-size: clamp(0.8rem, 2.3vw, 1.05rem);
+  letter-spacing: 2px;
+  color: var(--text-main);
+  text-transform: uppercase;
+  animation: enter-pulse 1.8s ease-in-out infinite;
+}
+.enter-hint {
+  display: block;
+  margin: 14px 0 0;
+  color: var(--text-main);
+  opacity: 0.35;
+  font-size: 0.78rem;
+  letter-spacing: 0.5px;
+}
+@keyframes enter-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Capa de estática de TV, compartida por la intro, la transición de canal y
+   la escena de Adán. Es 100px más grande que su contenedor por cada lado
+   para poder temblar con transform (static-jitter, lo mueve la GPU) sin
+   que se vea el borde; antes temblaba moviendo background-position, que
+   repinta toda la capa en cada salto. Su contenedor la recorta
+   (overflow: hidden). */
+.intro-static,
+.adan-scene-static,
+.channel-transition-static {
+  position: absolute;
+  inset: -100px;
+  background-image: var(--noise-static);
+  background-size: 140px 140px;
+  will-change: transform;
+}
+
+/* Estática tipo señal de TV sin sintonizar: fuerte al cargar, luego ambiente con picos */
+.intro-static {
+  z-index: 1;
+  pointer-events: none;
+  animation:
+    static-jitter 0.15s steps(1) infinite,
+    intro-boot 2.2s steps(9, end) 1 both,
+    intro-static-ambient 6s steps(2, end) infinite 2.2s;
+}
+
+/* Saltos de como mucho 90px: la capa sobra 100px por cada lado. */
+@keyframes static-jitter {
+  0% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(-70px, 40px);
+  }
+  50% {
+    transform: translate(55px, -60px);
+  }
+  75% {
+    transform: translate(-40px, -90px);
+  }
+  100% {
+    transform: translate(90px, 20px);
+  }
+}
+
+@keyframes intro-boot {
+  0% {
+    opacity: 1;
+  }
+  8% {
+    opacity: 0.82;
+  }
+  16% {
+    opacity: 1;
+  }
+  24% {
+    opacity: 0.55;
+  }
+  32% {
+    opacity: 0.95;
+  }
+  45% {
+    opacity: 0.35;
+  }
+  55% {
+    opacity: 0.8;
+  }
+  70% {
+    opacity: 0.2;
+  }
+  85% {
+    opacity: 0.45;
+  }
+  100% {
+    opacity: 0.07;
+  }
+}
+
+@keyframes intro-static-ambient {
+  0%,
+  80%,
+  100% {
+    opacity: 0.07;
+  }
+  85% {
+    opacity: 0.2;
+  }
+  90% {
+    opacity: 0.04;
+  }
+  95% {
+    opacity: 0.14;
+  }
+}
+
+/* Barras de glitch con separación de canal cian/magenta */
+.intro-glitch-bars {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+.intro-glitch-bars::before,
+.intro-glitch-bars::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 3px;
+  opacity: 0;
+}
+.intro-glitch-bars::before {
+  background: linear-gradient(90deg, transparent, var(--glitch-cyan), transparent);
+  animation:
+    intro-bar-sweep 1.9s steps(1) 1 both,
+    intro-bar-sweep-ambient 6.5s steps(1) infinite 1.9s;
+}
+.intro-glitch-bars::after {
+  background: linear-gradient(90deg, transparent, var(--glitch-red), transparent);
+  animation:
+    intro-bar-sweep 1.9s steps(1) 1 both reverse,
+    intro-bar-sweep-ambient 6.5s steps(1) infinite 3.2s;
+}
+@keyframes intro-bar-sweep {
+  0% {
+    top: 5%;
+    opacity: 0.8;
+  }
+  15% {
+    top: 70%;
+    opacity: 0.5;
+  }
+  30% {
+    top: 25%;
+    opacity: 0.7;
+  }
+  45% {
+    top: 85%;
+    opacity: 0.4;
+  }
+  60% {
+    top: 10%;
+    opacity: 0.6;
+  }
+  80% {
+    top: 55%;
+    opacity: 0.2;
+  }
+  100% {
+    top: 40%;
+    opacity: 0;
+  }
+}
+@keyframes intro-bar-sweep-ambient {
+  0%,
+  92%,
+  100% {
+    top: -10%;
+    opacity: 0;
+  }
+  93% {
+    top: 30%;
+    opacity: 0.5;
+  }
+  94% {
+    top: 65%;
+    opacity: 0.3;
+  }
+  95% {
+    top: -10%;
+    opacity: 0;
+  }
+}
+
+/* Texto de sintonización tipo terminal, parpadea antes de que se asiente el título */
+.boot-log {
+  position: absolute;
+  top: 44%;
+  left: 50%;
+  z-index: 3;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+.boot-line {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+  font-family: var(--font-display);
+  font-size: clamp(0.55rem, 1.6vw, 0.75rem);
+  letter-spacing: 1.5px;
+  color: var(--glitch-cyan);
+  text-shadow: 0 0 8px rgba(55, 240, 224, 0.5);
+  opacity: 0;
+}
+.boot-line::after {
+  content: '_';
+  animation: boot-cursor-blink 0.5s steps(1) infinite;
+}
+@keyframes boot-cursor-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+.boot-line-1 {
+  animation: boot-line-flicker 0.45s steps(1) 1 both;
+}
+.boot-line-2 {
+  animation: boot-line-flicker 0.5s steps(1) 1 both 0.5s;
+}
+.boot-line-3 {
+  animation: boot-line-flicker 0.4s steps(1) 1 both 1.05s;
+}
+@keyframes boot-line-flicker {
+  0% {
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  22% {
+    opacity: 0.2;
+  }
+  30% {
+    opacity: 1;
+  }
+  75% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Línea 4: el mensaje "corrupto", en rojo y con más temblor que las demás */
+.boot-line-creepy {
+  color: var(--glitch-red);
+  text-shadow: 0 0 10px rgba(255, 46, 99, 0.6);
+  animation: boot-line-flicker-creepy 0.55s steps(1) 1 both 1.5s;
+}
+@keyframes boot-line-flicker-creepy {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%);
+  }
+  8% {
+    opacity: 1;
+    transform: translate(calc(-50% - 3px), -50%);
+  }
+  13% {
+    opacity: 0.1;
+    transform: translate(-50%, -50%);
+  }
+  18% {
+    opacity: 1;
+    transform: translate(calc(-50% + 2px), calc(-50% - 1px));
+  }
+  24% {
+    opacity: 0.3;
+    transform: translate(-50%, -50%);
+  }
+  30% {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+  78% {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+  86% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Variante "imagen" de la línea 4: en vez de la frase pequeña, la foto ocupa
+   toda la pantalla como fondo y el texto sale grande encima, centrado. */
+.boot-fullscreen-image {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  pointer-events: none;
+}
+.boot-fullscreen-image.active {
+  animation: boot-fullscreen-flicker 0.7s steps(1) 1 both 1.5s;
+}
+@keyframes boot-fullscreen-flicker {
+  0% {
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  13% {
+    opacity: 0.15;
+  }
+  18% {
+    opacity: 1;
+  }
+  75% {
+    opacity: 1;
+  }
+  88% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+.boot-fullscreen-caption {
+  position: relative;
+  white-space: nowrap;
+  font-family: var(--font-display);
+  font-size: clamp(1.4rem, 6vw, 3.2rem);
+  letter-spacing: 3px;
+  color: var(--glitch-red);
+  text-shadow:
+    0 0 12px #000,
+    0 0 24px #000,
+    0 0 20px rgba(255, 46, 99, 0.8);
+}
+
+.intro-content {
+  position: relative;
+  z-index: 3;
+  padding: 24px;
+  max-width: 720px;
+  opacity: 0;
+  animation:
+    intro-reveal 1s ease 2.15s 1 both,
+    intro-content-jitter 8s steps(1) infinite 3.15s;
+}
+@keyframes intro-reveal {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+    filter: blur(3px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+@keyframes intro-content-jitter {
+  0%,
+  90%,
+  100% {
+    transform: translate(0, 0);
+    filter: none;
+  }
+  91% {
+    transform: translate(-3px, 1px);
+    filter: contrast(1.4) brightness(1.3);
+  }
+  92% {
+    transform: translate(2px, -2px);
+    filter: contrast(0.8);
+  }
+  93% {
+    transform: translate(0, 0);
+    filter: none;
+  }
+  96% {
+    transform: translate(3px, 0);
+    filter: brightness(1.5);
+  }
+  97% {
+    transform: translate(-2px, 1px);
+    filter: none;
+  }
+}
+.intro-content::after {
+  content: '';
+  position: absolute;
+  inset: -24px;
+  pointer-events: none;
+  background-image: var(--noise-static);
+  mix-blend-mode: overlay;
+  opacity: 0;
+  animation: intro-content-static-flash 8s steps(1) infinite 3.15s;
+}
+@keyframes intro-content-static-flash {
+  0%,
+  90%,
+  100% {
+    opacity: 0;
+  }
+  91% {
+    opacity: 0.7;
+  }
+  92% {
+    opacity: 0.15;
+  }
+  93% {
+    opacity: 0;
+  }
+  96% {
+    opacity: 0.55;
+  }
+  97% {
+    opacity: 0;
+  }
+}
+
+.intro-title {
+  position: relative;
+  font-family: var(--font-display);
+  font-size: clamp(2.4rem, 9vw, 5.5rem);
+  margin: 0 0 32px;
+  line-height: 1.15;
+  color: var(--text-main);
+  text-shadow:
+    0 0 24px rgba(55, 240, 224, 0.3),
+    4px 4px 0 rgba(255, 46, 99, 0.25);
+  transition:
+    font-size 0.3s ease,
+    padding 0.3s ease,
+    color 0.3s ease;
+}
+
+/* Efecto glitch: dos capas de color (cian/magenta) que se desalinean en ráfagas breves */
+.glitch::before,
+.glitch::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  background: transparent;
+}
+.glitch::before {
+  color: var(--glitch-cyan);
+  clip-path: inset(0 0 100% 0);
+  animation: glitch-1 5s infinite steps(1);
+}
+.glitch::after {
+  color: var(--glitch-red);
+  clip-path: inset(100% 0 0 0);
+  animation: glitch-2 5s infinite steps(1);
+}
+@keyframes glitch-1 {
+  0%,
+  100% {
+    clip-path: inset(0 0 100% 0);
+    transform: translate(0, 0);
+  }
+  4% {
+    clip-path: inset(10% 0 60% 0);
+    transform: translate(-4px, 1px);
+  }
+  5% {
+    clip-path: inset(40% 0 30% 0);
+    transform: translate(3px, -1px);
+  }
+  6% {
+    clip-path: inset(0 0 100% 0);
+    transform: translate(0, 0);
+  }
+  62% {
+    clip-path: inset(60% 0 5% 0);
+    transform: translate(-3px, 0);
+  }
+  63% {
+    clip-path: inset(0 0 100% 0);
+    transform: translate(0, 0);
+  }
+}
+@keyframes glitch-2 {
+  0%,
+  100% {
+    clip-path: inset(100% 0 0 0);
+    transform: translate(0, 0);
+  }
+  4% {
+    clip-path: inset(60% 0 10% 0);
+    transform: translate(4px, -1px);
+  }
+  5% {
+    clip-path: inset(20% 0 50% 0);
+    transform: translate(-3px, 1px);
+  }
+  6% {
+    clip-path: inset(100% 0 0 0);
+    transform: translate(0, 0);
+  }
+  62% {
+    clip-path: inset(5% 0 70% 0);
+    transform: translate(3px, 0);
+  }
+  63% {
+    clip-path: inset(100% 0 0 0);
+    transform: translate(0, 0);
+  }
+}
+
+.intro-actions {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.modpack-version {
+  margin-top: 8px;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: clamp(0.6rem, 1.3vw, 0.75rem);
+  letter-spacing: 0.5px;
+  color: var(--text-dim);
+  opacity: 0.7;
+}
+
+/* Estado del servidor (js/server-status.js): punto verde/rojo + texto */
+.server-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 10px 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(0.55rem, 1.2vw, 0.7rem);
+  letter-spacing: 0.5px;
+  color: var(--text-main);
+  opacity: 0.85;
+}
+.server-status[hidden] {
+  display: none;
+}
+.server-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--glitch-red);
+  box-shadow: 0 0 6px rgba(255, 46, 99, 0.8);
+}
+/* Selector de idioma (js/i18n.js): tres botones pequeños "ES · EN · PT",
+   arriba a la izquierda debajo de "Lore". Aparece a la vez que los botones de
+   las esquinas (ver .menu-toggle-btn). */
+.lang-switch {
+  display: flex;
+  gap: 6px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+body.booted .lang-switch {
+  pointer-events: auto;
+  animation: intro-reveal 1s ease 2.15s 1 both;
+}
+.lang-btn {
+  background: transparent;
+  border: 1px solid rgba(234, 230, 218, 0.2);
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-family: var(--font-display);
+  font-size: 0.55rem;
+  letter-spacing: 1px;
+  color: rgba(234, 230, 218, 0.55);
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+.lang-btn:hover {
+  color: var(--text-main);
+  border-color: rgba(55, 240, 224, 0.5);
+}
+.lang-btn[aria-pressed='true'] {
+  color: var(--glitch-cyan);
+  border-color: var(--glitch-cyan);
+  background: rgba(55, 240, 224, 0.1);
+}
+
+/* Cuenta atrás "Be The Boss" (js/countdown.js): abajo del todo en la intro */
+.countdown {
+  margin: 26px auto 0;
+  padding-top: 18px;
+  border-top: 1px solid rgba(234, 230, 218, 0.12);
+  max-width: 420px;
+}
+.countdown[hidden],
+.countdown [hidden] {
+  display: none;
+}
+.countdown-title {
+  margin: 0 0 12px;
+  font-family: var(--font-display);
+  font-size: clamp(0.75rem, 2vw, 1rem);
+  letter-spacing: 2px;
+  color: var(--glitch-red);
+  text-shadow: 0 0 10px rgba(255, 46, 99, 0.45);
+}
+.countdown-timer {
+  display: flex;
+  justify-content: center;
+  gap: clamp(8px, 2.5vw, 16px);
+}
+.countdown-unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 3.4em;
+  padding: 8px 6px 6px;
+  border: 1px solid rgba(55, 240, 224, 0.35);
+  border-radius: 6px;
+  background: rgba(55, 240, 224, 0.06);
+}
+.countdown-num {
+  font-family: var(--font-display);
+  font-size: clamp(0.95rem, 3vw, 1.35rem);
+  color: var(--glitch-cyan);
+  font-variant-numeric: tabular-nums;
+}
+/* Fuente normal, no la pixel: esta no tiene "Í" mayúscula (DÍAS). */
+.countdown-label {
+  margin-top: 4px;
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.countdown-date {
+  margin: 10px 0 0;
+  font-size: 0.75rem;
+  color: var(--text-dim);
+}
+.countdown-done {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(0.7rem, 1.8vw, 0.9rem);
+  color: var(--glitch-cyan);
+}
+
+.server-status[data-state='online'] .server-status-dot {
+  background: var(--emerald);
+  box-shadow: 0 0 6px rgba(46, 204, 113, 0.8);
+}
+
+.intro-copy-ip {
+  background: rgba(55, 240, 224, 0.1);
+  border-color: var(--glitch-cyan);
+  color: var(--glitch-cyan);
+}
+.intro-copy-ip:hover {
+  background: rgba(55, 240, 224, 0.14);
+  color: #fff;
+}
+.intro-copy-ip.is-copied {
+  border-color: var(--emerald);
+  color: var(--emerald);
+  background: rgba(46, 204, 113, 0.14);
+}

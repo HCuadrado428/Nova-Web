@@ -1,0 +1,264 @@
+/* ======================================================
+   NOVA 2 — Estilos
+   Paleta: espacio liminal / backrooms desgastado, con
+   glitches de color (cian + magenta) sobre acentos esmeralda + morado end
+   ====================================================== */
+
+/* ---------- Fuentes (servidas desde fonts/, ver fonts/README.md) ----------
+   Cada fuente va partida en dos archivos por "unicode-range": el navegador
+   solo descarga el de letras extra (latin-ext) si la página las usa. */
+@font-face {
+  font-family: 'Press Start 2P';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../fonts/press-start-2p-latin-400-normal.woff2') format('woff2');
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Press Start 2P';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../fonts/press-start-2p-latin-ext-400-normal.woff2') format('woff2');
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('../fonts/inter-latin-wght-normal.woff2') format('woff2-variations');
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('../fonts/inter-latin-ext-wght-normal.woff2') format('woff2-variations');
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+:root {
+  --bg-stone: #17150f;
+
+  --text-main: #eae6da;
+
+  --emerald: #2ecc71;
+  --end-purple: #a855f7;
+
+  /* Acentos de glitch: separación de canal cian/magenta, tipo VHS/CRT */
+  --glitch-cyan: #37f0e0;
+  --glitch-red: #ff2e63;
+
+  --font-display: 'Press Start 2P', 'Courier New', monospace;
+  --font-body: 'Inter', system-ui, -apple-system, Segoe UI, sans-serif;
+
+  --text-dim: #8a8a8a;
+
+  --radius: 10px;
+
+  /* Texturas de ruido (SVG generado, sin archivos). La de estática la
+     comparten la intro, la transición de canal y la escena de Adán. */
+  --noise-grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  --noise-static: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+}
+
+* {
+  box-sizing: border-box;
+}
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--bg-stone);
+  color: var(--text-main);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* ---------- Cursor personalizado: retícula con el mismo split cian/magenta
+   del resto del glitch del sitio, en vez del cursor del sistema. Los campos
+   de texto reales (input/textarea) mantienen el cursor de texto normal, y
+   los estados :disabled ya definidos más abajo (cursor: not-allowed) ganan
+   por especificidad sobre la regla genérica de "a, button". ---------- */
+html,
+body {
+  cursor:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><circle cx='11' cy='11' r='6' fill='none' stroke='%2337f0e0' stroke-width='1.5'/><circle cx='13' cy='13' r='6' fill='none' stroke='%23ff2e63' stroke-width='1.5'/><circle cx='12' cy='12' r='1.3' fill='%23eae6da'/></svg>")
+    12 12,
+    auto;
+}
+a,
+button,
+[role='button'] {
+  cursor:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='26' height='26' viewBox='0 0 26 26'><circle cx='12' cy='12' r='7' fill='none' stroke='%2337f0e0' stroke-width='2'/><circle cx='14' cy='14' r='7' fill='none' stroke='%23ff2e63' stroke-width='2'/><circle cx='13' cy='13' r='2' fill='%23eae6da'/></svg>")
+    13 13,
+    pointer;
+}
+input,
+textarea,
+select {
+  cursor: text;
+}
+
+/* Foco visible al moverse con el teclado (Tab): un contorno cian en botones
+   y enlaces. Con ratón o dedo no aparece (:focus-visible). Los campos de
+   texto ya marcan el foco cambiando el color del borde. */
+:is(a, button, [tabindex]):focus-visible {
+  outline: 2px solid var(--glitch-cyan);
+  outline-offset: 3px;
+}
+/* La pantalla de entrada ocupa toda la ventana: el contorno va por dentro. */
+.enter-gate:focus-visible {
+  outline-offset: -8px;
+}
+
+.glitch-filter-defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+/* ---------- Ambientación: grano + líneas de escaneo (espacio liminal / VHS) ---------- */
+.noise-overlay,
+.scanline-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.noise-overlay {
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  background-image: var(--noise-grain);
+  animation: noise-flicker 6s steps(1) infinite;
+}
+
+/* Las líneas van en un ::before 120px más alto que la pantalla que se
+   desliza con transform (lo mueve la GPU), en vez de animar
+   background-position, que obligaba a repintar la pantalla entera en cada
+   fotograma. 120px = 40 líneas de 3px: el bucle no tiene salto. */
+.scanline-overlay {
+  overflow: hidden;
+  opacity: 0.35;
+  mix-blend-mode: multiply;
+}
+.scanline-overlay::before {
+  content: '';
+  position: absolute;
+  inset: -120px 0 0;
+  background-image: repeating-linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.35) 0px,
+    rgba(0, 0, 0, 0.35) 1px,
+    transparent 2px,
+    transparent 3px
+  );
+  animation: scan-drift 7s linear infinite;
+  will-change: transform;
+}
+
+@keyframes noise-flicker {
+  0%,
+  89%,
+  100% {
+    opacity: 0.045;
+  }
+  90% {
+    opacity: 0.09;
+  }
+  92% {
+    opacity: 0.02;
+  }
+  95% {
+    opacity: 0.07;
+  }
+}
+@keyframes scan-drift {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(120px);
+  }
+}
+
+/* ---------- Botones ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 20px;
+  border-radius: var(--radius);
+  font-weight: 700;
+  font-size: 0.9rem;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    background 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+  white-space: nowrap;
+}
+.btn:hover {
+  transform: translateY(-2px);
+}
+.btn:active {
+  transform: translateY(0);
+}
+
+.btn-primary {
+  position: relative;
+  overflow: hidden;
+  background: var(--emerald);
+  color: #0d1f14;
+  box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.5);
+}
+.btn-primary:hover {
+  background: #3fdc82;
+  box-shadow: 0 4px 18px rgba(46, 204, 113, 0.35);
+}
+.btn-primary::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 40%, rgba(255, 255, 255, 0.4) 50%, transparent 60%);
+  transform: translateX(-120%);
+  transition: transform 0.5s ease;
+}
+.btn-primary:hover::after {
+  transform: translateX(120%);
+}
+
+.btn-ghost {
+  background: rgba(168, 85, 247, 0.12);
+  border-color: var(--end-purple);
+  color: #d9b8ff;
+}
+.btn-ghost:hover {
+  background: rgba(168, 85, 247, 0.22);
+}
+
+.btn-lg {
+  padding: 14px 28px;
+  font-size: 1rem;
+}

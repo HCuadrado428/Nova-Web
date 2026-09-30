@@ -1,0 +1,84 @@
+/* ---------- Página de Normas: mismo tratamiento visual que la de Lore ---------- */
+body[data-view='rules'] .rules-page {
+  visibility: visible;
+  pointer-events: auto;
+}
+/* Guías: misma página que Normas (reutiliza .rules-viewer, .rules-panel...) */
+body[data-view='guides'] .guides-page {
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.rules-viewer {
+  position: relative;
+  z-index: 2;
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+/* Botones para cambiar de panel (Discord/Minecraft) sin salir de la página */
+.rules-switch {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 44px;
+}
+.rules-switch-btn {
+  letter-spacing: 1.5px;
+}
+.rules-switch-btn.is-active {
+  background: rgba(55, 240, 224, 0.16);
+  color: #fff;
+}
+
+.rules-panel {
+  display: none;
+  animation: lore-slide-in 0.5s ease both;
+}
+.rules-panel.is-active {
+  display: block;
+}
+
+.rules-title {
+  position: relative;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: clamp(1.1rem, 4vw, 1.7rem);
+  color: var(--text-main);
+  text-shadow: 0 0 20px rgba(55, 240, 224, 0.3);
+  margin: 0 0 18px;
+}
+
+.rules-intro {
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  color: rgba(234, 230, 218, 0.55);
+  margin: 0 0 34px;
+}
+
+.rules-item {
+  font-family: var(--font-body);
+  font-size: 1.02rem;
+  line-height: 1.85;
+  color: rgba(234, 230, 218, 0.78);
+  margin: 0 0 22px;
+}
+.rules-item strong {
+  color: var(--glitch-cyan);
+}
+.rules-item:last-child {
+  margin-bottom: 0;
+}
+
+.rules-footer {
+  margin-top: 50px;
+  padding-top: 30px;
+  border-top: 1px solid rgba(55, 240, 224, 0.15);
+}
+.rules-footer-item {
+  text-align: center;
+  font-size: 0.9rem;
+  color: rgba(234, 230, 218, 0.5);
+}

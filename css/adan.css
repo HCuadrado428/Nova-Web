@@ -1,0 +1,167 @@
+/* ---------- Easter egg de Adán: pantalla negra, diálogo tecleado, apagado final ---------- */
+.adan-scene {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  background: #000;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  /* Sin transition a propósito: el corte a negro debe ser instantáneo
+     ("de golpe"), no un fundido como el resto de overlays del sitio. */
+}
+body[data-view='adan'] .adan-scene {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.adan-scene-static {
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+body[data-view='adan'] .adan-scene-static {
+  animation: static-jitter 0.15s steps(1) infinite;
+}
+
+/* Panel de consola real: pegado a la esquina superior izquierda, texto
+   alineado a la izquierda y creciendo hacia abajo, no un mensaje flotando
+   centrado en medio de la pantalla. */
+.adan-scene-terminal {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 14px;
+  width: min(92vw, 720px);
+  padding: 48px;
+  text-align: left;
+  transition: opacity 0.4s ease;
+}
+
+/* Líneas de Adán (la pregunta y su respuesta final): morado. position:relative
+   para que el glitch (.glitch, añadido por JS al terminar de escribirse)
+   recorte sus capas ::before/::after sobre esta línea y no sobre todo el panel. */
+.adan-scene-line {
+  position: relative;
+  margin: 0;
+  min-height: 1.4em;
+  font-family: var(--font-display);
+  font-size: clamp(0.7rem, 2.2vw, 0.95rem);
+  line-height: 1.7;
+  letter-spacing: 1px;
+  color: var(--end-purple);
+  text-shadow: 0 0 14px rgba(168, 85, 247, 0.55);
+  white-space: pre-wrap;
+}
+
+/* Historial de rondas ya cerradas (una o más, si Adán te deja preguntar más
+   de una vez en la misma visita). Cada ronda añade aquí su frase congelada
+   (roja, con .adan-scene-line-player) y la respuesta de Adán (morada,
+   .adan-scene-line normal). */
+.adan-scene-log {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.adan-scene-line-player {
+  color: var(--glitch-red);
+  text-shadow: 0 0 14px rgba(255, 46, 99, 0.55);
+}
+
+/* Línea del jugador (lo que "escribe" quien responde a Adán): rojo, para
+   distinguirla de las líneas de Adán en morado. El <input> real captura el
+   teclado pero no se ve (evita el caret nativo, fino y casi invisible con
+   la fuente pixel); lo que se ve es .adan-scene-echo + un cursor de bloque
+   parpadeante propio, más fiel a una consola real. */
+.adan-scene-input-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  width: 100%;
+}
+/* Sin esto, el atributo HTML "hidden" no hace nada aquí: una regla de autor
+   como "display: flex" de arriba gana siempre al estilo por defecto del
+   user-agent para [hidden], sea cual sea su especificidad. */
+.adan-scene-input-row[hidden] {
+  display: none;
+}
+.adan-scene-input-row.is-jittering {
+  animation: adan-row-jitter 0.18s steps(1) 1;
+}
+@keyframes adan-row-jitter {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  20% {
+    transform: translate(-3px, 1px);
+  }
+  40% {
+    transform: translate(2px, -1px);
+  }
+  60% {
+    transform: translate(-2px, 0);
+  }
+  80% {
+    transform: translate(1px, 1px);
+  }
+}
+.adan-scene-caret {
+  margin-right: 6px;
+  font-family: var(--font-display);
+  color: var(--glitch-red);
+  text-shadow: 0 0 14px rgba(255, 46, 99, 0.55);
+}
+.adan-scene-echo {
+  font-family: var(--font-display);
+  font-size: clamp(0.7rem, 2.2vw, 0.95rem);
+  letter-spacing: 1px;
+  color: var(--glitch-red);
+  text-shadow: 0 0 14px rgba(255, 46, 99, 0.55);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.adan-scene-cursor {
+  font-family: var(--font-display);
+  font-size: clamp(0.7rem, 2.2vw, 0.95rem);
+  color: var(--glitch-red);
+  text-shadow: 0 0 14px rgba(255, 46, 99, 0.55);
+  animation: adan-cursor-blink 1s steps(1) infinite;
+}
+@keyframes adan-cursor-blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+.adan-scene-input {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: transparent;
+  caret-color: transparent;
+}
+
+/* Estado final: apagado permanente, sin estática ni texto, totalmente inerte */
+.adan-scene.is-dead .adan-scene-terminal,
+.adan-scene.is-dead .adan-scene-static {
+  display: none;
+}
