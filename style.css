@@ -970,15 +970,22 @@ body.tab-hidden .enter-text {
   background: var(--glitch-red);
   box-shadow: 0 0 6px rgba(255, 46, 99, 0.8);
 }
-/* Selector de idioma (js/i18n.js): tres botones pequeños "ES · EN · PT" */
+/* Selector de idioma (js/i18n.js): tres botones pequeños "ES · EN · PT",
+   arriba a la izquierda debajo de "Lore". Aparece a la vez que los botones de
+   las esquinas (ver .menu-toggle-btn). */
 .lang-switch {
   display: flex;
-  justify-content: center;
   gap: 6px;
   min-width: 0;
-  margin: 16px 0 0;
+  margin: 0;
   padding: 0;
   border: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+body.booted .lang-switch {
+  pointer-events: auto;
+  animation: intro-reveal 1s ease 2.15s 1 both;
 }
 .lang-btn {
   background: transparent;
@@ -1072,8 +1079,6 @@ body.tab-hidden .enter-text {
 }
 
 .intro-copy-ip {
-  display: block;
-  margin: 24px auto 0;
   background: rgba(55, 240, 224, 0.1);
   border-color: var(--glitch-cyan);
   color: var(--glitch-cyan);
@@ -1081,10 +1086,6 @@ body.tab-hidden .enter-text {
 .intro-copy-ip:hover {
   background: rgba(55, 240, 224, 0.14);
   color: #fff;
-}
-.intro-guides-btn {
-  display: block;
-  margin: 12px auto 0;
 }
 .intro-copy-ip.is-copied {
   border-color: var(--emerald);
@@ -1262,6 +1263,9 @@ body[data-view='personajes'] .personajes-back-btn {
   bottom: 20px;
   right: 20px;
   z-index: 6;
+  /* Con "Silenciar" en la otra esquina: en pantallas estrechas cada uno se
+     queda en su mitad y el texto pasa a dos líneas en vez de pisarse. */
+  max-width: calc(50% - 30px);
   opacity: 0;
   pointer-events: none;
 }
@@ -1279,6 +1283,7 @@ body.booted .password-trigger-btn {
   bottom: 20px;
   left: 20px;
   z-index: 6;
+  max-width: calc(50% - 30px);
   opacity: 0;
   pointer-events: none;
 }
@@ -2648,7 +2653,7 @@ body[data-view='personajes'] .personajes-page {
   } /* la sacudida de pantalla: gana a la regla que la pone */
   /* Misma especificidad que "body.booted .menu-toggle-btn" (que es quien les
      pone la animación de aparición), y va después, así que gana. */
-  body.booted :is(.menu-toggle-btn, .password-trigger-btn, .audio-toggle-btn) {
+  body.booted :is(.menu-toggle-btn, .password-trigger-btn, .audio-toggle-btn, .lang-switch) {
     animation: none;
     opacity: 1;
   }

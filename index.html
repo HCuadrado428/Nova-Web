@@ -99,6 +99,8 @@
           <a class="btn btn-primary btn-lg" id="download-modpack"
              href="https://drive.google.com/drive/folders/1d6L9iJC7T4NUyx9x8YVAl2wPVo0LmIGE"
              target="_blank" rel="noopener" data-i18n="intro.download">Descargar Modpack</a>
+          <!-- Al lado del modpack (no debajo): son las dos cosas que hacen falta para jugar. -->
+          <button class="btn btn-ghost btn-lg intro-copy-ip" id="copy-ip-btn" type="button" data-i18n="intro.copyIp">Copiar IP</button>
         </div>
         <p class="modpack-version">Forge 1.20.1</p>
         <!-- Estado del servidor en directo: lo rellena js/server-status.js.
@@ -107,15 +109,6 @@
           <span class="server-status-dot" aria-hidden="true"></span>
           <span class="server-status-text" id="server-status-text"></span>
         </p>
-        <button class="btn btn-ghost intro-copy-ip" id="copy-ip-btn" type="button" data-i18n="intro.copyIp">Copiar IP</button>
-        <!-- Abre la página de Guías (js/guides.js). -->
-        <button class="btn btn-ghost intro-guides-btn" id="guides-open-btn" type="button" data-i18n="guides.open">Guías</button>
-        <!-- Selector de idioma (js/i18n.js). Cada botón lleva el nombre en su propio idioma. -->
-        <fieldset class="lang-switch" aria-label="Idioma" data-i18n-attr="aria-label:lang.label">
-          <button class="lang-btn" type="button" data-lang="es" lang="es" aria-label="Español">ES</button>
-          <button class="lang-btn" type="button" data-lang="en" lang="en" aria-label="English">EN</button>
-          <button class="lang-btn" type="button" data-lang="pt" lang="pt" aria-label="Português">PT</button>
-        </fieldset>
         <!-- Cuenta atrás "Be The Boss" (js/countdown.js). data-end va en UTC: las 22:00
              del 10 de octubre en España (CEST, UTC+2) son las 20:00 UTC. Para otra
              fecha, cambia solo data-end. Oculta hasta que la arranca el JS. -->
@@ -145,7 +138,8 @@
   </section>
 
   <!-- Botón Lore: arriba a la izquierda, aparece junto al resto del contenido tras el boot.
-       Al pulsarlo despliega el submenú con las pistas (Antes del Nova / Nova / Personajes). -->
+       Al pulsarlo despliega el submenú con las pistas (Antes del Nova / Nova / Personajes).
+       Debajo va el selector de idioma, en la esquina para no ocupar sitio en el centro. -->
   <div class="lore-triggers" inert data-until-boot>
     <button class="menu-toggle-btn" id="lore-menu-btn" type="button" aria-expanded="false" aria-controls="lore-submenu" data-i18n="menu.lore">Lore</button>
     <div class="submenu" id="lore-submenu">
@@ -153,10 +147,17 @@
       <button class="lore-btn" id="lore-nova-btn" type="button">Nova</button>
       <button class="lore-btn" id="lore-personajes-btn" type="button" data-i18n="menu.personajes">Personajes</button>
     </div>
+    <!-- Selector de idioma (js/i18n.js). Cada botón lleva el nombre en su propio idioma. -->
+    <fieldset class="lang-switch" aria-label="Idioma" data-i18n-attr="aria-label:lang.label">
+      <button class="lang-btn" type="button" data-lang="es" lang="es" aria-label="Español">ES</button>
+      <button class="lang-btn" type="button" data-lang="en" lang="en" aria-label="English">EN</button>
+      <button class="lang-btn" type="button" data-lang="pt" lang="pt" aria-label="Português">PT</button>
+    </fieldset>
   </div>
 
   <!-- Botón Normas: arriba a la derecha, mismo patrón que el botón Lore.
-       Al pulsarlo despliega el submenú con las normativas (Discord / Minecraft / Objetos). -->
+       Al pulsarlo despliega el submenú con las normativas (Discord / Minecraft / Objetos).
+       Debajo va el botón de Guías (js/guides.js). -->
   <div class="rules-triggers" id="rules-triggers" inert data-until-boot>
     <button class="menu-toggle-btn" id="rules-menu-btn" type="button" aria-expanded="false" aria-controls="rules-submenu" data-i18n="menu.rules">Normas</button>
     <div class="submenu" id="rules-submenu">
@@ -164,6 +165,7 @@
       <button class="lore-btn" id="rules-minecraft-btn" type="button">Minecraft</button>
       <button class="lore-btn" id="rules-objetos-btn" type="button" data-i18n="rules.tabObjetos">Objetos</button>
     </div>
+    <button class="menu-toggle-btn guides-open-btn" id="guides-open-btn" type="button" data-i18n="guides.open">Guías</button>
   </div>
 
   <!-- Botón "Inserta la contraseña": abajo a la derecha, aparece junto al resto del contenido tras el boot -->
