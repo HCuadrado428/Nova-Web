@@ -26,7 +26,7 @@ function buildLoreSlideElement(slide) {
     const video = document.createElement('video');
     video.className = 'lore-slide-video-el';
     video.src = slide.src;
-    // Solo los metadatos hasta que se pulse play: el vídeo pesa ~20 MB y no
+    // Solo los metadatos hasta que se pulse play: el vídeo pesa ~11 MB y no
     // hace falta descargarlo entero por pasar por el pase.
     video.preload = 'metadata';
     if (slide.poster) video.poster = slide.poster;
