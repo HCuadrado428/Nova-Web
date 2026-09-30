@@ -14,6 +14,7 @@ Firebase) y algún secreto. Se publica con GitHub Pages tal cual está en
 | `js/intro.js`, `lore.js`, `rules.js`, `guides.js`, `personajes.js`, `password.js`, `adan.js` | Una sección cada uno |
 | `js/audio.js`, `views.js`, `utils.js` | Sonido, cambio de pantalla y utilidades compartidas |
 | `js/relations-graph.js` | Árbol de relaciones entre personajes (dentro de Personajes) |
+| `js/personajes/` | Piezas de Personajes: carga de Firebase (`firebase.js`), bloques del perfil (`blocks.js`) y comentarios (`comments.js`) |
 | `js/server-status.js`, `js/i18n.js` | Estado del servidor en la intro; idiomas |
 | `js/data/lore.es.js` | **Los textos del Lore** en español (lo que se edita para cambiar la historia) |
 | `js/data/lore.en.js`, `lore.pt.js` | El Lore traducido (mismos pases en el mismo orden) |

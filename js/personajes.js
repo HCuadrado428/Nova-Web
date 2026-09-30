@@ -11,142 +11,23 @@
 // opción por comodidad visual.
 // Sigue el mismo patrón de página que rules.js: transición de canal +
 // vistas internas conmutadas por .is-active.
+// Las piezas que no dependen del resto viven en js/personajes/: la carga de
+// Firebase (firebase.js), los bloques del perfil (blocks.js) y los
+// comentarios (comments.js).
 
 import { channelSwitch, closeMenuToggle, isView, setView } from './views.js';
-import { normalizeSearchTerm, storageGet, storageSet } from './utils.js';
+import { normalizeSearchTerm } from './utils.js';
 import { onLanguageChange, t } from './i18n.js';
 import { buildGraph, renderRelationsGraph } from './relations-graph.js';
-
-/* ---------------------------------------------------
-   Carga de Firebase bajo demanda
-   El SDK solo lo necesita esta sección, así que no se descarga al entrar en
-   la web sino la primera vez que se abre Personajes (o un link directo a un
-   personaje). Se sirve desde la propia web (vendor/firebase.js, generado con
-   "npm run build:firebase" con solo las funciones que se usan aquí), no desde
-   gstatic.com: pesa menos y no lo cortan los bloqueadores.
---------------------------------------------------- */
-let firebaseLoad = null;
-
-function loadFirebase() {
-  if (!firebaseLoad) {
-    firebaseLoad = import('../vendor/firebase.js').then((fb) => {
-      const app = fb.initializeApp(window.FIREBASE_CONFIG);
-      const auth = fb.getAuth(app);
-      const db = fb.getFirestore(app);
-      // Solo para los tests (tests/e2e.test.js): apunta a los emuladores
-      // locales de Firebase en vez de al proyecto real.
-      const emulators = window.NOVA_FIREBASE_EMULATORS;
-      if (emulators) {
-        fb.connectAuthEmulator(auth, emulators.auth, { disableWarnings: true });
-        fb.connectFirestoreEmulator(db, emulators.firestoreHost, emulators.firestorePort);
-      }
-      return { fb, auth, db };
-    });
-    // Si falla (sin conexión...), se olvida para poder reintentarlo luego.
-    firebaseLoad.catch(() => {
-      firebaseLoad = null;
-    });
-  }
-  return firebaseLoad;
-}
-
-// Mientras firebase-config.js siga con los valores de ejemplo, la sección se
-// desactiva en vez de intentar conectar con Firebase.
-const isFirebaseConfigured = () => !!window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.apiKey !== 'TU_API_KEY';
+import { isFirebaseConfigured, loadFirebase } from './personajes/firebase.js';
+import { buildPersonajeBlockElement } from './personajes/blocks.js';
+import { createComments } from './personajes/comments.js';
 
 // Enganche para el link directo a un personaje (#personaje/<uid>): lo monta
 // initPersonajes() y lo llama intro.js tras revelarse la intro.
 let openFromHash = null;
 export function openPersonajeFromHash(uid) {
   if (openFromHash) openFromHash(uid);
-}
-
-function spotifyUrlToEmbed(url) {
-  const match = /open\.spotify\.com\/(?:intl-[a-z]{2}\/)?(track|album|playlist|episode|show)\/([a-zA-Z0-9]+)/.exec(
-    url || '',
-  );
-  if (!match) return null;
-  return `https://open.spotify.com/embed/${match[1]}/${match[2]}`;
-}
-
-// Pinta un bloque de personaje (texto/imagen/spotify/relación) para la
-// vista de perfil (solo lectura). `options.onRelacionClick(uid)` navega al
-// personaje enlazado; `options.lookupFoto(uid)` le da su foto si ya está en
-// el directorio cargado. Ninguna de las dos hace falta fuera de un bloque
-// de tipo relación.
-function buildPersonajeBlockElement(bloque, options = {}) {
-  const wrap = document.createElement('div');
-  wrap.className = `personaje-block personaje-block-${bloque.tipo}`;
-
-  if (bloque.tipo === 'texto') {
-    const p = document.createElement('p');
-    p.className = 'personaje-block-texto-text';
-    p.textContent = bloque.contenido;
-    wrap.appendChild(p);
-  } else if (bloque.tipo === 'imagen') {
-    const img = document.createElement('img');
-    img.className = 'personaje-block-imagen-img';
-    img.src = bloque.contenido;
-    img.alt = '';
-    img.loading = 'lazy';
-    img.addEventListener('error', () => {
-      wrap.hidden = true;
-    });
-    wrap.appendChild(img);
-  } else if (bloque.tipo === 'spotify') {
-    const embedUrl = spotifyUrlToEmbed(bloque.contenido);
-    if (!embedUrl) {
-      wrap.hidden = true;
-    } else {
-      const iframe = document.createElement('iframe');
-      iframe.className = 'personaje-block-spotify-frame';
-      iframe.src = embedUrl;
-      iframe.width = '100%';
-      iframe.height = '152';
-      iframe.allow = 'autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture';
-      iframe.loading = 'lazy';
-      wrap.appendChild(iframe);
-    }
-  } else if (bloque.tipo === 'relacion') {
-    if (!bloque.uid || !bloque.nombre) {
-      wrap.hidden = true;
-    } else {
-      const card = document.createElement('button');
-      card.type = 'button';
-      card.className = 'personaje-block-relacion-card';
-
-      const foto = options.lookupFoto ? options.lookupFoto(bloque.uid) : null;
-      if (foto) {
-        const img = document.createElement('img');
-        img.className = 'personaje-block-relacion-photo';
-        img.src = foto;
-        img.alt = '';
-        img.loading = 'lazy';
-        img.addEventListener('error', () => img.remove());
-        card.appendChild(img);
-      }
-
-      const info = document.createElement('span');
-      info.className = 'personaje-block-relacion-info';
-      const nombreEl = document.createElement('strong');
-      nombreEl.textContent = bloque.nombre;
-      info.appendChild(nombreEl);
-      if (bloque.etiqueta) {
-        const etiquetaEl = document.createElement('span');
-        etiquetaEl.className = 'personaje-block-relacion-etiqueta';
-        etiquetaEl.textContent = bloque.etiqueta;
-        info.appendChild(etiquetaEl);
-      }
-      card.appendChild(info);
-
-      card.addEventListener('click', () => {
-        if (options.onRelacionClick) options.onRelacionClick(bloque.uid);
-      });
-      wrap.appendChild(card);
-    }
-  }
-
-  return wrap;
 }
 
 export function initPersonajes() {
@@ -285,9 +166,27 @@ export function initPersonajes() {
     showStatus(text);
   };
 
+  // ---- Comentarios (js/personajes/comments.js) ----
+  const comments = createComments({
+    session: {
+      get fb() {
+        return fb;
+      },
+      get currentUser() {
+        return currentUser;
+      },
+      get profileUid() {
+        return currentProfileUid;
+      },
+    },
+    comentariosCol,
+    reportError,
+    els: { list: commentsListEl, form: commentForm, input: commentInput, feedback: commentFeedbackEl, mineBtn },
+  });
+
   const showView = (key) => {
     for (const [k, el] of Object.entries(views)) el.classList.toggle('is-active', k === key);
-    if (key !== 'profile') stopWatchingComments();
+    if (key !== 'profile') comments.stop();
     showStatus('');
     page.scrollTop = 0;
   };
@@ -321,7 +220,7 @@ export function initPersonajes() {
   const switchTo = (showPersonajes, uid = null) =>
     channelSwitch(() => {
       if (!showPersonajes) {
-        stopWatchingComments();
+        comments.stop();
         setProfileHash(null);
         setView('home');
         return;
@@ -517,232 +416,14 @@ export function initPersonajes() {
     }
     editBtn.hidden = !(currentUser && currentUser.uid === uid);
     if (currentUser && currentUser.uid === uid) {
-      markCommentsSeen(uid);
+      comments.markSeen(uid);
       mineBtn.classList.remove('personajes-has-badge');
     }
     updateCommentFormVisibility();
     showView('profile');
-    watchComments(uid);
+    comments.watch(uid);
     setProfileHash(uid);
   }
-
-  // ---- Comentarios ----
-  function toMillis(valor) {
-    if (valor && typeof valor.toMillis === 'function') return valor.toMillis();
-    if (valor) return new Date(valor).getTime();
-    return 0;
-  }
-
-  const commentsSeenKey = (uid) => `personajes_comentarios_vistos_${uid}`;
-
-  function markCommentsSeen(uid) {
-    storageSet(commentsSeenKey(uid), String(Date.now()));
-  }
-
-  function checkUnreadComments(uid) {
-    const lastSeen = Number(storageGet(commentsSeenKey(uid))) || 0;
-    fb.getDocs(comentariosCol(uid))
-      .then((snapshot) => {
-        let hayNuevos = false;
-        snapshot.forEach((doc) => {
-          const data = doc.data();
-          if (data.autorUid !== uid && toMillis(data.creadoEn) > lastSeen) hayNuevos = true;
-        });
-        mineBtn.classList.toggle('personajes-has-badge', hayNuevos);
-      })
-      .catch(() => {
-        // si falla (p.ej. las reglas de comentarios aún no están publicadas), simplemente no se muestra aviso
-      });
-  }
-
-  /* Comentarios en tiempo real: mientras se ve un perfil, onSnapshot avisa
-     de cada comentario nuevo, editado o borrado (de cualquiera) y la lista se
-     repinta sola, sin recargar. Se deja de escuchar al salir del perfil (ver
-     showView) para no mantener conexiones abiertas de más.
-     Si llega un cambio mientras estás editando uno de tus comentarios, no se
-     repinta en ese momento (se perdería lo que estás escribiendo): se guarda
-     y se aplica al guardar o cancelar la edición. */
-  let unsubscribeComments = null;
-  let commentsUid = null;
-  let lastCommentsSnapshot = null;
-  let editingComment = false;
-
-  function stopWatchingComments() {
-    if (unsubscribeComments) unsubscribeComments();
-    unsubscribeComments = null;
-    commentsUid = null;
-    lastCommentsSnapshot = null;
-    editingComment = false;
-  }
-
-  function watchComments(uid) {
-    stopWatchingComments();
-    commentsUid = uid;
-    commentsListEl.innerHTML = '';
-    const comentarios = fb.query(comentariosCol(uid), fb.orderBy('creadoEn'));
-    unsubscribeComments = fb.onSnapshot(
-      comentarios,
-      (snapshot) => {
-        lastCommentsSnapshot = snapshot;
-        if (!editingComment) renderComments();
-        // Si es tu propio perfil y lo estás viendo, lo nuevo ya cuenta como leído.
-        if (currentUser && currentUser.uid === uid) markCommentsSeen(uid);
-      },
-      (err) => {
-        console.error('No se pudieron cargar los comentarios:', err);
-        commentsListEl.innerHTML = '';
-        const msg = document.createElement('p');
-        msg.className = 'personajes-comments-hint is-fail';
-        msg.textContent = t('pj.commentsLoadError');
-        commentsListEl.appendChild(msg);
-      },
-    );
-  }
-
-  // Pinta el último snapshot recibido (también al cambiar de sesión: los
-  // botones de editar/borrar dependen de quién mira).
-  function renderComments() {
-    const snapshot = lastCommentsSnapshot;
-    const uid = commentsUid;
-    if (!snapshot || !uid) return;
-    editingComment = false;
-    commentsListEl.innerHTML = '';
-    if (snapshot.empty) {
-      const empty = document.createElement('p');
-      empty.className = 'personajes-comments-hint';
-      empty.textContent = t('pj.noComments');
-      commentsListEl.appendChild(empty);
-      return;
-    }
-    for (const doc of snapshot.docs) {
-      const data = doc.data();
-      const item = document.createElement('div');
-      item.className = 'personajes-comment';
-
-      const header = document.createElement('div');
-      header.className = 'personajes-comment-header';
-      const author = document.createElement('span');
-      author.className = 'personajes-comment-author';
-      author.textContent = data.autorNombre || t('pj.someone');
-      header.appendChild(author);
-
-      const text = document.createElement('p');
-      text.className = 'personajes-comment-text';
-      text.textContent = data.texto + (data.editadoEn ? ' ' : '');
-      if (data.editadoEn) {
-        const editedTag = document.createElement('span');
-        editedTag.className = 'personajes-comment-edited-tag';
-        editedTag.textContent = t('pj.edited');
-        text.appendChild(editedTag);
-      }
-
-      const isAuthor = currentUser && currentUser.uid === data.autorUid;
-
-      if (isAuthor) {
-        const editCommentBtn = document.createElement('button');
-        editCommentBtn.type = 'button';
-        editCommentBtn.className = 'personajes-comment-edit-btn';
-        editCommentBtn.textContent = t('common.edit');
-        editCommentBtn.addEventListener('click', () => startEditingComment(uid, doc.id, data.texto, text));
-        header.appendChild(editCommentBtn);
-      }
-
-      if (currentUser && (isAuthor || currentUser.uid === uid)) {
-        const removeBtn = document.createElement('button');
-        removeBtn.type = 'button';
-        removeBtn.className = 'personajes-comment-remove-btn';
-        removeBtn.textContent = '✕';
-        removeBtn.setAttribute('aria-label', t('pj.deleteComment'));
-        removeBtn.addEventListener('click', () => {
-          removeBtn.disabled = true;
-          // No hace falta repintar a mano: onSnapshot se entera del borrado.
-          fb.deleteDoc(fb.doc(comentariosCol(uid), doc.id)).catch((err) => {
-            removeBtn.disabled = false;
-            reportError(t('pj.deleteCommentError'), err);
-          });
-        });
-        header.appendChild(removeBtn);
-      }
-
-      item.append(header, text);
-      commentsListEl.appendChild(item);
-    }
-  }
-
-  // Sustituye el <p> de un comentario por un textarea + Guardar/Cancelar,
-  // in situ, sin reordenar la lista. Solo lo llama el propio autor (ver
-  // renderComments) -- las reglas de Firestore son las que de verdad lo
-  // impiden para cualquier otra persona.
-  function startEditingComment(uid, commentId, original, textEl) {
-    editingComment = true;
-
-    const textarea = document.createElement('textarea');
-    textarea.className = 'personajes-input personajes-block-textarea';
-    textarea.maxLength = 500;
-    textarea.value = original;
-    textarea.setAttribute('aria-label', t('pj.editComment'));
-
-    const actions = document.createElement('div');
-    actions.className = 'personajes-comment-edit-actions';
-    const saveBtnEl = document.createElement('button');
-    saveBtnEl.type = 'button';
-    saveBtnEl.className = 'rules-switch-btn';
-    saveBtnEl.textContent = t('common.save');
-    const cancelBtnEl = document.createElement('button');
-    cancelBtnEl.type = 'button';
-    cancelBtnEl.className = 'personajes-comment-edit-btn';
-    cancelBtnEl.textContent = t('common.cancel');
-
-    saveBtnEl.addEventListener('click', () => {
-      const nuevo = textarea.value.trim();
-      if (!nuevo) return;
-      saveBtnEl.disabled = true;
-      fb.updateDoc(fb.doc(comentariosCol(uid), commentId), {
-        texto: nuevo,
-        editadoEn: fb.serverTimestamp(),
-      })
-        .then(() => renderComments())
-        .catch((err) => {
-          saveBtnEl.disabled = false;
-          reportError(t('pj.editCommentError'), err);
-        });
-    });
-    cancelBtnEl.addEventListener('click', () => renderComments());
-
-    actions.append(saveBtnEl, cancelBtnEl);
-    textEl.replaceWith(textarea, actions);
-    textarea.focus();
-  }
-
-  commentForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    if (!currentUser || !currentProfileUid) return;
-    const texto = commentInput.value.trim();
-    if (!texto) return;
-
-    commentFeedbackEl.textContent = '';
-    commentFeedbackEl.classList.remove('is-fail');
-    const submitBtn = commentForm.querySelector('button[type="submit"]');
-    submitBtn.disabled = true;
-    fb.addDoc(comentariosCol(currentProfileUid), {
-      autorUid: currentUser.uid,
-      // Máx. 60: lo que aceptan las reglas de Firestore.
-      autorNombre: (currentUser.displayName || currentUser.email || t('pj.someone')).slice(0, 60),
-      texto,
-      creadoEn: fb.serverTimestamp(),
-    })
-      .then(() => {
-        commentInput.value = ''; // el comentario ya lo pinta onSnapshot
-      })
-      .catch((err) => {
-        console.error('No se pudo publicar el comentario:', err);
-        commentFeedbackEl.textContent = t('pj.commentError');
-        commentFeedbackEl.classList.add('is-fail');
-      })
-      .finally(() => {
-        submitBtn.disabled = false;
-      });
-  });
 
   profileBackBtn.addEventListener('click', () => {
     showView('directory');
@@ -1041,7 +722,7 @@ export function initPersonajes() {
       fb.getDoc(personajeDoc(user.uid))
         .then((doc) => {
           setHasCharacter(doc.exists());
-          if (doc.exists()) checkUnreadComments(user.uid);
+          if (doc.exists()) comments.checkUnread(user.uid);
         })
         .catch((err) => {
           // Sin saber si ya tiene personaje: el botón se enseña igual y, al
@@ -1057,7 +738,7 @@ export function initPersonajes() {
       editBtn.hidden = !(user && currentProfileUid === user.uid);
       updateCommentFormVisibility();
       // Los botones de editar/borrar de cada comentario dependen de quién mira.
-      renderComments();
+      comments.render();
     }
   }
 
