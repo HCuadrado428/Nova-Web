@@ -2,7 +2,7 @@
 
 Fuentes servidas desde la propia web (antes venían de Google Fonts: así
 cargan sin depender de otro servidor y no se envía la IP de cada visita a
-Google). Las declara el bloque `@font-face` al principio de `style.css`.
+Google). Las declara el bloque `@font-face` al principio de `css/base.css`.
 
 | Archivo | Fuente | Uso |
 |---|---|---|

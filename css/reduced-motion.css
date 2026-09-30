@@ -1,0 +1,72 @@
+/* ---------- Accesibilidad: respeta "reducir movimiento" ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .noise-overlay,
+  .scanline-overlay,
+  .intro-static,
+  .intro-glitch-bars {
+    display: none;
+  }
+  .glitch::before,
+  .glitch::after {
+    display: none;
+  }
+  .intro-content {
+    opacity: 1;
+    animation: none;
+  }
+  .intro-content::after {
+    display: none;
+  }
+  .enter-text {
+    animation: none;
+    opacity: 1;
+  }
+  .boot-log {
+    display: none;
+  }
+  .boot-fullscreen-image {
+    display: none;
+  }
+  body.booted .intro-hero-inner {
+    animation: none;
+  } /* la sacudida de pantalla: gana a la regla que la pone */
+  /* Misma especificidad que "body.booted .menu-toggle-btn" (que es quien les
+     pone la animación de aparición), y va después, así que gana. */
+  body.booted :is(.menu-toggle-btn, .password-trigger-btn, .audio-toggle-btn, .lang-switch) {
+    animation: none;
+    opacity: 1;
+  }
+  .channel-transition.active .channel-transition-static {
+    animation: none;
+  }
+  .adan-scene-static {
+    display: none;
+  }
+  .adan-scene-cursor {
+    animation: none;
+    opacity: 1;
+  }
+  .adan-scene-input-row.is-jittering {
+    animation: none;
+  }
+  .lore-page::before,
+  .lore-page::after {
+    animation: none;
+  }
+  .rules-panel {
+    animation: none;
+  }
+  .personajes-view {
+    animation: none;
+  }
+  .lore-slide {
+    animation: none;
+    opacity: 1;
+  }
+  .lore-reveal-text {
+    animation: none;
+  }
+  .btn-primary::after {
+    display: none;
+  }
+}

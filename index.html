@@ -23,7 +23,7 @@
   <meta name="twitter:image" content="https://hcuadrado428.github.io/Nova-Web/images/og-image.jpg">
 
   <!-- Fuentes: una tipo pixel para títulos y una legible para el cuerpo,
-       servidas desde fonts/ (ver @font-face en style.css). Se precargan las
+       servidas desde fonts/ (ver @font-face en css/base.css). Se precargan las
        dos que se ven nada más entrar para que no parpadeen al aparecer. -->
   <link rel="preload" href="fonts/press-start-2p-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
@@ -34,7 +34,19 @@
   <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
   <meta name="theme-color" content="#000000">
 
-  <link rel="stylesheet" href="style.css">
+  <!-- Estilos: un archivo por sección, en css/. El orden importa (las reglas
+       de un archivo pueden pisar a las de uno anterior): base primero y
+       reduced-motion al final, porque apaga animaciones de todas las demás. -->
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/intro.css">
+  <link rel="stylesheet" href="css/controls.css">
+  <link rel="stylesheet" href="css/password.css">
+  <link rel="stylesheet" href="css/adan.css">
+  <link rel="stylesheet" href="css/channel-transition.css">
+  <link rel="stylesheet" href="css/lore.css">
+  <link rel="stylesheet" href="css/rules.css">
+  <link rel="stylesheet" href="css/personajes.css">
+  <link rel="stylesheet" href="css/reduced-motion.css">
 </head>
 <body data-view="home">
 
@@ -172,7 +184,7 @@
   <button class="password-trigger-btn" id="password-trigger-btn" type="button" inert data-until-boot data-i18n="password.trigger">Inserta la contraseña</button>
 
   <!-- Botón de silenciar/reactivar el audio ambiente: abajo a la izquierda, aparece junto al resto
-       del contenido tras el boot. Se oculta solo en la escena de Adán (ver style.css), donde ningún
+       del contenido tras el boot. Se oculta solo en la escena de Adán (ver css/controls.css), donde ningún
        otro control queda visible a propósito. La preferencia se recuerda entre visitas (js/audio.js). -->
   <button class="audio-toggle-btn" id="audio-toggle-btn" type="button" aria-pressed="false" inert data-until-boot data-i18n="audio.mute">Silenciar</button>
 
