@@ -86,6 +86,10 @@ export default {
     '<strong>Adoption limit:</strong> If you are going to adopt other players, the limit is 4 adoptions (eggs count too). This is to avoid roleplays becoming impossible because everyone is family.',
   'rules.minecraft.6':
     '<strong>World border:</strong> The block limit is 14000, to keep the server optimized and focused on roleplay. There will be a border and, if you die crossing it, lost items will not be returned. The limit for building your house is 5000.',
+  'rules.minecraft.7':
+    "<strong>Stealing from other houses:</strong> Mass theft of items from other players' houses is forbidden unless it is allowed and both the staff and the player have been notified.",
+  'rules.minecraft.8':
+    "<strong>Other people's accounts (IAS):</strong> Using IAS to log in with op accounts that are NOT YOURS OR WITHOUT PERMISSION will result in a permanent IP ban.",
   'rules.objetos.title': 'RULES · ITEMS',
   'rules.objetos.intro': 'Items whose use or acquisition is forbidden on the server.',
   'rules.objetos.1': '<strong>Ring of Odin:</strong> Forbidden.',

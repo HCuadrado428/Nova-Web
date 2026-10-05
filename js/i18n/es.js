@@ -87,6 +87,10 @@ export default {
     '<strong>Límite de adopciones:</strong> Si van a adoptar a otros cubitos el límite es de 4 adopciones (los huevitos también cuentan). Esto para evitar que los roles no se puedan realizar debido a que son familiares.',
   'rules.minecraft.6':
     '<strong>Borde del mundo:</strong> El límite de bloques es de 14000, esto para mantener el servidor optimizado y enfocado en el roleplay. Habrá un borde el cual, en caso de morir por cruzarlo, no se devolverán las cosas perdidas. El límite para hacer vuestra casa será hasta 5000.',
+  'rules.minecraft.7':
+    '<strong>Robo en casas ajenas:</strong> Está prohibido el robo masivo de objetos de casas ajenas a no ser que sea permitido y avisado tanto al staff como al usuario.',
+  'rules.minecraft.8':
+    '<strong>Cuentas ajenas (IAS):</strong> Hacer uso del IAS para entrar con cuentas con op NO TUYAS O SIN PERMISO será motivo de baneo de IP permanente.',
   'rules.objetos.title': 'NORMAS · OBJETOS',
   'rules.objetos.intro': 'Objetos cuyo uso u obtención está prohibido en el servidor.',
   'rules.objetos.1': '<strong>Anillo de Odín:</strong> Prohibido.',
