@@ -87,6 +87,10 @@ export default {
     '<strong>Limite de adoções:</strong> Se forem adotar outros jogadores, o limite é de 4 adoções (os ovinhos também contam). Isso é para evitar que os roleplays fiquem impossíveis porque todo mundo é da mesma família.',
   'rules.minecraft.6':
     '<strong>Borda do mundo:</strong> O limite de blocos é 14000, para manter o servidor otimizado e focado no roleplay. Haverá uma borda e, se você morrer ao atravessá-la, os itens perdidos não serão devolvidos. O limite para construir sua casa é até 5000.',
+  'rules.minecraft.7':
+    '<strong>Roubo em casas alheias:</strong> É proibido o roubo em massa de itens de casas alheias, a não ser que seja permitido e avisado tanto à staff quanto ao jogador.',
+  'rules.minecraft.8':
+    '<strong>Contas alheias (IAS):</strong> Usar o IAS para entrar com contas com op QUE NÃO SÃO SUAS OU SEM PERMISSÃO será motivo de banimento de IP permanente.',
   'rules.objetos.title': 'REGRAS · ITENS',
   'rules.objetos.intro': 'Itens cujo uso ou obtenção é proibido no servidor.',
   'rules.objetos.1': '<strong>Anel de Odin:</strong> Proibido.',
