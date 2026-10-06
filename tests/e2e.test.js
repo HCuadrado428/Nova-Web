@@ -9,7 +9,7 @@ import { readFileSync } from 'node:fs';
 import { after, before, beforeEach, describe, test } from 'node:test';
 import { initializeTestEnvironment } from '@firebase/rules-unit-testing';
 import { build } from 'esbuild';
-import { doc, getDoc, setDoc, Timestamp, updateDoc } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, setDoc, Timestamp, updateDoc } from 'firebase/firestore';
 import { chromium } from 'playwright';
 import { startStaticServer } from './static-server.js';
 
@@ -651,6 +651,75 @@ describe('Personajes', () => {
     await autor.context().close();
   });
 
+  test('avisos de comentarios: número en "Mi personaje" en directo y "Nuevo" en tu ficha', async () => {
+    const ana = await openPage({ signedInAs: { uid: 'ana', name: 'Ana' } });
+    const hace = (min) => Timestamp.fromMillis(Date.now() - min * 60_000);
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      const db = ctx.firestore();
+      await setDoc(doc(db, 'personajes', ana.uid), {
+        nombre: 'Ana',
+        minecraftUsername: null,
+        fotoUrl: null,
+        bloques: [],
+        actualizadoEn: hace(300),
+        creadoEn: hace(300),
+      });
+      const comentario = (id, texto, min) =>
+        setDoc(doc(db, 'personajes', ana.uid, 'comentarios', id), {
+          autorUid: 'zed',
+          autorNombre: 'Zed',
+          texto,
+          creadoEn: hace(min),
+        });
+      await comentario('viejo', 'Ya lo habías leído', 120);
+      await comentario('nuevo', 'Aún no lo has leído', 1);
+    });
+    // Ana vio su ficha por última vez hace una hora (en este navegador).
+    await ana.evaluate(
+      (uid) => localStorage.setItem(`personajes_comentarios_vistos_${uid}`, Date.now() - 3_600_000),
+      ana.uid,
+    );
+    await enter(ana);
+    await openPersonajes(ana);
+    const badge = () => ana.locator('#personajes-mine-btn').getAttribute('data-badge');
+    await ana.waitForFunction(() => document.getElementById('personajes-mine-btn').dataset.badge === '1');
+    assert.equal(
+      await ana.locator('#personajes-mine-btn').getAttribute('aria-label'),
+      'Mi personaje · 1 comentario nuevo',
+    );
+
+    // Bob le escribe desde otro navegador: el número sube solo.
+    const bob = await openPage({ signedInAs: { uid: 'bob', name: 'Bob' } });
+    await enter(bob);
+    await openPersonajes(bob);
+    await openProfile(bob, 'Ana');
+    await bob.locator('#personajes-comment-form:not([hidden])').waitFor();
+    await bob.fill('#personajes-comment-input', 'Hola Ana');
+    await bob.click('#personajes-comment-form button[type=submit]');
+    await ana.waitForFunction(() => document.getElementById('personajes-mine-btn').dataset.badge === '2');
+
+    // En su ficha, los dos que no había visto salen como "Nuevo" y el aviso se va.
+    await openProfile(ana, 'Ana');
+    await ana.waitForFunction(() => document.querySelectorAll('.personajes-comment').length === 3);
+    assert.deepEqual(await ana.locator('.personajes-comment.is-new .personajes-comment-text').allTextContents(), [
+      'Aún no lo has leído',
+      'Hola Ana',
+    ]);
+    assert.equal(await text(ana, '.personajes-comment-new-tag'), 'Nuevo');
+    assert.equal(await badge(), null);
+
+    // Al volver a entrar ya no hay nada nuevo.
+    await ana.click('#personajes-profile-back-btn');
+    await openProfile(ana, 'Ana');
+    await ana.waitForFunction(() => document.querySelectorAll('.personajes-comment').length === 3);
+    assert.equal(await ana.locator('.personajes-comment.is-new').count(), 0);
+    assert.equal(await badge(), null);
+    assert.deepEqual(ana.errors, []);
+    assert.deepEqual(bob.errors, []);
+    await ana.context().close();
+    await bob.context().close();
+  });
+
   test('un comentario nuevo no borra lo que estás editando', async () => {
     const bob = await openPage({ signedInAs: { uid: 'bob', name: 'Bob' } });
     await env.withSecurityRulesDisabled((ctx) =>
@@ -815,6 +884,63 @@ describe('Personajes', () => {
     assert.match(await text(page, '#personajes-relations-empty'), /^No relationships yet/);
     assert.equal(await page.locator('.relations-graph').count(), 0);
     await page.context().close();
+  });
+
+  test('Crónica: desde Lore, publicar, editar y borrar; los demás lo ven en directo', async () => {
+    const lector = await openPage(); // sin sesión
+    await enter(lector);
+    await lector.click('#lore-menu-btn');
+    await lector.click('#lore-cronica-btn');
+    await lector.locator('#personajes-view-cronica.is-active').waitFor();
+    await lector.waitForFunction(() =>
+      document.getElementById('personajes-cronica-list').textContent.includes('Todavía'),
+    );
+    assert.ok(await lector.locator('#personajes-cronica-signin-hint').isVisible());
+    assert.ok(await lector.locator('#personajes-cronica-form').isHidden());
+
+    const autor = await openPage({ signedInAs: { uid: 'bob', name: 'Bob' } });
+    await enter(autor);
+    await openPersonajes(autor);
+    await autor.click('#personajes-cronica-btn');
+    await autor.locator('#personajes-cronica-form:not([hidden])').waitFor();
+    await autor.fill('#personajes-cronica-titulo', 'La caída de la torre');
+    await autor.fill('#personajes-cronica-texto', 'Ardió entera.');
+    await autor.click('#personajes-cronica-submit');
+    await autor.locator('.chronicle-entry').waitFor();
+    // Al guardarse, el formulario se vacía.
+    await autor.waitForFunction(() => document.getElementById('personajes-cronica-titulo').value === '');
+
+    // El lector la ve sin recargar, con autor y sin botones de editar.
+    await lector.locator('.chronicle-entry').waitFor();
+    assert.equal(await text(lector, '.chronicle-entry-title'), 'La caída de la torre');
+    assert.match(await text(lector, '.chronicle-entry-meta'), /· Bob$/);
+    assert.equal(await lector.locator('.chronicle-entry-actions').count(), 0);
+
+    // Editar reutiliza el formulario.
+    await autor.click('.chronicle-entry .personajes-comment-edit-btn');
+    assert.equal(await autor.inputValue('#personajes-cronica-titulo'), 'La caída de la torre');
+    assert.equal(await text(autor, '#personajes-cronica-submit'), 'Guardar');
+    await autor.fill('#personajes-cronica-texto', 'Ardió entera. Nadie sabe quién fue.');
+    await autor.click('#personajes-cronica-submit');
+    await lector.waitForFunction(() =>
+      document.querySelector('.chronicle-entry-text')?.textContent.includes('Nadie sabe'),
+    );
+    assert.match(await text(lector, '.chronicle-entry-meta'), /\(editado\)$/);
+
+    // Borrar (con confirmación).
+    autor.on('dialog', (d) => d.accept());
+    await autor.click('.chronicle-entry .personajes-comment-remove-btn');
+    await lector.waitForFunction(() => !document.querySelector('.chronicle-entry'));
+
+    let entradas;
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      entradas = (await getDocs(collection(ctx.firestore(), 'cronica'))).size;
+    });
+    assert.equal(entradas, 0);
+    assert.deepEqual(lector.errors, []);
+    assert.deepEqual(autor.errors, []);
+    await lector.context().close();
+    await autor.context().close();
   });
 
   test('link directo #personaje/<uid>', async () => {

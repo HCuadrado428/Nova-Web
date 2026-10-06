@@ -12,8 +12,8 @@
 // Sigue el mismo patrón de página que rules.js: transición de canal +
 // vistas internas conmutadas por .is-active.
 // Las piezas que no dependen del resto viven en js/personajes/: la carga de
-// Firebase (firebase.js), los bloques del perfil (blocks.js) y los
-// comentarios (comments.js) y las facciones (factions.js).
+// Firebase (firebase.js), los bloques del perfil (blocks.js), los
+// comentarios (comments.js), las facciones (factions.js) y la Crónica (chronicle.js).
 
 import { channelSwitch, closeMenuToggle, isView, setView } from './views.js';
 import { normalizeSearchTerm } from './utils.js';
@@ -23,6 +23,7 @@ import { isFirebaseConfigured, loadFirebase } from './personajes/firebase.js';
 import { buildPersonajeBlockElement } from './personajes/blocks.js';
 import { createComments } from './personajes/comments.js';
 import { FACTION_MAX, factionKey, listFactions } from './personajes/factions.js';
+import { createChronicle } from './personajes/chronicle.js';
 
 // Enganche para el link directo a un personaje (#personaje/<uid>): lo monta
 // initPersonajes() y lo llama intro.js tras revelarse la intro.
@@ -33,6 +34,7 @@ export function openPersonajeFromHash(uid) {
 
 export function initPersonajes() {
   const menuBtn = document.getElementById('lore-personajes-btn');
+  const cronicaMenuBtn = document.getElementById('lore-cronica-btn');
   const backBtn = document.getElementById('personajes-back-btn');
   const page = document.getElementById('personajes-page');
 
@@ -50,6 +52,7 @@ export function initPersonajes() {
     profile: document.getElementById('personajes-view-profile'),
     editor: document.getElementById('personajes-view-editor'),
     relations: document.getElementById('personajes-view-relations'),
+    cronica: document.getElementById('personajes-view-cronica'),
   };
   const grid = document.getElementById('personajes-grid');
   const searchInput = document.getElementById('personajes-search-input');
@@ -62,6 +65,19 @@ export function initPersonajes() {
   const relationsHintEl = document.getElementById('personajes-relations-hint');
   const relationsListTitleEl = document.getElementById('personajes-relations-list-title');
   const relationsListEl = document.getElementById('personajes-relations-list');
+  const cronicaBtn = document.getElementById('personajes-cronica-btn');
+  const cronicaBackBtn = document.getElementById('personajes-cronica-back-btn');
+  const cronicaEls = {
+    list: document.getElementById('personajes-cronica-list'),
+    form: document.getElementById('personajes-cronica-form'),
+    signinHint: document.getElementById('personajes-cronica-signin-hint'),
+    titleInput: document.getElementById('personajes-cronica-titulo'),
+    textInput: document.getElementById('personajes-cronica-texto'),
+    imageInput: document.getElementById('personajes-cronica-imagen'),
+    submitBtn: document.getElementById('personajes-cronica-submit'),
+    cancelBtn: document.getElementById('personajes-cronica-cancel'),
+    feedback: document.getElementById('personajes-cronica-feedback'),
+  };
 
   const profileBackBtn = document.getElementById('personajes-profile-back-btn');
   const editBtn = document.getElementById('personajes-edit-btn');
@@ -143,13 +159,20 @@ export function initPersonajes() {
     !relationsLegendEl ||
     !profileFaccionEl ||
     !faccionInput ||
-    !faccionesDatalist
+    !faccionesDatalist ||
+    !cronicaMenuBtn ||
+    !views.cronica ||
+    !cronicaBtn ||
+    !cronicaBackBtn ||
+    Object.values(cronicaEls).some((el) => !el)
   )
     return;
 
   if (!isFirebaseConfigured()) {
-    menuBtn.disabled = true;
-    menuBtn.title = t('pj.notConfigured');
+    for (const btn of [menuBtn, cronicaMenuBtn]) {
+      btn.disabled = true;
+      btn.title = t('pj.notConfigured');
+    }
     return;
   }
 
@@ -199,9 +222,25 @@ export function initPersonajes() {
     els: { list: commentsListEl, form: commentForm, input: commentInput, feedback: commentFeedbackEl, mineBtn },
   });
 
+  // ---- Crónica (js/personajes/chronicle.js) ----
+  const chronicle = createChronicle({
+    session: {
+      get fb() {
+        return fb;
+      },
+      get currentUser() {
+        return currentUser;
+      },
+    },
+    cronicaCol: () => fb.collection(db, 'cronica'),
+    reportError,
+    els: cronicaEls,
+  });
+
   const showView = (key) => {
     for (const [k, el] of Object.entries(views)) el.classList.toggle('is-active', k === key);
     if (key !== 'profile') comments.stop();
+    if (key !== 'cronica') chronicle.stop();
     showStatus('');
     page.scrollTop = 0;
   };
@@ -232,10 +271,12 @@ export function initPersonajes() {
   }
 
   // `uid`: abrir directamente ese perfil (link directo) en vez del directorio.
-  const switchTo = (showPersonajes, uid = null) =>
+  // `cronica`: abrir la Crónica (botón Lore → Crónica).
+  const switchTo = (showPersonajes, uid = null, cronica = false) =>
     channelSwitch(() => {
       if (!showPersonajes) {
         comments.stop();
+        chronicle.stop();
         setProfileHash(null);
         setView('home');
         return;
@@ -247,6 +288,7 @@ export function initPersonajes() {
         .then(() => {
           const directoryLoaded = renderDirectory();
           if (uid) directoryLoaded.then(() => goToProfile(uid));
+          else if (cronica) openChronicle();
         })
         .catch((err) => {
           grid.innerHTML = ''; // quita el "Cargando..."; el aviso va arriba
@@ -441,6 +483,18 @@ export function initPersonajes() {
     renderRelations();
   });
   relationsBackBtn.addEventListener('click', () => showView('directory'));
+
+  function openChronicle() {
+    setProfileHash(null);
+    showView('cronica');
+    chronicle.watch();
+  }
+  cronicaBtn.addEventListener('click', openChronicle);
+  cronicaBackBtn.addEventListener('click', () => showView('directory'));
+  // Las fechas y los textos de las entradas van en el idioma de la web.
+  onLanguageChange(() => {
+    if (views.cronica.classList.contains('is-active')) chronicle.render();
+  });
   // Si se cambia de idioma con el árbol abierto, se repintan sus textos.
   onLanguageChange(() => {
     if (views.relations.classList.contains('is-active')) renderRelations();
@@ -494,10 +548,6 @@ export function initPersonajes() {
       );
     }
     editBtn.hidden = !(currentUser && currentUser.uid === uid);
-    if (currentUser && currentUser.uid === uid) {
-      comments.markSeen(uid);
-      mineBtn.classList.remove('personajes-has-badge');
-    }
     updateCommentFormVisibility();
     showView('profile');
     comments.watch(uid);
@@ -795,6 +845,7 @@ export function initPersonajes() {
   function setHasCharacter(value) {
     hasCharacter = value;
     mineBtn.textContent = t(value ? 'pj.mine' : 'pj.create');
+    comments.renderBadge(); // su aria-label lleva el texto del botón
   }
   onLanguageChange(() => {
     setHasCharacter(hasCharacter);
@@ -807,13 +858,13 @@ export function initPersonajes() {
     signinBtn.hidden = !!user;
     sessionActive.hidden = !user;
     mineBtn.hidden = true;
-    mineBtn.classList.remove('personajes-has-badge');
+    comments.stopUnread();
     if (user) {
       sessionName.textContent = user.displayName || user.email || t('pj.googleAccount');
       fb.getDoc(personajeDoc(user.uid))
         .then((doc) => {
           setHasCharacter(doc.exists());
-          if (doc.exists()) comments.checkUnread(user.uid);
+          if (doc.exists()) comments.watchUnread(user.uid);
         })
         .catch((err) => {
           // Sin saber si ya tiene personaje: el botón se enseña igual y, al
@@ -824,6 +875,10 @@ export function initPersonajes() {
         .finally(() => {
           mineBtn.hidden = false;
         });
+    }
+    if (views.cronica.classList.contains('is-active')) {
+      chronicle.updateForm();
+      chronicle.render(); // editar/borrar dependen de quién mira
     }
     if (views.profile.classList.contains('is-active')) {
       editBtn.hidden = !(user && currentProfileUid === user.uid);
@@ -902,6 +957,10 @@ export function initPersonajes() {
   menuBtn.addEventListener('click', () => {
     closeMenuToggle('lore-menu-btn', 'lore-submenu');
     switchTo(true);
+  });
+  cronicaMenuBtn.addEventListener('click', () => {
+    closeMenuToggle('lore-menu-btn', 'lore-submenu');
+    switchTo(true, null, true);
   });
   backBtn.addEventListener('click', () => switchTo(false));
 

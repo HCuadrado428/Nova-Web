@@ -1,6 +1,6 @@
 rules_version = '2';
 
-// Reglas de Firestore para "Personajes" (Lore).
+// Reglas de Firestore para "Personajes" y "Crónica" (Lore).
 // Cómo aplicarlas: consola de Firebase -> Firestore Database -> Rules ->
 // pegar esto -> Publish. Este archivo es solo una copia de referencia
 // versionada en el repo; Firebase no lo lee directamente desde aquí.
@@ -84,6 +84,38 @@ service cloud.firestore {
         allow delete: if request.auth != null
                       && (request.auth.uid == resource.data.autorUid || request.auth.uid == uid);
       }
+    }
+
+    // Crónica de la temporada (js/personajes/chronicle.js): entradas que
+    // escriben los jugadores. Lectura pública; publicar, con sesión y siendo
+    // tú el autor; editar (solo título, texto e imagen) y borrar, solo el autor.
+    match /cronica/{entradaId} {
+      function validEntrada(data) {
+        return data.titulo is string
+          && data.titulo.size() > 0
+          && data.titulo.size() <= 80
+          && data.texto is string
+          && data.texto.size() > 0
+          && data.texto.size() <= 2000
+          && (data.get('imagenUrl', null) == null
+              || (data.imagenUrl is string && data.imagenUrl.size() <= 1000 && data.imagenUrl.matches('^https?://.+')));
+      }
+
+      allow read: if true;
+      allow create: if request.auth != null
+                    && request.resource.data.keys().hasOnly(['titulo', 'texto', 'imagenUrl', 'autorUid', 'autorNombre', 'creadoEn'])
+                    && request.resource.data.autorUid == request.auth.uid
+                    && request.resource.data.autorNombre is string
+                    && request.resource.data.autorNombre.size() > 0
+                    && request.resource.data.autorNombre.size() <= 60
+                    && validEntrada(request.resource.data)
+                    && request.resource.data.creadoEn == request.time;
+      allow update: if request.auth != null
+                    && request.auth.uid == resource.data.autorUid
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['titulo', 'texto', 'imagenUrl', 'editadoEn'])
+                    && validEntrada(request.resource.data)
+                    && request.resource.data.editadoEn == request.time;
+      allow delete: if request.auth != null && request.auth.uid == resource.data.autorUid;
     }
   }
 }

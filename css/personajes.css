@@ -63,18 +63,28 @@ body[data-view='personajes'] .personajes-page {
   background: rgba(55, 240, 224, 0.12);
 }
 
-/* Aviso de comentarios nuevos en tu propio personaje: puntito en "Mi personaje" */
-.personajes-has-badge {
+/* Aviso de comentarios nuevos en tu propio personaje: número en "Mi personaje"
+   (data-badge, lo pone js/personajes/comments.js) */
+#personajes-mine-btn[data-badge] {
   position: relative;
 }
-.personajes-has-badge::after {
-  content: '';
+#personajes-mine-btn[data-badge]::after {
+  content: attr(data-badge);
   position: absolute;
-  top: -3px;
-  right: -3px;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
+  top: -8px;
+  right: -8px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  box-sizing: border-box;
+  border-radius: 999px;
+  font-family: var(--font-body);
+  font-size: 0.65rem;
+  font-weight: 700;
+  line-height: 18px;
+  letter-spacing: 0;
+  text-align: center;
+  color: #fff;
   background: var(--glitch-red);
   box-shadow: 0 0 6px rgba(255, 46, 99, 0.8);
 }
@@ -623,6 +633,20 @@ body[data-view='personajes'] .personajes-page {
   color: rgba(234, 230, 218, 0.78);
   white-space: pre-wrap;
 }
+.personajes-comment.is-new {
+  border-left-color: var(--glitch-red);
+}
+.personajes-comment-new-tag {
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-family: var(--font-body);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #fff;
+  background: var(--glitch-red);
+}
 .personajes-comment-edited-tag {
   font-size: 0.78rem;
   color: rgba(234, 230, 218, 0.4);
@@ -701,4 +725,76 @@ body[data-view='personajes'] .personajes-page {
   margin: 12px 0 0;
   padding: 0;
   list-style: none;
+}
+
+/* Crónica de la temporada (js/personajes/chronicle.js) */
+.chronicle-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 640px;
+  margin: 0 auto 28px;
+}
+.chronicle-form[hidden] {
+  display: none;
+}
+.chronicle-form-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 4px;
+}
+#personajes-cronica-signin-hint {
+  text-align: center;
+}
+#personajes-cronica-signin-hint[hidden] {
+  display: none;
+}
+.chronicle-list {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  max-width: 640px;
+  margin: 0 auto;
+}
+.chronicle-entry {
+  padding: 16px 18px;
+  border: 1px solid rgba(55, 240, 224, 0.25);
+  border-left: 3px solid var(--glitch-cyan);
+  border-radius: var(--radius);
+  background: rgba(55, 240, 224, 0.03);
+}
+.chronicle-entry-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  letter-spacing: 1px;
+  color: var(--text-main);
+}
+.chronicle-entry-meta {
+  margin: 6px 0 0;
+  font-size: 0.75rem;
+  color: var(--text-dim);
+}
+.chronicle-entry-image {
+  display: block;
+  width: 100%;
+  max-height: 360px;
+  margin-top: 12px;
+  object-fit: cover;
+  border-radius: calc(var(--radius) - 2px);
+}
+.chronicle-entry-text {
+  margin: 12px 0 0;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: rgba(234, 230, 218, 0.82);
+  white-space: pre-wrap;
+}
+.chronicle-entry-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 12px;
 }

@@ -37,6 +37,7 @@ export default {
   'menu.lore': 'Lore',
   'menu.loreAntes': 'Before Nova',
   'menu.personajes': 'Characters',
+  'menu.cronica': 'Chronicle',
   'menu.rules': 'Rules',
   // ---- Sound button ----
   'audio.mute': 'Mute',
@@ -138,6 +139,9 @@ export default {
   'pj.noComments': 'No comments yet.',
   'pj.someone': 'Someone',
   'pj.edited': '(edited)',
+  'pj.newComments': '{n} new comments',
+  'pj.newCommentsOne': '1 new comment',
+  'pj.newTag': 'New',
   'pj.deleteComment': 'Delete comment',
   'pj.deleteCommentError': "Couldn't delete the comment.",
   'pj.editComment': 'Edit comment',
@@ -185,6 +189,25 @@ export default {
   'pj.factionAll': 'All',
   'pj.treeLegendLabel': 'Factions',
   'pj.treeBtn': 'Relationship tree',
+  // ---- Crónica (js/personajes/chronicle.js) ----
+  'chron.btn': 'Chronicle',
+  'chron.title': 'CHRONICLE',
+  'chron.intro': 'What is happening on the server, told by the players. The newest entries come first.',
+  'chron.fieldTitle': 'Title',
+  'chron.fieldTitlePlaceholder': 'The fall of the north tower',
+  'chron.fieldText': 'What happened',
+  'chron.fieldImage': 'Screenshot link (optional)',
+  'chron.publish': 'Publish',
+  'chron.signinHint': 'Sign in with Google to write in the chronicle.',
+  'chron.empty': 'Nothing in the chronicle yet. Write the first entry!',
+  'chron.meta': '{date} · {author}',
+  'chron.metaEdited': '{date} · {author} (edited)',
+  'chron.delete': 'Delete entry',
+  'chron.confirmDelete': 'Delete this chronicle entry?',
+  'chron.errEmpty': 'Add a title and tell what happened.',
+  'chron.saveError': 'The entry could not be saved. Please try again.',
+  'chron.deleteError': 'The entry could not be deleted.',
+  'chron.loadError': 'The chronicle could not be loaded.',
   'pj.treeTitle': 'RELATIONSHIPS',
   'pj.treeHint': 'Tap a character to see their profile. To zoom: + / − buttons, pinch or the mouse wheel.',
   'pj.treeZoomIn': 'Zoom in',
@@ -243,9 +266,11 @@ export default {
   'guides.pj.7':
     '<strong>Your name:</strong> The ✎ pencil next to your name changes how others see you, for example when you sign comments.',
   'guides.pj.8':
-    '<strong>Comments:</strong> Once signed in you can comment on any profile (up to 500 characters) and edit or delete your own comments. On your own profile you can delete any comment. When you get new comments, "My character" shows a badge.',
+    '<strong>Comments:</strong> Once signed in you can comment on any profile (up to 500 characters) and edit or delete your own comments. On your own profile you can delete any comment. When you get new comments, "My character" shows how many you haven\'t read (it updates by itself) and they are marked "New" on your profile.',
   'guides.pj.9':
     "<strong>Sharing:</strong> When you open a profile, the link in the browser's address bar goes straight to that character. Copy it to share it.",
+  'guides.pj.10':
+    '<strong>Chronicle:</strong> Lore → Chronicle (or the "Chronicle" button in the directory) shows what is happening on the server. Once signed in you can publish an entry with a title, text and a screenshot, and edit or delete your own.',
   'guides.rel.title': 'GUIDE · RELATIONSHIPS',
   'guides.rel.intro': 'How the relationship tree works.',
   'guides.rel.1':
