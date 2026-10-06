@@ -20,7 +20,8 @@ const TEST_CONFIG = `window.FIREBASE_CONFIG = ${JSON.stringify({
   authDomain: 'demo-nova.firebaseapp.com',
   projectId: 'demo-nova',
   appId: 'demo-app',
-})};`;
+})};
+window.CLOUDINARY_CONFIG = { cloudName: 'demo-nova', uploadPreset: 'demo-preset' };`;
 const INTRO_MS = 3400; // hasta que se ven los botones tras pulsar la pantalla de entrada
 const CHANNEL_MS = 1400; // transición de canal completa
 
@@ -614,6 +615,63 @@ describe('Personajes', () => {
     assert.equal(await color('zed'), '');
     // Dos formas de escribirla, empatadas: se muestra la de la ficha más antigua.
     assert.equal(await text(page, '#personajes-relations-legend li'), 'Reino del Norte');
+    assert.deepEqual(page.errors, []);
+    await page.context().close();
+  });
+
+  test('subir imágenes: la foto y un bloque de imagen se suben a Cloudinary y se guarda su link', async () => {
+    const page = await openPage({ signedInAs: { uid: 'subidor', name: 'Subidor' } });
+    // Cloudinary falso: nunca se sube nada de verdad desde los tests.
+    const subidas = [];
+    await page.context().route('https://api.cloudinary.com/**', (r) => {
+      subidas.push(r.request().url());
+      const n = subidas.length;
+      r.fulfill({
+        json: { secure_url: `https://res.cloudinary.com/demo-nova/image/upload/v1/pj-${n}.png` },
+        headers: { 'Access-Control-Allow-Origin': '*' },
+      });
+    });
+    await page.context().route('https://res.cloudinary.com/**', (r) => r.abort());
+    const png = { name: 'pj.png', mimeType: 'image/png', buffer: Buffer.from('falso png') };
+
+    await enter(page);
+    await openPersonajes(page);
+    await page.locator('#personajes-mine-btn:not([hidden])').waitFor();
+    await page.click('#personajes-mine-btn');
+    await page.locator('#personajes-view-editor.is-active').waitFor();
+    await page.fill('#personajes-input-nombre', 'Con fotos');
+
+    // Un archivo que no es imagen no llega a subirse.
+    const fotoFile = page.locator('#personajes-input-foto ~ .personajes-upload-file');
+    await fotoFile.setInputFiles({ name: 'notas.txt', mimeType: 'text/plain', buffer: Buffer.from('hola') });
+    await page.waitForFunction(() =>
+      document.getElementById('personajes-feedback').textContent.includes('no es una imagen'),
+    );
+    assert.equal(subidas.length, 0);
+
+    await fotoFile.setInputFiles(png);
+    await page.waitForFunction(() => document.getElementById('personajes-input-foto').value.includes('pj-1.png'));
+    await page.click('#personajes-add-imagen-btn');
+    await page.locator('.personajes-upload-field .personajes-upload-file').setInputFiles(png);
+    await page.waitForFunction(() =>
+      document.querySelector('.personajes-upload-field input[type="url"]').value.includes('pj-2'),
+    );
+    assert.ok(
+      subidas.every((url) => url === 'https://api.cloudinary.com/v1_1/demo-nova/image/upload'),
+      subidas.join(),
+    );
+
+    await page.click('#personajes-save-btn');
+    await page.waitForFunction(() => document.getElementById('personajes-profile-name').textContent === 'Con fotos');
+    let guardado;
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      guardado = (await getDoc(doc(ctx.firestore(), 'personajes', page.uid))).data();
+    });
+    assert.equal(guardado.fotoUrl, 'https://res.cloudinary.com/demo-nova/image/upload/v1/pj-1.png');
+    assert.deepEqual(
+      guardado.bloques.map((b) => b.contenido),
+      ['https://res.cloudinary.com/demo-nova/image/upload/v1/pj-2.png'],
+    );
     assert.deepEqual(page.errors, []);
     await page.context().close();
   });

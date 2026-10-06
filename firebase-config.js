@@ -31,3 +31,28 @@ window.FIREBASE_CONFIG = {
   messagingSenderId: '518373518736',
   appId: '1:518373518736:web:d33a383b37209c89c91715',
 };
+
+// ======================================================
+// Cloudinary: botón "Subir imagen" en Personajes y la Crónica
+// ======================================================
+//
+// Tampoco es secreto. Las imágenes se suben a Cloudinary (plan gratuito) y en
+// Firestore se guarda solo su link, que no caduca (js/personajes/upload.js).
+//
+// Cómo conseguirlo:
+//   1. cloudinary.com -> crear cuenta (plan Free).
+//   2. Dashboard -> copia el "Cloud name".
+//   3. Settings (engranaje) -> Upload -> Upload presets -> Add upload preset:
+//        - Signing mode: "Unsigned".
+//        - Asset folder: p.ej. "nova-personajes".
+//        - Allowed formats: jpg, png, gif, webp.
+//        - Max file size: 10 MB (y, si quieres, que reduzca a 2000 px).
+//      Guarda y copia el nombre del preset.
+//   4. Sustituye los valores de abajo.
+//
+// Mientras tenga los valores de ejemplo no sale el botón y solo se pueden
+// pegar links, como antes.
+window.CLOUDINARY_CONFIG = {
+  cloudName: 'TU_CLOUD_NAME',
+  uploadPreset: 'TU_UPLOAD_PRESET',
+};

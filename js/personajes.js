@@ -24,6 +24,7 @@ import { buildPersonajeBlockElement } from './personajes/blocks.js';
 import { createComments } from './personajes/comments.js';
 import { FACTION_MAX, factionKey, listFactions } from './personajes/factions.js';
 import { createChronicle } from './personajes/chronicle.js';
+import { attachUploadButton } from './personajes/upload.js';
 
 // Enganche para el link directo a un personaje (#personaje/<uid>): lo monta
 // initPersonajes() y lo llama intro.js tras revelarse la intro.
@@ -250,6 +251,8 @@ export function initPersonajes() {
     feedbackEl.classList.remove('is-fail', 'is-ok');
     if (tone) feedbackEl.classList.add(tone === 'ok' ? 'is-ok' : 'is-fail');
   };
+  const setUploadFeedback = (text, fail) => setFeedback(text, fail ? 'fail' : null);
+  attachUploadButton(fotoInput, setUploadFeedback);
 
   // Link directo a un personaje: refleja/limpia #personaje/<uid> en la URL
   // según la vista, sin tocar el historial (replaceState, no pushState).
@@ -678,7 +681,16 @@ export function initPersonajes() {
         field.addEventListener('input', () => {
           bloque.contenido = field.value;
         });
-        row.appendChild(field);
+        if (bloque.tipo === 'imagen') {
+          // El campo y su botón "Subir imagen", uno debajo del otro.
+          const wrap = document.createElement('div');
+          wrap.className = 'personajes-upload-field';
+          wrap.appendChild(field);
+          row.appendChild(wrap);
+          attachUploadButton(field, setUploadFeedback);
+        } else {
+          row.appendChild(field);
+        }
       }
 
       editorBlocksEl.appendChild(row);
