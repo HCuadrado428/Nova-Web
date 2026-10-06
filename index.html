@@ -158,6 +158,7 @@
       <button class="lore-btn" id="lore-antes-btn" type="button" data-i18n="menu.loreAntes">Antes del Nova</button>
       <button class="lore-btn" id="lore-nova-btn" type="button">Nova</button>
       <button class="lore-btn" id="lore-personajes-btn" type="button" data-i18n="menu.personajes">Personajes</button>
+      <button class="lore-btn" id="lore-cronica-btn" type="button" data-i18n="menu.cronica">Crónica</button>
     </div>
     <!-- Selector de idioma (js/i18n.js). Cada botón lleva el nombre en su propio idioma. -->
     <fieldset class="lang-switch" aria-label="Idioma" data-i18n-attr="aria-label:lang.label">
@@ -325,6 +326,7 @@
         <p class="rules-item" data-i18n-html="guides.pj.7"><strong>Tu nombre:</strong> El lápiz ✎ junto a tu nombre cambia cómo te ven los demás, por ejemplo al firmar comentarios.</p>
         <p class="rules-item" data-i18n-html="guides.pj.8"><strong>Comentarios:</strong> Con sesión iniciada puedes comentar cualquier ficha (hasta 500 caracteres) y editar o borrar tus comentarios. En tu propia ficha puedes borrar cualquier comentario. Si te han comentado algo nuevo, «Mi personaje» lleva un aviso.</p>
         <p class="rules-item" data-i18n-html="guides.pj.9"><strong>Compartir:</strong> Al abrir una ficha, el enlace de la barra del navegador lleva directo a ese personaje. Cópialo para compartirlo.</p>
+        <p class="rules-item" data-i18n-html="guides.pj.10"><strong>Crónica:</strong> En Lore → Crónica (o el botón «Crónica» del directorio) está lo que va pasando en el servidor. Con sesión iniciada puedes publicar una entrada con título, texto y una captura, y editar o borrar las tuyas.</p>
       </div>
 
       <div class="rules-panel" id="guides-panel-rel">
@@ -372,6 +374,7 @@
         <input class="personajes-input personajes-search-input" id="personajes-search-input" type="text" placeholder="Buscar personaje..." aria-label="Buscar personaje" data-i18n-attr="placeholder:pj.searchPlaceholder|aria-label:pj.searchLabel">
         <div class="personajes-directory-tools">
           <button class="rules-switch-btn" id="personajes-relations-btn" type="button" data-i18n="pj.treeBtn">Árbol de relaciones</button>
+          <button class="rules-switch-btn" id="personajes-cronica-btn" type="button" data-i18n="chron.btn">Crónica</button>
         </div>
         <div class="personajes-grid" id="personajes-grid"></div>
       </div>
@@ -385,6 +388,28 @@
         <p class="personajes-empty" id="personajes-relations-empty" hidden></p>
         <h3 class="personajes-comments-title relations-list-title" id="personajes-relations-list-title" data-i18n="pj.treeListTitle">Todas las relaciones</h3>
         <ul class="relations-list" id="personajes-relations-list"></ul>
+      </div>
+
+      <!-- Crónica de la temporada: la escriben los jugadores (js/personajes/chronicle.js) -->
+      <div class="personajes-view" id="personajes-view-cronica">
+        <button class="lore-nav-btn" id="personajes-cronica-back-btn" type="button" data-i18n="pj.backToDirectory">← Directorio</button>
+        <h2 class="rules-title glitch" data-text="CRÓNICA" data-i18n="chron.title">CRÓNICA</h2>
+        <p class="personajes-field-hint relations-hint" data-i18n="chron.intro">Lo que va pasando en el servidor, contado por los jugadores. Las entradas más recientes salen primero.</p>
+        <form class="chronicle-form" id="personajes-cronica-form" hidden>
+          <label class="personajes-field-label" for="personajes-cronica-titulo" data-i18n="chron.fieldTitle">Título</label>
+          <input class="personajes-input" id="personajes-cronica-titulo" type="text" maxlength="80" required placeholder="La caída de la torre norte" data-i18n-attr="placeholder:chron.fieldTitlePlaceholder">
+          <label class="personajes-field-label" for="personajes-cronica-texto" data-i18n="chron.fieldText">Qué pasó</label>
+          <textarea class="personajes-input personajes-block-textarea" id="personajes-cronica-texto" rows="5" maxlength="2000" required></textarea>
+          <label class="personajes-field-label" for="personajes-cronica-imagen" data-i18n="chron.fieldImage">Link de una captura (opcional)</label>
+          <input class="personajes-input" id="personajes-cronica-imagen" type="url" placeholder="https://...">
+          <div class="chronicle-form-actions">
+            <button class="rules-switch-btn" id="personajes-cronica-submit" type="submit" data-i18n="chron.publish">Publicar</button>
+            <button class="personajes-comment-edit-btn" id="personajes-cronica-cancel" type="button" hidden data-i18n="common.cancel">Cancelar</button>
+          </div>
+          <p class="personajes-comments-hint" id="personajes-cronica-feedback" role="status" aria-live="polite"></p>
+        </form>
+        <p class="personajes-comments-hint" id="personajes-cronica-signin-hint" data-i18n="chron.signinHint">Inicia sesión con Google para escribir en la crónica.</p>
+        <div class="chronicle-list" id="personajes-cronica-list"></div>
       </div>
 
       <div class="personajes-view" id="personajes-view-profile">

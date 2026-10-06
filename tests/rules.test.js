@@ -3,7 +3,17 @@
 import { readFileSync } from 'node:fs';
 import { after, before, beforeEach, describe, test } from 'node:test';
 import { assertFails, assertSucceeds, initializeTestEnvironment } from '@firebase/rules-unit-testing';
-import { addDoc, collection, deleteDoc, doc, serverTimestamp, setDoc, Timestamp, updateDoc } from 'firebase/firestore';
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  getDoc,
+  serverTimestamp,
+  setDoc,
+  Timestamp,
+  updateDoc,
+} from 'firebase/firestore';
 
 let env;
 before(async () => {
@@ -143,5 +153,63 @@ describe('comentarios', () => {
   test('NO: un tercero borra el comentario', async () => {
     await seedComentario();
     await assertFails(deleteDoc(c1('carol')));
+  });
+});
+
+describe('crónica', () => {
+  const cronica = (uid) => collection(db(uid), 'cronica');
+  const entrada = (extra = {}) => ({
+    titulo: 'La caída de la torre',
+    texto: 'Ardió entera',
+    imagenUrl: null,
+    autorUid: 'bob',
+    autorNombre: 'Bob',
+    creadoEn: serverTimestamp(),
+    ...extra,
+  });
+  const seedEntrada = () => seed('cronica/e1', { ...entrada(), creadoEn: Timestamp.now() });
+  const e1 = (uid) => doc(db(uid), 'cronica/e1');
+
+  test('leer sin sesión', async () => {
+    await seedEntrada();
+    await assertSucceeds(getDoc(e1(null)));
+  });
+  test('publicar (como la web)', () => assertSucceeds(addDoc(cronica('bob'), entrada())));
+  test('publicar con captura', () =>
+    assertSucceeds(addDoc(cronica('bob'), entrada({ imagenUrl: 'https://i.imgur.com/x.png' }))));
+  test('NO: anónimo', () => assertFails(addDoc(cronica(null), entrada())));
+  test('NO: suplantando autorUid', () => assertFails(addDoc(cronica('bob'), entrada({ autorUid: 'alice' }))));
+  test('NO: fecha inventada', () =>
+    assertFails(addDoc(cronica('bob'), entrada({ creadoEn: Timestamp.fromMillis(0) }))));
+  test('NO: campo extra', () => assertFails(addDoc(cronica('bob'), entrada({ fijada: true }))));
+  test('NO: sin título', () => assertFails(addDoc(cronica('bob'), entrada({ titulo: '' }))));
+  test('NO: título de más de 80 caracteres', () =>
+    assertFails(addDoc(cronica('bob'), entrada({ titulo: 'x'.repeat(81) }))));
+  test('NO: texto de más de 2000 caracteres', () =>
+    assertFails(addDoc(cronica('bob'), entrada({ texto: 'x'.repeat(2001) }))));
+  test('NO: imagen javascript:', () =>
+    assertFails(addDoc(cronica('bob'), entrada({ imagenUrl: 'javascript:alert(1)' }))));
+
+  test('editar la tuya (como la web)', async () => {
+    await seedEntrada();
+    await assertSucceeds(
+      updateDoc(e1('bob'), { titulo: 'Otra', texto: 'Editado', imagenUrl: null, editadoEn: serverTimestamp() }),
+    );
+  });
+  test('NO: editar cambiando el autor', async () => {
+    await seedEntrada();
+    await assertFails(updateDoc(e1('bob'), { autorNombre: 'Admin', editadoEn: serverTimestamp() }));
+  });
+  test('NO: editar la de otra persona', async () => {
+    await seedEntrada();
+    await assertFails(updateDoc(e1('alice'), { texto: 'x', editadoEn: serverTimestamp() }));
+  });
+  test('el autor borra su entrada', async () => {
+    await seedEntrada();
+    await assertSucceeds(deleteDoc(e1('bob')));
+  });
+  test('NO: otra persona borra la entrada', async () => {
+    await seedEntrada();
+    await assertFails(deleteDoc(e1('alice')));
   });
 });
