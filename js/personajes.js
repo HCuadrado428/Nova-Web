@@ -16,7 +16,7 @@
 // comentarios (comments.js), las facciones (factions.js) y la Crónica (chronicle.js).
 
 import { channelSwitch, closeMenuToggle, isView, setView } from './views.js';
-import { normalizeSearchTerm } from './utils.js';
+import { isExpiringImageUrl, normalizeSearchTerm } from './utils.js';
 import { onLanguageChange, t } from './i18n.js';
 import { buildGraph, renderRelationsGraph } from './relations-graph.js';
 import { isFirebaseConfigured, loadFirebase } from './personajes/firebase.js';
@@ -759,6 +759,14 @@ export function initPersonajes() {
     const fotoUrl = fotoInput.value.trim();
     if (fotoUrl && !/^https?:\/\//i.test(fotoUrl)) {
       setFeedback(t('pj.errPhoto'), 'fail');
+      return;
+    }
+    const enlacesImagen = [
+      fotoUrl,
+      ...editorBloques.filter((b) => b.tipo === 'imagen').map((b) => (b.contenido || '').trim()),
+    ];
+    if (enlacesImagen.some(isExpiringImageUrl)) {
+      setFeedback(t('pj.errDiscordLink'), 'fail');
       return;
     }
     const minecraftUsername = mcUserInput.value.trim();

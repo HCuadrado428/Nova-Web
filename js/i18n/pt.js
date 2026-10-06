@@ -122,7 +122,8 @@ export default {
   'pj.fieldMcUserPlaceholder': 'SeuUsuarioDoMinecraft',
   'pj.fieldMcUserHint': 'É opcional: se você colocar, aparece como informação extra abaixo do seu nome na ficha.',
   'pj.fieldPhoto': 'Link da foto de perfil (opcional)',
-  'pj.fieldPhotoHint': 'Um link do Pinterest também serve: clique direito na imagem → "Copiar endereço da imagem".',
+  'pj.fieldPhotoHint':
+    'Um link do Pinterest também serve: clique direito na imagem → "Copiar endereço da imagem". Links do Discord não servem: expiram e a imagem deixa de aparecer.',
   'pj.addText': '+ Texto',
   'pj.addImage': '+ Imagem',
   'pj.addRelation': '+ Relação',
@@ -164,6 +165,8 @@ export default {
   'pj.errNoName': 'Dê um nome ao seu personagem.',
   'pj.errNameLong': 'O nome é longo demais (máx. 60 caracteres).',
   'pj.errPhoto': 'O link da foto deve começar com http:// ou https://',
+  'pj.errDiscordLink':
+    'Os links de imagens do Discord expiram no dia seguinte e a imagem deixa de aparecer. Envie-a para o Imgur, Catbox ou Pinterest e cole esse link.',
   'pj.errMcUser': 'O usuário do Minecraft só pode ter letras, números e "_" (máx. 16).',
   'pj.errRelation': 'Alguma relação não corresponde a nenhum personagem existente. Verifique o nome.',
   'pj.saving': 'Salvando...',
