@@ -53,6 +53,6 @@ window.FIREBASE_CONFIG = {
 // Mientras tenga los valores de ejemplo no sale el botón y solo se pueden
 // pegar links, como antes.
 window.CLOUDINARY_CONFIG = {
-  cloudName: 'TU_CLOUD_NAME',
-  uploadPreset: 'TU_UPLOAD_PRESET',
+  cloudName: 'zhbroeov',
+  uploadPreset: 'nova_web',
 };
