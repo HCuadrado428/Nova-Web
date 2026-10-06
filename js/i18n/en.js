@@ -121,7 +121,8 @@ export default {
   'pj.fieldMcUserPlaceholder': 'YourMinecraftUsername',
   'pj.fieldMcUserHint': 'Optional: if you add it, it is shown as extra info under your name on the profile.',
   'pj.fieldPhoto': 'Profile picture link (optional)',
-  'pj.fieldPhotoHint': 'A Pinterest link works too: right-click the image → "Copy image address".',
+  'pj.fieldPhotoHint':
+    'A Pinterest link works too: right-click the image → "Copy image address". Discord links do not work: they expire and the picture stops showing.',
   'pj.addText': '+ Text',
   'pj.addImage': '+ Image',
   'pj.addRelation': '+ Relationship',
@@ -163,6 +164,8 @@ export default {
   'pj.errNoName': 'Give your character a name.',
   'pj.errNameLong': 'The name is too long (max. 60 characters).',
   'pj.errPhoto': 'The picture link must start with http:// or https://',
+  'pj.errDiscordLink':
+    'Discord image links expire after a day and the picture stops showing. Upload it to Imgur, Catbox or Pinterest and paste that link.',
   'pj.errMcUser': 'The Minecraft username can only contain letters, numbers and "_" (max. 16).',
   'pj.errRelation': "A relationship doesn't match any existing character. Check the name.",
   'pj.saving': 'Saving...',

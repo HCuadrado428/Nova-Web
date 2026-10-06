@@ -31,6 +31,19 @@ export function normalizeSearchTerm(raw) {
     .replace(/[\u0300-\u036f]/g, '');
 }
 
+// ¿Es un enlace de imagen que caduca? Los adjuntos de Discord (cdn.discordapp.com,
+// media.discordapp.net) llevan una firma que deja de valer a las ~24 h, así que
+// la imagen se ve al guardar la ficha y luego desaparece.
+export function isExpiringImageUrl(raw) {
+  let host;
+  try {
+    host = new URL(raw).hostname.toLowerCase();
+  } catch (_err) {
+    return false;
+  }
+  return host === 'discordapp.com' || host.endsWith('.discordapp.com') || host.endsWith('.discordapp.net');
+}
+
 // localStorage puede no estar disponible (modo privado, cookies bloqueadas...):
 // en ese caso simplemente no se recuerda nada, sin romper la página.
 export function storageGet(key) {
