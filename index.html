@@ -319,7 +319,7 @@
         <p class="rules-item" data-i18n-html="guides.pj.1"><strong>Ver fichas:</strong> En Lore → Personajes cualquiera puede ver todos los personajes y buscarlos por nombre, sin cuenta.</p>
         <p class="rules-item" data-i18n-html="guides.pj.2"><strong>Iniciar sesión:</strong> Para tener ficha propia pulsa «Entrar con Google». Si no se abre la ventana de Google, permite las ventanas emergentes para esta web. Cada cuenta de Google tiene un personaje.</p>
         <p class="rules-item" data-i18n-html="guides.pj.3"><strong>Crear y editar:</strong> Pulsa «Crear personaje» (o «Mi personaje» si ya lo tienes) para abrir el editor. Solo tú puedes editar tu ficha.</p>
-        <p class="rules-item" data-i18n-html="guides.pj.4"><strong>Datos:</strong> Nombre (obligatorio, hasta 60 caracteres), usuario de Minecraft (opcional) y link de foto (opcional). De Pinterest vale: clic derecho sobre la imagen → «copiar dirección de imagen».</p>
+        <p class="rules-item" data-i18n-html="guides.pj.4"><strong>Datos:</strong> Nombre (obligatorio, hasta 60 caracteres), usuario de Minecraft, facción y link de foto (los tres opcionales). La facción la eliges o la creas tú: los que escriban la misma salen juntos. De Pinterest vale: clic derecho sobre la imagen → «copiar dirección de imagen».</p>
         <p class="rules-item" data-i18n-html="guides.pj.5"><strong>Bloques:</strong> Añade bloques de Texto, Imagen, Spotify o Relación (hasta 30) y cámbialos de orden con las flechas. En Spotify pega el link de una canción, álbum o playlist.</p>
         <p class="rules-item" data-i18n-html="guides.pj.6"><strong>Guardar y eliminar:</strong> «Guardar» publica los cambios. «Eliminar personaje» borra la ficha para siempre.</p>
         <p class="rules-item" data-i18n-html="guides.pj.7"><strong>Tu nombre:</strong> El lápiz ✎ junto a tu nombre cambia cómo te ven los demás, por ejemplo al firmar comentarios.</p>
@@ -370,6 +370,9 @@
       <div class="personajes-view is-active" id="personajes-view-directory">
         <h2 class="rules-title glitch" data-text="PERSONAJES" data-i18n="pj.title">PERSONAJES</h2>
         <input class="personajes-input personajes-search-input" id="personajes-search-input" type="text" placeholder="Buscar personaje..." aria-label="Buscar personaje" data-i18n-attr="placeholder:pj.searchPlaceholder|aria-label:pj.searchLabel">
+        <!-- Filtro por facción: lo rellena js/personajes.js con las facciones que
+             han escrito los jugadores en sus fichas. Oculto si nadie tiene facción. -->
+        <fieldset class="personajes-faction-filter" id="personajes-faction-filter" aria-label="Filtrar por facción" data-i18n-attr="aria-label:pj.factionFilterLabel" hidden></fieldset>
         <div class="personajes-directory-tools">
           <button class="rules-switch-btn" id="personajes-relations-btn" type="button" data-i18n="pj.treeBtn">Árbol de relaciones</button>
         </div>
@@ -382,6 +385,7 @@
         <h2 class="rules-title glitch" data-text="RELACIONES" data-i18n="pj.treeTitle">RELACIONES</h2>
         <p class="personajes-field-hint relations-hint" id="personajes-relations-hint" data-i18n="pj.treeHint">Pulsa un personaje para ver su perfil. Para acercar: botones + / −, pellizco o la rueda del ratón.</p>
         <div class="relations-graph-wrap" id="personajes-relations-graph"></div>
+        <ul class="relations-legend" id="personajes-relations-legend" aria-label="Facciones" data-i18n-attr="aria-label:pj.treeLegendLabel" hidden></ul>
         <p class="personajes-empty" id="personajes-relations-empty" hidden></p>
         <h3 class="personajes-comments-title relations-list-title" id="personajes-relations-list-title" data-i18n="pj.treeListTitle">Todas las relaciones</h3>
         <ul class="relations-list" id="personajes-relations-list"></ul>
@@ -392,6 +396,7 @@
         <button class="lore-btn personajes-edit-btn" id="personajes-edit-btn" type="button" hidden data-i18n="common.edit">Editar</button>
         <h2 class="rules-title glitch" id="personajes-profile-name" data-text="Personaje">Personaje</h2>
         <p class="personajes-profile-mcuser" id="personajes-profile-mcuser" hidden></p>
+        <p class="personajes-profile-faccion" id="personajes-profile-faccion" hidden></p>
         <div class="personajes-blocks" id="personajes-profile-blocks"></div>
 
         <div class="personajes-comments" id="personajes-comments">
@@ -415,6 +420,11 @@
         <label class="personajes-field-label" for="personajes-input-mcuser" data-i18n="pj.fieldMcUser">Usuario de Minecraft (opcional)</label>
         <input class="personajes-input" id="personajes-input-mcuser" type="text" maxlength="16" placeholder="TuUsuarioDeMinecraft" data-i18n-attr="placeholder:pj.fieldMcUserPlaceholder">
         <p class="personajes-field-hint" data-i18n="pj.fieldMcUserHint">Es opcional: si lo pones, se muestra como dato extra debajo de tu nombre en la ficha.</p>
+
+        <label class="personajes-field-label" for="personajes-input-faccion" data-i18n="pj.fieldFaction">Facción (opcional)</label>
+        <input class="personajes-input" id="personajes-input-faccion" type="text" maxlength="40" list="personajes-facciones-datalist" placeholder="Reino del Norte" data-i18n-attr="placeholder:pj.fieldFactionPlaceholder">
+        <datalist id="personajes-facciones-datalist"></datalist>
+        <p class="personajes-field-hint" data-i18n="pj.fieldFactionHint">Elige una de la lista o escribe una nueva. Los personajes con el mismo nombre de facción salen juntos en el directorio y del mismo color en el árbol.</p>
 
         <label class="personajes-field-label" for="personajes-input-foto" data-i18n="pj.fieldPhoto">Link de foto de perfil (opcional)</label>
         <input class="personajes-input" id="personajes-input-foto" type="url" placeholder="https://...">

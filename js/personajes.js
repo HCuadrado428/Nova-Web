@@ -13,7 +13,7 @@
 // vistas internas conmutadas por .is-active.
 // Las piezas que no dependen del resto viven en js/personajes/: la carga de
 // Firebase (firebase.js), los bloques del perfil (blocks.js) y los
-// comentarios (comments.js).
+// comentarios (comments.js) y las facciones (factions.js).
 
 import { channelSwitch, closeMenuToggle, isView, setView } from './views.js';
 import { normalizeSearchTerm } from './utils.js';
@@ -22,6 +22,7 @@ import { buildGraph, renderRelationsGraph } from './relations-graph.js';
 import { isFirebaseConfigured, loadFirebase } from './personajes/firebase.js';
 import { buildPersonajeBlockElement } from './personajes/blocks.js';
 import { createComments } from './personajes/comments.js';
+import { FACTION_MAX, factionKey, listFactions } from './personajes/factions.js';
 
 // Enganche para el link directo a un personaje (#personaje/<uid>): lo monta
 // initPersonajes() y lo llama intro.js tras revelarse la intro.
@@ -52,6 +53,8 @@ export function initPersonajes() {
   };
   const grid = document.getElementById('personajes-grid');
   const searchInput = document.getElementById('personajes-search-input');
+  const factionFilterEl = document.getElementById('personajes-faction-filter');
+  const relationsLegendEl = document.getElementById('personajes-relations-legend');
   const relationsBtn = document.getElementById('personajes-relations-btn');
   const relationsBackBtn = document.getElementById('personajes-relations-back-btn');
   const relationsGraphEl = document.getElementById('personajes-relations-graph');
@@ -64,6 +67,7 @@ export function initPersonajes() {
   const editBtn = document.getElementById('personajes-edit-btn');
   const profileNameEl = document.getElementById('personajes-profile-name');
   const profileMcUserEl = document.getElementById('personajes-profile-mcuser');
+  const profileFaccionEl = document.getElementById('personajes-profile-faccion');
   const profileBlocksEl = document.getElementById('personajes-profile-blocks');
   const commentsListEl = document.getElementById('personajes-comments-list');
   const commentForm = document.getElementById('personajes-comment-form');
@@ -74,6 +78,8 @@ export function initPersonajes() {
   const editorCancelBtn = document.getElementById('personajes-editor-cancel-btn');
   const nombreInput = document.getElementById('personajes-input-nombre');
   const mcUserInput = document.getElementById('personajes-input-mcuser');
+  const faccionInput = document.getElementById('personajes-input-faccion');
+  const faccionesDatalist = document.getElementById('personajes-facciones-datalist');
   const fotoInput = document.getElementById('personajes-input-foto');
   const editorBlocksEl = document.getElementById('personajes-editor-blocks');
   const nombresDatalist = document.getElementById('personajes-nombres-datalist');
@@ -132,7 +138,12 @@ export function initPersonajes() {
     !relationsEmptyEl ||
     !relationsHintEl ||
     !relationsListTitleEl ||
-    !relationsListEl
+    !relationsListEl ||
+    !factionFilterEl ||
+    !relationsLegendEl ||
+    !profileFaccionEl ||
+    !faccionInput ||
+    !faccionesDatalist
   )
     return;
 
@@ -153,7 +164,11 @@ export function initPersonajes() {
   let currentProfileUid = null;
   let editorBloques = [];
   let editingExisting = false;
+  let hadFaccion = false; // la ficha que se edita ya tenía facción (ver el guardado)
   let allPersonajes = []; // [{ id, data }], cache del directorio: alimenta el buscador y el autocompletado de relaciones
+  let factions = []; // listFactions(allPersonajes): [{ key, name, count, color }]
+  let factionFilter = ''; // clave de la facción elegida en el directorio ('' = todas)
+  const factionOf = (data) => factions.find((f) => f.key === factionKey(data.faccion));
 
   // Aviso general de la sección (errores de carga, de login...), visible
   // sobre cualquiera de las tres vistas internas. Se limpia al cambiar de vista.
@@ -250,9 +265,11 @@ export function initPersonajes() {
 
   function renderGrid() {
     const term = normalizeSearchTerm(searchInput.value);
-    const filtered = term
-      ? allPersonajes.filter(({ data }) => normalizeSearchTerm(data.nombre || '').includes(term))
-      : allPersonajes;
+    const filtered = allPersonajes.filter(
+      ({ data }) =>
+        (!term || normalizeSearchTerm(data.nombre || '').includes(term)) &&
+        (!factionFilter || factionKey(data.faccion) === factionFilter),
+    );
 
     if (!filtered.length) {
       setGridMessage(allPersonajes.length ? t('pj.noMatches') : t('pj.empty'));
@@ -281,6 +298,14 @@ export function initPersonajes() {
       name.className = 'personajes-card-name';
       name.textContent = data.nombre || t('pj.noName');
       card.appendChild(name);
+      const faction = factionOf(data);
+      if (faction) {
+        const tag = document.createElement('span');
+        tag.className = 'personajes-faction-tag';
+        tag.style.setProperty('--faction-color', faction.color);
+        tag.textContent = faction.name;
+        card.appendChild(tag);
+      }
       card.addEventListener('click', () => openProfile(id, data));
       grid.appendChild(card);
     });
@@ -303,6 +328,16 @@ export function initPersonajes() {
           nombresDatalist.appendChild(opt);
         });
 
+        factions = listFactions(allPersonajes);
+        if (!factions.some((f) => f.key === factionFilter)) factionFilter = '';
+        faccionesDatalist.innerHTML = '';
+        for (const f of factions) {
+          const opt = document.createElement('option');
+          opt.value = f.name;
+          faccionesDatalist.appendChild(opt);
+        }
+
+        renderFactionFilter();
         renderGrid();
       })
       .catch((err) => {
@@ -312,6 +347,33 @@ export function initPersonajes() {
   }
 
   searchInput.addEventListener('input', renderGrid);
+
+  // Botones "Todas · Facción A · Facción B..." encima del directorio.
+  function renderFactionFilter() {
+    factionFilterEl.innerHTML = '';
+    factionFilterEl.hidden = !factions.length;
+    if (!factions.length) return;
+    const chip = (key, label, color) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'personajes-faction-chip';
+      btn.dataset.faction = key;
+      btn.setAttribute('aria-pressed', String(key === factionFilter));
+      if (color) btn.style.setProperty('--faction-color', color);
+      btn.textContent = label;
+      btn.addEventListener('click', () => {
+        factionFilter = key;
+        for (const b of factionFilterEl.children) b.setAttribute('aria-pressed', String(b === btn));
+        renderGrid();
+      });
+      return btn;
+    };
+    factionFilterEl.append(chip('', t('pj.factionAll'), null));
+    for (const f of factions) factionFilterEl.append(chip(f.key, `${f.name} (${f.count})`, f.color));
+  }
+  onLanguageChange(() => {
+    if (views.directory.classList.contains('is-active')) renderFactionFilter();
+  });
 
   // ---- Árbol de relaciones (js/relations-graph.js) ----
   // Usa la caché del directorio (allPersonajes), que ya está cargada porque
@@ -324,9 +386,22 @@ export function initPersonajes() {
     renderRelationsGraph(relationsGraphEl, graph, {
       onSelect: goToProfile,
       nodeLabel: (name) => t('pj.treeNodeLabel', { name: name || t('pj.noName') }),
+      nodeColor: (node) => factionOf({ faccion: node.faccion })?.color || null,
       zoomLabels: { in: t('pj.treeZoomIn'), out: t('pj.treeZoomOut'), reset: t('pj.treeZoomReset') },
     });
     relationsHintEl.hidden = !hasEdges;
+
+    // Leyenda de colores: solo las facciones que salen en el árbol.
+    const inGraph = new Set(graph.nodes.map((n) => factionKey(n.faccion)));
+    relationsLegendEl.innerHTML = '';
+    for (const f of factions.filter((f) => inGraph.has(f.key))) {
+      const li = document.createElement('li');
+      li.className = 'personajes-faction-tag';
+      li.style.setProperty('--faction-color', f.color);
+      li.textContent = f.name;
+      relationsLegendEl.append(li);
+    }
+    relationsLegendEl.hidden = !relationsLegendEl.children.length;
     relationsListTitleEl.hidden = !hasEdges;
 
     // Aviso: vacío del todo, o cuántos personajes se quedan fuera por no tener relaciones.
@@ -405,6 +480,10 @@ export function initPersonajes() {
       profileMcUserEl.textContent = '';
       profileMcUserEl.hidden = true;
     }
+    const faccion = (data.faccion || '').trim();
+    profileFaccionEl.hidden = !faccion;
+    profileFaccionEl.textContent = faccion ? t('pj.faction', { name: faccion }) : '';
+    profileFaccionEl.style.setProperty('--faction-color', factionOf(data)?.color || '');
     profileBlocksEl.innerHTML = '';
     for (const bloque of data.bloques || []) {
       profileBlocksEl.appendChild(
@@ -573,6 +652,8 @@ export function initPersonajes() {
     editingExisting = !!data;
     nombreInput.value = data ? data.nombre || '' : '';
     mcUserInput.value = data ? data.minecraftUsername || '' : '';
+    faccionInput.value = data ? data.faccion || '' : '';
+    hadFaccion = !!data?.faccion;
     fotoInput.value = data ? data.fotoUrl || '' : '';
     editorBloques = data && Array.isArray(data.bloques) ? data.bloques.map((b) => ({ ...b })) : [];
     renderEditorBlocks();
@@ -623,6 +704,11 @@ export function initPersonajes() {
       setFeedback(t('pj.errMcUser'), 'fail');
       return;
     }
+    const faccion = faccionInput.value.trim().replace(/\s+/g, ' ');
+    if (faccion.length > FACTION_MAX) {
+      setFeedback(t('pj.errFactionLong'), 'fail');
+      return;
+    }
     const relacionInvalida = editorBloques.some((b) => b.tipo === 'relacion' && (b.nombre || '').trim() && !b.uid);
     if (relacionInvalida) {
       setFeedback(t('pj.errRelation'), 'fail');
@@ -643,6 +729,9 @@ export function initPersonajes() {
     const payload = {
       nombre,
       minecraftUsername: minecraftUsername || null,
+      // Solo se manda si hay facción (o había, para quitarla): así las fichas
+      // sin facción se siguen guardando aunque firestore.rules aún no la admita.
+      ...(faccion || hadFaccion ? { faccion: faccion || null } : {}),
       fotoUrl: fotoUrl || null,
       bloques,
       actualizadoEn: fb.serverTimestamp(),
@@ -655,11 +744,13 @@ export function initPersonajes() {
     write
       .then(() => {
         editingExisting = true;
+        hadFaccion = !!faccion;
         setHasCharacter(true);
         currentProfileUid = currentUser.uid;
         openProfile(currentUser.uid, {
           nombre,
           minecraftUsername: minecraftUsername || null,
+          faccion: faccion || null,
           fotoUrl: fotoUrl || null,
           bloques,
         });

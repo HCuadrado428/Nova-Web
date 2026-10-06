@@ -46,7 +46,12 @@ export function buildGraph(personajes) {
 
   const nodes = personajes
     .filter((p) => connected.has(p.id))
-    .map((p) => ({ id: p.id, name: p.data.nombre || '', foto: p.data.fotoUrl || null }))
+    .map((p) => ({
+      id: p.id,
+      name: p.data.nombre || '',
+      foto: p.data.fotoUrl || null,
+      faccion: p.data.faccion || null,
+    }))
     .sort((x, y) => x.id.localeCompare(y.id)); // orden estable: mismo dibujo siempre
 
   // Orden fijo (no el de llegada de los datos): la simulación suma fuerzas en
@@ -175,7 +180,12 @@ function svgEl(name, attrs = {}) {
 export function renderRelationsGraph(
   container,
   graph,
-  { onSelect, nodeLabel = (name) => name, zoomLabels = { in: '+', out: '−', reset: '1:1' } } = {},
+  {
+    onSelect,
+    nodeLabel = (name) => name,
+    nodeColor = () => null, // color del borde (p.ej. el de su facción); null = el de siempre
+    zoomLabels = { in: '+', out: '−', reset: '1:1' },
+  } = {},
 ) {
   container.innerHTML = '';
   if (!graph.nodes.length) return;
@@ -214,6 +224,8 @@ export function renderRelationsGraph(
       'aria-label': nodeLabel(node.name),
     });
     g.dataset.id = node.id;
+    const color = nodeColor(node);
+    if (color) g.style.setProperty('--node-color', color);
     const clipId = `relations-clip-${i}`;
     const clip = svgEl('clipPath', { id: clipId });
     clip.append(svgEl('circle', { r }));

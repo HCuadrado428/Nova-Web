@@ -23,6 +23,7 @@ const db = (uid) => (uid ? env.authenticatedContext(uid) : env.unauthenticatedCo
 const base = () => ({
   nombre: 'Alicia',
   minecraftUsername: null,
+  faccion: null,
   fotoUrl: null,
   bloques: [],
   actualizadoEn: serverTimestamp(),
@@ -45,6 +46,12 @@ describe('personajes', () => {
         }),
       ),
     ));
+  test('crear con facción', () =>
+    assertSucceeds(setDoc(doc(db('bob'), 'personajes/bob'), nuevo({ faccion: 'Reino del Norte' }))));
+  test('NO: facción de más de 40 caracteres', () =>
+    assertFails(setDoc(doc(db('bob'), 'personajes/bob'), nuevo({ faccion: 'x'.repeat(41) }))));
+  test('NO: facción que no es texto', () =>
+    assertFails(setDoc(doc(db('bob'), 'personajes/bob'), nuevo({ faccion: 7 }))));
   test('NO: crear el de otra persona', () => assertFails(setDoc(doc(db('bob'), 'personajes/alice'), nuevo())));
   test('NO: anónimo', () => assertFails(setDoc(doc(db(null), 'personajes/x'), nuevo())));
   test('NO: campo extra', () => assertFails(setDoc(doc(db('bob'), 'personajes/bob'), nuevo({ admin: true }))));
