@@ -138,6 +138,9 @@ export default {
   'pj.noComments': 'Todavía no hay comentarios.',
   'pj.someone': 'Alguien',
   'pj.edited': '(editado)',
+  'pj.newComments': '{n} comentarios nuevos',
+  'pj.newCommentsOne': '1 comentario nuevo',
+  'pj.newTag': 'Nuevo',
   'pj.deleteComment': 'Borrar comentario',
   'pj.deleteCommentError': 'No se pudo borrar el comentario.',
   'pj.editComment': 'Editar comentario',
@@ -235,7 +238,7 @@ export default {
   'guides.pj.7':
     '<strong>Tu nombre:</strong> El lápiz ✎ junto a tu nombre cambia cómo te ven los demás, por ejemplo al firmar comentarios.',
   'guides.pj.8':
-    '<strong>Comentarios:</strong> Con sesión iniciada puedes comentar cualquier ficha (hasta 500 caracteres) y editar o borrar tus comentarios. En tu propia ficha puedes borrar cualquier comentario. Si te han comentado algo nuevo, «Mi personaje» lleva un aviso.',
+    '<strong>Comentarios:</strong> Con sesión iniciada puedes comentar cualquier ficha (hasta 500 caracteres) y editar o borrar tus comentarios. En tu propia ficha puedes borrar cualquier comentario. Si te escriben algo nuevo, «Mi personaje» muestra cuántos comentarios tienes sin leer (se actualiza solo) y en tu ficha salen marcados como «Nuevo».',
   'guides.pj.9':
     '<strong>Compartir:</strong> Al abrir una ficha, el enlace de la barra del navegador lleva directo a ese personaje. Cópialo para compartirlo.',
   'guides.rel.title': 'GUÍA · RELACIONES',

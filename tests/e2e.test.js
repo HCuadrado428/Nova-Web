@@ -580,6 +580,75 @@ describe('Personajes', () => {
     await autor.context().close();
   });
 
+  test('avisos de comentarios: número en "Mi personaje" en directo y "Nuevo" en tu ficha', async () => {
+    const ana = await openPage({ signedInAs: { uid: 'ana', name: 'Ana' } });
+    const hace = (min) => Timestamp.fromMillis(Date.now() - min * 60_000);
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      const db = ctx.firestore();
+      await setDoc(doc(db, 'personajes', ana.uid), {
+        nombre: 'Ana',
+        minecraftUsername: null,
+        fotoUrl: null,
+        bloques: [],
+        actualizadoEn: hace(300),
+        creadoEn: hace(300),
+      });
+      const comentario = (id, texto, min) =>
+        setDoc(doc(db, 'personajes', ana.uid, 'comentarios', id), {
+          autorUid: 'zed',
+          autorNombre: 'Zed',
+          texto,
+          creadoEn: hace(min),
+        });
+      await comentario('viejo', 'Ya lo habías leído', 120);
+      await comentario('nuevo', 'Aún no lo has leído', 1);
+    });
+    // Ana vio su ficha por última vez hace una hora (en este navegador).
+    await ana.evaluate(
+      (uid) => localStorage.setItem(`personajes_comentarios_vistos_${uid}`, Date.now() - 3_600_000),
+      ana.uid,
+    );
+    await enter(ana);
+    await openPersonajes(ana);
+    const badge = () => ana.locator('#personajes-mine-btn').getAttribute('data-badge');
+    await ana.waitForFunction(() => document.getElementById('personajes-mine-btn').dataset.badge === '1');
+    assert.equal(
+      await ana.locator('#personajes-mine-btn').getAttribute('aria-label'),
+      'Mi personaje · 1 comentario nuevo',
+    );
+
+    // Bob le escribe desde otro navegador: el número sube solo.
+    const bob = await openPage({ signedInAs: { uid: 'bob', name: 'Bob' } });
+    await enter(bob);
+    await openPersonajes(bob);
+    await openProfile(bob, 'Ana');
+    await bob.locator('#personajes-comment-form:not([hidden])').waitFor();
+    await bob.fill('#personajes-comment-input', 'Hola Ana');
+    await bob.click('#personajes-comment-form button[type=submit]');
+    await ana.waitForFunction(() => document.getElementById('personajes-mine-btn').dataset.badge === '2');
+
+    // En su ficha, los dos que no había visto salen como "Nuevo" y el aviso se va.
+    await openProfile(ana, 'Ana');
+    await ana.waitForFunction(() => document.querySelectorAll('.personajes-comment').length === 3);
+    assert.deepEqual(await ana.locator('.personajes-comment.is-new .personajes-comment-text').allTextContents(), [
+      'Aún no lo has leído',
+      'Hola Ana',
+    ]);
+    assert.equal(await text(ana, '.personajes-comment-new-tag'), 'Nuevo');
+    assert.equal(await badge(), null);
+
+    // Al volver a entrar ya no hay nada nuevo.
+    await ana.click('#personajes-profile-back-btn');
+    await openProfile(ana, 'Ana');
+    await ana.waitForFunction(() => document.querySelectorAll('.personajes-comment').length === 3);
+    assert.equal(await ana.locator('.personajes-comment.is-new').count(), 0);
+    assert.equal(await badge(), null);
+    assert.deepEqual(ana.errors, []);
+    assert.deepEqual(bob.errors, []);
+    await ana.context().close();
+    await bob.context().close();
+  });
+
   test('un comentario nuevo no borra lo que estás editando', async () => {
     const bob = await openPage({ signedInAs: { uid: 'bob', name: 'Bob' } });
     await env.withSecurityRulesDisabled((ctx) =>

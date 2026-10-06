@@ -136,6 +136,9 @@ export default {
   'pj.noComments': 'No comments yet.',
   'pj.someone': 'Someone',
   'pj.edited': '(edited)',
+  'pj.newComments': '{n} new comments',
+  'pj.newCommentsOne': '1 new comment',
+  'pj.newTag': 'New',
   'pj.deleteComment': 'Delete comment',
   'pj.deleteCommentError': "Couldn't delete the comment.",
   'pj.editComment': 'Edit comment',
@@ -231,7 +234,7 @@ export default {
   'guides.pj.7':
     '<strong>Your name:</strong> The ✎ pencil next to your name changes how others see you, for example when you sign comments.',
   'guides.pj.8':
-    '<strong>Comments:</strong> Once signed in you can comment on any profile (up to 500 characters) and edit or delete your own comments. On your own profile you can delete any comment. When you get new comments, "My character" shows a badge.',
+    '<strong>Comments:</strong> Once signed in you can comment on any profile (up to 500 characters) and edit or delete your own comments. On your own profile you can delete any comment. When you get new comments, "My character" shows how many you haven\'t read (it updates by itself) and they are marked "New" on your profile.',
   'guides.pj.9':
     "<strong>Sharing:</strong> When you open a profile, the link in the browser's address bar goes straight to that character. Copy it to share it.",
   'guides.rel.title': 'GUIDE · RELATIONSHIPS',

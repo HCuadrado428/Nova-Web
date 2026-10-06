@@ -3,7 +3,9 @@
 // ======================================================
 //
 // Lista en tiempo real, publicar, editar y borrar comentarios, y el aviso
-// de comentarios nuevos en tu propio personaje. Lo monta initPersonajes()
+// de comentarios nuevos en tu propio personaje: un número en "Mi personaje"
+// que se actualiza en directo y la etiqueta "Nuevo" en los que aún no habías
+// visto. Lo visto se recuerda en este navegador (localStorage). Lo monta initPersonajes()
 // (js/personajes.js), que le pasa los elementos del HTML y `session`: un
 // objeto cuyas propiedades se leen en el momento de usarlas, porque
 // Firebase se conecta tarde y la sesión cambia al entrar o salir.
@@ -25,25 +27,64 @@ export function createComments({ session, comentariosCol, reportError, els }) {
 
   const commentsSeenKey = (uid) => `personajes_comentarios_vistos_${uid}`;
 
-  function markCommentsSeen(uid) {
-    storageSet(commentsSeenKey(uid), String(Date.now()));
+  const lastSeenOf = (uid) => Number(storageGet(commentsSeenKey(uid))) || 0;
+  const isUnread = (data, uid, since) => data.autorUid !== uid && toMillis(data.creadoEn) > since;
+
+  // ---- Aviso en "Mi personaje" ----
+  // Mientras hay sesión, se escuchan los comentarios de tu personaje: si
+  // alguien te escribe, el número sube sin recargar.
+  let unsubscribeUnread = null;
+  let unreadUid = null;
+  let unreadCount = 0;
+
+  function renderBadge() {
+    if (unreadCount > 0) {
+      mineBtn.dataset.badge = unreadCount > 9 ? '9+' : String(unreadCount);
+      mineBtn.setAttribute(
+        'aria-label',
+        `${mineBtn.textContent} · ${t(unreadCount === 1 ? 'pj.newCommentsOne' : 'pj.newComments', { n: unreadCount })}`,
+      );
+    } else {
+      delete mineBtn.dataset.badge;
+      mineBtn.removeAttribute('aria-label');
+    }
   }
 
-  function checkUnreadComments(uid) {
-    const lastSeen = Number(storageGet(commentsSeenKey(uid))) || 0;
-    session.fb
-      .getDocs(comentariosCol(uid))
-      .then((snapshot) => {
-        let hayNuevos = false;
-        snapshot.forEach((doc) => {
-          const data = doc.data();
-          if (data.autorUid !== uid && toMillis(data.creadoEn) > lastSeen) hayNuevos = true;
-        });
-        mineBtn.classList.toggle('personajes-has-badge', hayNuevos);
-      })
-      .catch(() => {
+  function setUnread(n) {
+    unreadCount = n;
+    renderBadge();
+  }
+
+  function markCommentsSeen(uid) {
+    storageSet(commentsSeenKey(uid), String(Date.now()));
+    if (uid === unreadUid) setUnread(0);
+  }
+
+  function stopWatchingUnread() {
+    if (unsubscribeUnread) unsubscribeUnread();
+    unsubscribeUnread = null;
+    unreadUid = null;
+    setUnread(0);
+  }
+
+  function watchUnread(uid) {
+    stopWatchingUnread();
+    unreadUid = uid;
+    unsubscribeUnread = session.fb.onSnapshot(
+      comentariosCol(uid),
+      (snapshot) => {
+        // Si estás viendo tu propio perfil, lo que llega ya lo estás leyendo.
+        if (commentsUid === uid) {
+          markCommentsSeen(uid);
+          return;
+        }
+        const since = lastSeenOf(uid);
+        setUnread(snapshot.docs.filter((doc) => isUnread(doc.data(), uid, since)).length);
+      },
+      () => {
         // si falla (p.ej. las reglas de comentarios aún no están publicadas), simplemente no se muestra aviso
-      });
+      },
+    );
   }
 
   /* Comentarios en tiempo real: mientras se ve un perfil, onSnapshot avisa
@@ -57,6 +98,7 @@ export function createComments({ session, comentariosCol, reportError, els }) {
   let commentsUid = null;
   let lastCommentsSnapshot = null;
   let editingComment = false;
+  let newSince = null; // en tu propio perfil: lo escrito después de esto lleva "Nuevo"
 
   function stopWatchingComments() {
     if (unsubscribeComments) unsubscribeComments();
@@ -64,12 +106,19 @@ export function createComments({ session, comentariosCol, reportError, els }) {
     commentsUid = null;
     lastCommentsSnapshot = null;
     editingComment = false;
+    newSince = null;
   }
 
   function watchComments(uid) {
     stopWatchingComments();
     commentsUid = uid;
     commentsListEl.innerHTML = '';
+    // Tu propio perfil: se apunta qué habías visto ya (para marcar lo nuevo)
+    // y desde ahora todo cuenta como leído.
+    if (session.currentUser && session.currentUser.uid === uid) {
+      newSince = lastSeenOf(uid);
+      markCommentsSeen(uid);
+    }
     const comentarios = session.fb.query(comentariosCol(uid), session.fb.orderBy('creadoEn'));
     unsubscribeComments = session.fb.onSnapshot(
       comentarios,
@@ -109,12 +158,20 @@ export function createComments({ session, comentariosCol, reportError, els }) {
       const data = doc.data();
       const item = document.createElement('div');
       item.className = 'personajes-comment';
+      const isNew = newSince !== null && isUnread(data, uid, newSince);
+      if (isNew) item.classList.add('is-new');
 
       const header = document.createElement('div');
       header.className = 'personajes-comment-header';
       const author = document.createElement('span');
       author.className = 'personajes-comment-author';
       author.textContent = data.autorNombre || t('pj.someone');
+      if (isNew) {
+        const newTag = document.createElement('span');
+        newTag.className = 'personajes-comment-new-tag';
+        newTag.textContent = t('pj.newTag');
+        author.append(' ', newTag);
+      }
       header.appendChild(author);
 
       const text = document.createElement('p');
@@ -241,7 +298,8 @@ export function createComments({ session, comentariosCol, reportError, els }) {
     watch: watchComments,
     stop: stopWatchingComments,
     render: renderComments,
-    checkUnread: checkUnreadComments,
-    markSeen: markCommentsSeen,
+    watchUnread,
+    stopUnread: stopWatchingUnread,
+    renderBadge,
   };
 }
