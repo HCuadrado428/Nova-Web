@@ -38,6 +38,7 @@ export default {
   'menu.lore': 'Lore',
   'menu.loreAntes': 'Antes del Nova',
   'menu.personajes': 'Personajes',
+  'menu.cronica': 'Crónica',
   'menu.rules': 'Normas',
   // ---- Botón de sonido ----
   'audio.mute': 'Silenciar',
@@ -182,6 +183,26 @@ export default {
   'pj.renameError': 'No se pudo cambiar el nombre.',
   'pj.mcUser': 'Usuario de Minecraft: {name}',
   'pj.treeBtn': 'Árbol de relaciones',
+  // ---- Crónica (js/personajes/chronicle.js) ----
+  'chron.btn': 'Crónica',
+  'chron.title': 'CRÓNICA',
+  'chron.intro':
+    'Lo que va pasando en el servidor, contado por los jugadores. Las entradas más recientes salen primero.',
+  'chron.fieldTitle': 'Título',
+  'chron.fieldTitlePlaceholder': 'La caída de la torre norte',
+  'chron.fieldText': 'Qué pasó',
+  'chron.fieldImage': 'Link de una captura (opcional)',
+  'chron.publish': 'Publicar',
+  'chron.signinHint': 'Inicia sesión con Google para escribir en la crónica.',
+  'chron.empty': 'Todavía no hay nada en la crónica. ¡Escribe la primera entrada!',
+  'chron.meta': '{date} · {author}',
+  'chron.metaEdited': '{date} · {author} (editado)',
+  'chron.delete': 'Borrar entrada',
+  'chron.confirmDelete': '¿Borrar esta entrada de la crónica?',
+  'chron.errEmpty': 'Pon un título y cuenta qué pasó.',
+  'chron.saveError': 'No se pudo guardar la entrada. Inténtalo de nuevo.',
+  'chron.deleteError': 'No se pudo borrar la entrada.',
+  'chron.loadError': 'No se pudo cargar la crónica.',
   'pj.treeTitle': 'RELACIONES',
   'pj.treeHint': 'Pulsa un personaje para ver su perfil. Para acercar: botones + / −, pellizco o la rueda del ratón.',
   'pj.treeZoomIn': 'Acercar',
@@ -243,6 +264,8 @@ export default {
     '<strong>Comentarios:</strong> Con sesión iniciada puedes comentar cualquier ficha (hasta 500 caracteres) y editar o borrar tus comentarios. En tu propia ficha puedes borrar cualquier comentario. Si te escriben algo nuevo, «Mi personaje» muestra cuántos comentarios tienes sin leer (se actualiza solo) y en tu ficha salen marcados como «Nuevo».',
   'guides.pj.9':
     '<strong>Compartir:</strong> Al abrir una ficha, el enlace de la barra del navegador lleva directo a ese personaje. Cópialo para compartirlo.',
+  'guides.pj.10':
+    '<strong>Crónica:</strong> En Lore → Crónica (o el botón «Crónica» del directorio) está lo que va pasando en el servidor. Con sesión iniciada puedes publicar una entrada con título, texto y una captura, y editar o borrar las tuyas.',
   'guides.rel.title': 'GUÍA · RELACIONES',
   'guides.rel.intro': 'Cómo funciona el árbol de relaciones.',
   'guides.rel.1':

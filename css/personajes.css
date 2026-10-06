@@ -660,3 +660,75 @@ body[data-view='personajes'] .personajes-page {
 .personajes-comment-form[hidden] {
   display: none;
 }
+
+/* Crónica de la temporada (js/personajes/chronicle.js) */
+.chronicle-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 640px;
+  margin: 0 auto 28px;
+}
+.chronicle-form[hidden] {
+  display: none;
+}
+.chronicle-form-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 4px;
+}
+#personajes-cronica-signin-hint {
+  text-align: center;
+}
+#personajes-cronica-signin-hint[hidden] {
+  display: none;
+}
+.chronicle-list {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  max-width: 640px;
+  margin: 0 auto;
+}
+.chronicle-entry {
+  padding: 16px 18px;
+  border: 1px solid rgba(55, 240, 224, 0.25);
+  border-left: 3px solid var(--glitch-cyan);
+  border-radius: var(--radius);
+  background: rgba(55, 240, 224, 0.03);
+}
+.chronicle-entry-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  letter-spacing: 1px;
+  color: var(--text-main);
+}
+.chronicle-entry-meta {
+  margin: 6px 0 0;
+  font-size: 0.75rem;
+  color: var(--text-dim);
+}
+.chronicle-entry-image {
+  display: block;
+  width: 100%;
+  max-height: 360px;
+  margin-top: 12px;
+  object-fit: cover;
+  border-radius: calc(var(--radius) - 2px);
+}
+.chronicle-entry-text {
+  margin: 12px 0 0;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: rgba(234, 230, 218, 0.82);
+  white-space: pre-wrap;
+}
+.chronicle-entry-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 12px;
+}
