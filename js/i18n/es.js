@@ -182,6 +182,15 @@ export default {
   'pj.promptName': '¿Qué nombre quieres que vean los demás en Personajes?',
   'pj.renameError': 'No se pudo cambiar el nombre.',
   'pj.mcUser': 'Usuario de Minecraft: {name}',
+  'pj.fieldFaction': 'Facción (opcional)',
+  'pj.fieldFactionPlaceholder': 'Reino del Norte',
+  'pj.fieldFactionHint':
+    'Elige una de la lista o escribe una nueva. Los personajes con el mismo nombre de facción salen juntos en el directorio y del mismo color en el árbol.',
+  'pj.errFactionLong': 'La facción puede tener como mucho 40 caracteres.',
+  'pj.faction': 'Facción: {name}',
+  'pj.factionFilterLabel': 'Filtrar por facción',
+  'pj.factionAll': 'Todas',
+  'pj.treeLegendLabel': 'Facciones',
   'pj.treeBtn': 'Árbol de relaciones',
   // ---- Crónica (js/personajes/chronicle.js) ----
   'chron.btn': 'Crónica',
@@ -253,7 +262,7 @@ export default {
   'guides.pj.3':
     '<strong>Crear y editar:</strong> Pulsa «Crear personaje» (o «Mi personaje» si ya lo tienes) para abrir el editor. Solo tú puedes editar tu ficha.',
   'guides.pj.4':
-    '<strong>Datos:</strong> Nombre (obligatorio, hasta 60 caracteres), usuario de Minecraft (opcional) y link de foto (opcional). De Pinterest vale: clic derecho sobre la imagen → «copiar dirección de imagen».',
+    '<strong>Datos:</strong> Nombre (obligatorio, hasta 60 caracteres), usuario de Minecraft, facción y link de foto (los tres opcionales). La facción la eliges o la creas tú: los que escriban la misma salen juntos. De Pinterest vale: clic derecho sobre la imagen → «copiar dirección de imagen».',
   'guides.pj.5':
     '<strong>Bloques:</strong> Añade bloques de Texto, Imagen, Spotify o Relación (hasta 30) y cámbialos de orden con las flechas. En Spotify pega el link de una canción, álbum o playlist.',
   'guides.pj.6':

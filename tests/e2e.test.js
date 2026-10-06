@@ -9,7 +9,7 @@ import { readFileSync } from 'node:fs';
 import { after, before, beforeEach, describe, test } from 'node:test';
 import { initializeTestEnvironment } from '@firebase/rules-unit-testing';
 import { build } from 'esbuild';
-import { collection, doc, getDoc, getDocs, setDoc, Timestamp } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, setDoc, Timestamp, updateDoc } from 'firebase/firestore';
 import { chromium } from 'playwright';
 import { startStaticServer } from './static-server.js';
 
@@ -565,6 +565,55 @@ describe('Personajes', () => {
     await page.click('#personajes-profile-back-btn');
     await page.waitForFunction(() => document.querySelectorAll('.personajes-card').length === 3);
     assert.equal(await text(page, '#personajes-mine-btn'), 'Mi personaje');
+    assert.deepEqual(page.errors, []);
+    await page.context().close();
+  });
+
+  test('facciones: cada jugador pone la suya, filtro en el directorio y color en el árbol', async () => {
+    await env.withSecurityRulesDisabled((ctx) =>
+      updateDoc(doc(ctx.firestore(), 'personajes/kira'), { faccion: 'Reino del Norte' }),
+    );
+    const page = await openPage({ signedInAs: { uid: 'yo', name: 'Probador' } });
+    await enter(page);
+    await openPersonajes(page);
+    await page.locator('#personajes-faction-filter:not([hidden])').waitFor();
+    assert.deepEqual(await page.locator('.personajes-faction-chip').allTextContents(), [
+      'Todas',
+      'Reino del Norte (1)',
+    ]);
+
+    // Se une escribiéndola en minúsculas: cuenta como la misma facción.
+    await page.locator('#personajes-mine-btn:not([hidden])').waitFor();
+    await page.click('#personajes-mine-btn');
+    await page.locator('#personajes-view-editor.is-active').waitFor();
+    assert.equal(await page.locator('#personajes-facciones-datalist option').getAttribute('value'), 'Reino del Norte');
+    await page.fill('#personajes-input-nombre', 'Nuevo');
+    await page.fill('#personajes-input-faccion', '  reino   del norte ');
+    await page.click('#personajes-save-btn');
+    await page.waitForFunction(() => document.getElementById('personajes-profile-name').textContent === 'Nuevo');
+    assert.equal(await text(page, '#personajes-profile-faccion'), 'Facción: reino del norte');
+    let guardado;
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      guardado = (await getDoc(doc(ctx.firestore(), 'personajes', page.uid))).data();
+    });
+    assert.equal(guardado.faccion, 'reino del norte');
+
+    await page.click('#personajes-profile-back-btn');
+    await page.waitForFunction(() => document.querySelectorAll('.personajes-card').length === 3);
+    await page.click('.personajes-faction-chip:has-text("(2)")');
+    assert.deepEqual((await page.locator('.personajes-card-name').allTextContents()).sort(), ['Kira', 'Nuevo']);
+    await page.click('.personajes-faction-chip:has-text("Todas")');
+    assert.equal(await page.locator('.personajes-card').count(), 3);
+
+    // Árbol: Kira lleva el color de su facción; Zed, sin facción, el de siempre.
+    await page.click('#personajes-relations-btn');
+    await page.locator('#personajes-view-relations.is-active').waitFor();
+    const color = (id) =>
+      page.locator(`.relations-node[data-id="${id}"]`).evaluate((g) => g.style.getPropertyValue('--node-color'));
+    assert.ok(await color('kira'));
+    assert.equal(await color('zed'), '');
+    // Dos formas de escribirla, empatadas: se muestra la de la ficha más antigua.
+    assert.equal(await text(page, '#personajes-relations-legend li'), 'Reino del Norte');
     assert.deepEqual(page.errors, []);
     await page.context().close();
   });

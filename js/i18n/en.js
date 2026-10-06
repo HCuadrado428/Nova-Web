@@ -179,6 +179,15 @@ export default {
   'pj.promptName': 'What name do you want others to see in Characters?',
   'pj.renameError': "Couldn't change the name.",
   'pj.mcUser': 'Minecraft username: {name}',
+  'pj.fieldFaction': 'Faction (optional)',
+  'pj.fieldFactionPlaceholder': 'Kingdom of the North',
+  'pj.fieldFactionHint':
+    'Pick one from the list or type a new one. Characters with the same faction name are grouped together in the directory and share a colour in the tree.',
+  'pj.errFactionLong': 'The faction can be at most 40 characters long.',
+  'pj.faction': 'Faction: {name}',
+  'pj.factionFilterLabel': 'Filter by faction',
+  'pj.factionAll': 'All',
+  'pj.treeLegendLabel': 'Factions',
   'pj.treeBtn': 'Relationship tree',
   // ---- Crónica (js/personajes/chronicle.js) ----
   'chron.btn': 'Chronicle',
@@ -249,7 +258,7 @@ export default {
   'guides.pj.3':
     '<strong>Creating and editing:</strong> Press "Create character" (or "My character" if you already have one) to open the editor. Only you can edit your profile.',
   'guides.pj.4':
-    '<strong>Details:</strong> Name (required, up to 60 characters), Minecraft username (optional) and a photo link (optional). Pinterest works: right-click the image → "copy image address".',
+    '<strong>Details:</strong> Name (required, up to 60 characters), Minecraft username, faction and a photo link (all three optional). You pick or create your faction: everyone who types the same one is grouped together. Pinterest works: right-click the image → "copy image address".',
   'guides.pj.5':
     '<strong>Blocks:</strong> Add Text, Image, Spotify or Relationship blocks (up to 30) and reorder them with the arrows. For Spotify, paste the link to a song, album or playlist.',
   'guides.pj.6':

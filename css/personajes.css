@@ -254,7 +254,8 @@ body[data-view='personajes'] .personajes-page {
 }
 .relations-node-ring {
   fill: none;
-  stroke: var(--glitch-cyan);
+  /* --node-color: el de la facción del personaje, si tiene (js/personajes.js) */
+  stroke: var(--node-color, var(--glitch-cyan));
   stroke-width: 2;
   transition:
     stroke 0.15s ease,
@@ -659,6 +660,71 @@ body[data-view='personajes'] .personajes-page {
 }
 .personajes-comment-form[hidden] {
   display: none;
+}
+
+/* Facciones (js/personajes/factions.js): las escribe cada jugador en su ficha.
+   --faction-color lo pone el JS con el color de cada facción. */
+.personajes-faction-filter {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin: -8px auto 20px;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+.personajes-faction-filter[hidden],
+.relations-legend[hidden] {
+  display: none;
+}
+.personajes-faction-chip {
+  padding: 5px 12px;
+  font: inherit;
+  font-size: 0.75rem;
+  color: var(--faction-color, var(--text-main));
+  background: transparent;
+  border: 1px solid var(--faction-color, rgba(234, 230, 218, 0.35));
+  border-radius: 999px;
+  cursor: pointer;
+  opacity: 0.7;
+}
+.personajes-faction-chip:hover,
+.personajes-faction-chip:focus-visible {
+  opacity: 1;
+}
+.personajes-faction-chip[aria-pressed='true'] {
+  opacity: 1;
+  background: rgba(234, 230, 218, 0.08);
+  box-shadow: 0 0 8px var(--faction-color, rgba(234, 230, 218, 0.35));
+}
+.personajes-faction-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.7rem;
+  color: var(--text-dim);
+}
+.personajes-faction-tag::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--faction-color, var(--glitch-cyan));
+}
+.personajes-profile-faccion {
+  margin: 6px 0 0;
+  font-size: 0.8rem;
+  color: var(--faction-color, var(--text-dim));
+}
+.relations-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px 16px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
 }
 
 /* Crónica de la temporada (js/personajes/chronicle.js) */
