@@ -415,10 +415,6 @@ export function initPersonajes() {
       );
     }
     editBtn.hidden = !(currentUser && currentUser.uid === uid);
-    if (currentUser && currentUser.uid === uid) {
-      comments.markSeen(uid);
-      mineBtn.classList.remove('personajes-has-badge');
-    }
     updateCommentFormVisibility();
     showView('profile');
     comments.watch(uid);
@@ -704,6 +700,7 @@ export function initPersonajes() {
   function setHasCharacter(value) {
     hasCharacter = value;
     mineBtn.textContent = t(value ? 'pj.mine' : 'pj.create');
+    comments.renderBadge(); // su aria-label lleva el texto del botón
   }
   onLanguageChange(() => {
     setHasCharacter(hasCharacter);
@@ -716,13 +713,13 @@ export function initPersonajes() {
     signinBtn.hidden = !!user;
     sessionActive.hidden = !user;
     mineBtn.hidden = true;
-    mineBtn.classList.remove('personajes-has-badge');
+    comments.stopUnread();
     if (user) {
       sessionName.textContent = user.displayName || user.email || t('pj.googleAccount');
       fb.getDoc(personajeDoc(user.uid))
         .then((doc) => {
           setHasCharacter(doc.exists());
-          if (doc.exists()) comments.checkUnread(user.uid);
+          if (doc.exists()) comments.watchUnread(user.uid);
         })
         .catch((err) => {
           // Sin saber si ya tiene personaje: el botón se enseña igual y, al

@@ -63,18 +63,28 @@ body[data-view='personajes'] .personajes-page {
   background: rgba(55, 240, 224, 0.12);
 }
 
-/* Aviso de comentarios nuevos en tu propio personaje: puntito en "Mi personaje" */
-.personajes-has-badge {
+/* Aviso de comentarios nuevos en tu propio personaje: número en "Mi personaje"
+   (data-badge, lo pone js/personajes/comments.js) */
+#personajes-mine-btn[data-badge] {
   position: relative;
 }
-.personajes-has-badge::after {
-  content: '';
+#personajes-mine-btn[data-badge]::after {
+  content: attr(data-badge);
   position: absolute;
-  top: -3px;
-  right: -3px;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
+  top: -8px;
+  right: -8px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  box-sizing: border-box;
+  border-radius: 999px;
+  font-family: var(--font-body);
+  font-size: 0.65rem;
+  font-weight: 700;
+  line-height: 18px;
+  letter-spacing: 0;
+  text-align: center;
+  color: #fff;
   background: var(--glitch-red);
   box-shadow: 0 0 6px rgba(255, 46, 99, 0.8);
 }
@@ -621,6 +631,20 @@ body[data-view='personajes'] .personajes-page {
   line-height: 1.6;
   color: rgba(234, 230, 218, 0.78);
   white-space: pre-wrap;
+}
+.personajes-comment.is-new {
+  border-left-color: var(--glitch-red);
+}
+.personajes-comment-new-tag {
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-family: var(--font-body);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #fff;
+  background: var(--glitch-red);
 }
 .personajes-comment-edited-tag {
   font-size: 0.78rem;
