@@ -202,7 +202,7 @@ describe('web sin Firebase', () => {
     await page.context().close();
   });
 
-  test('cuenta atrás "Be The Boss": hasta el 10 oct 20:00 UTC, con la hora local', async () => {
+  test('cuenta atrás "Be The Boss" (js/data/events.js): hasta el 10 oct 20:00 UTC, con la hora local', async () => {
     const units = (page) => page.locator('#countdown [data-unit]').allTextContents();
     // Quedan 1 d 1 h 29 min 45 s. Desde México (UTC-6): 14:00 en su hora.
     const page = await openPage({ now: '2026-10-09T18:30:15Z', timezoneId: 'America/Mexico_City' });
@@ -227,7 +227,29 @@ describe('web sin Firebase', () => {
     assert.equal(await late.isVisible('#countdown-timer'), false);
     assert.equal(await late.isVisible('#countdown-done'), true);
     assert.equal(await text(late, '#countdown-done'), '¡Ha llegado la hora!');
+    assert.equal(await late.isVisible('#countdown-ics-btn'), false);
     await late.context().close();
+
+    // Acabado el evento (3 horas) y sin más en la lista: la cuenta atrás desaparece.
+    const over = await openPage({ now: '2026-10-10T23:00:01Z' });
+    await enter(over);
+    assert.equal(await over.isVisible('#countdown'), false);
+    assert.deepEqual(over.errors, []);
+    await over.context().close();
+  });
+
+  test('cuenta atrás: "Añadir al calendario" descarga el .ics del evento en UTC', async () => {
+    const page = await openPage({ now: '2026-10-09T18:30:15Z' });
+    await enter(page);
+    const [download] = await Promise.all([page.waitForEvent('download'), page.click('#countdown-ics-btn')]);
+    assert.equal(download.suggestedFilename(), 'nova2-be-the-boss.ics');
+    const ics = readFileSync(await download.path(), 'utf8');
+    assert.match(ics, /^BEGIN:VCALENDAR\r\n/);
+    assert.match(ics, /\r\nDTSTART:20261010T200000Z\r\n/);
+    assert.match(ics, /\r\nSUMMARY:NOVA 2 · Be The Boss\r\n/);
+    assert.match(ics, /\r\nDESCRIPTION:.*IP: xray\.dathost\.net:17487\r\n/);
+    assert.deepEqual(page.errors, []);
+    await page.context().close();
   });
 
   test('teclado: antes de entrar, Tab solo llega a la pantalla de entrada', async () => {

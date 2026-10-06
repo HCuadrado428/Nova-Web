@@ -121,11 +121,11 @@
           <span class="server-status-dot" aria-hidden="true"></span>
           <span class="server-status-text" id="server-status-text"></span>
         </p>
-        <!-- Cuenta atrás "Be The Boss" (js/countdown.js). data-end va en UTC: las 22:00
-             del 10 de octubre en España (CEST, UTC+2) son las 20:00 UTC. Para otra
-             fecha, cambia solo data-end. Oculta hasta que la arranca el JS. -->
-        <div class="countdown" id="countdown" data-end="2026-10-10T20:00:00Z" hidden>
-          <p class="countdown-title glitch" data-text="Be The Boss">Be The Boss</p>
+        <!-- Cuenta atrás del siguiente evento (js/countdown.js). Los eventos y sus horas
+             (en UTC) están en js/data/events.js; el título lo pone el JS. Oculta hasta
+             que la arranca el JS (y si no quedan eventos, se queda oculta). -->
+        <div class="countdown" id="countdown" hidden>
+          <p class="countdown-title glitch" id="countdown-title" data-text=""></p>
           <div class="countdown-timer" id="countdown-timer" role="timer">
             <span class="countdown-unit"><span class="countdown-num" data-unit="days">00</span><span class="countdown-label" data-i18n="countdown.days">días</span></span>
             <span class="countdown-unit"><span class="countdown-num" data-unit="hours">00</span><span class="countdown-label" data-i18n="countdown.hours">horas</span></span>
@@ -134,6 +134,7 @@
           </div>
           <p class="countdown-date" id="countdown-date"></p>
           <p class="countdown-done" id="countdown-done" hidden data-i18n="countdown.done">¡Ha llegado la hora!</p>
+          <button class="countdown-ics" id="countdown-ics-btn" type="button" data-i18n="countdown.addCalendar">Añadir al calendario</button>
         </div>
       </div>
     </div>
@@ -306,7 +307,7 @@
         <p class="rules-item" data-i18n-html="guides.web.1"><strong>Entrar:</strong> La web empieza con la pantalla «Toca para entrar». Al pulsarla arranca la intro, con sonido.</p>
         <p class="rules-item" data-i18n-html="guides.web.2"><strong>Sonido:</strong> El botón de abajo a la izquierda silencia o vuelve a activar el sonido. La web recuerda lo que elijas.</p>
         <p class="rules-item" data-i18n-html="guides.web.3"><strong>Idioma:</strong> Con los botones ES · EN · PT de la intro cambias el idioma. Lo que escribe cada jugador (fichas y comentarios) no se traduce.</p>
-        <p class="rules-item" data-i18n-html="guides.web.4"><strong>Cuenta atrás:</strong> Debajo de los números sale la fecha en UTC y también en tu hora local.</p>
+        <p class="rules-item" data-i18n-html="guides.web.4"><strong>Cuenta atrás:</strong> Abajo en la intro está el siguiente evento del servidor, con la fecha en UTC y en tu hora local. «Añadir al calendario» lo guarda en tu calendario.</p>
         <p class="rules-item" data-i18n-html="guides.web.5"><strong>Lore:</strong> El botón «Lore» (arriba a la izquierda) abre «Antes del Nova», «Nova» y «Personajes». La historia se pasa con Anterior / Siguiente o con las flechas ← → del teclado.</p>
         <p class="rules-item" data-i18n-html="guides.web.6"><strong>Volver:</strong> En cualquier página, «← Volver» o la tecla Esc te devuelven a la intro.</p>
         <p class="rules-item" data-i18n-html="guides.web.7"><strong>Contraseña:</strong> El botón «Inserta la contraseña» (abajo a la derecha) esconde secretos. No te vamos a decir cuáles, pero si fallas tres veces seguidas aparece una ayudita.</p>

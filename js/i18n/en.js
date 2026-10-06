@@ -19,13 +19,15 @@ export default {
   'intro.ipCopied': 'IP copied',
   // ---- Language selector ----
   'lang.label': 'Language',
-  // ---- Cuenta atrás "Be The Boss" ----
+  // ---- Cuenta atrás del siguiente evento (js/data/events.js) ----
   'countdown.days': 'days',
   'countdown.hours': 'hours',
   'countdown.minutes': 'min',
   'countdown.seconds': 'sec',
   'countdown.date': '{utc} UTC · Your time: {local}',
   'countdown.done': 'The time has come!',
+  'countdown.addCalendar': 'Add to calendar',
+  'countdown.icsDescription': 'NOVA 2 Minecraft server event. IP: {ip}',
   // ---- Server status ----
   'status.online': 'Online · {online}/{max} players',
   'status.onlineOne': 'Online · {online}/{max} player',
@@ -208,7 +210,8 @@ export default {
     '<strong>Sound:</strong> The bottom-left button mutes or unmutes the sound. The website remembers your choice.',
   'guides.web.3':
     '<strong>Language:</strong> Use the ES · EN · PT buttons on the intro to change the language. What players write (profiles and comments) is not translated.',
-  'guides.web.4': '<strong>Countdown:</strong> Below the numbers you can see the date in UTC and in your local time.',
+  'guides.web.4':
+    '<strong>Countdown:</strong> At the bottom of the intro you can see the next server event, with the date in UTC and in your local time. "Add to calendar" saves it to your calendar.',
   'guides.web.5':
     '<strong>Lore:</strong> The "Lore" button (top left) opens "Before Nova", "Nova" and "Characters". Move through the story with Previous / Next or the ← → arrow keys.',
   'guides.web.6': '<strong>Going back:</strong> On any page, "← Back" or the Esc key takes you back to the intro.',

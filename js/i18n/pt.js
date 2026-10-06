@@ -20,13 +20,15 @@ export default {
   'intro.ipCopied': 'IP copiado',
   // ---- Seletor de idioma ----
   'lang.label': 'Idioma',
-  // ---- Cuenta atrás "Be The Boss" ----
+  // ---- Cuenta atrás del siguiente evento (js/data/events.js) ----
   'countdown.days': 'dias',
   'countdown.hours': 'horas',
   'countdown.minutes': 'min',
   'countdown.seconds': 'seg',
   'countdown.date': '{utc} UTC · No seu horário: {local}',
   'countdown.done': 'Chegou a hora!',
+  'countdown.addCalendar': 'Adicionar ao calendário',
+  'countdown.icsDescription': 'Evento do servidor de Minecraft NOVA 2. IP: {ip}',
   // ---- Status do servidor ----
   'status.online': 'Online · {online}/{max} jogadores',
   'status.onlineOne': 'Online · {online}/{max} jogador',
@@ -210,7 +212,7 @@ export default {
   'guides.web.3':
     '<strong>Idioma:</strong> Com os botões ES · EN · PT da intro você muda o idioma. O que cada jogador escreve (fichas e comentários) não é traduzido.',
   'guides.web.4':
-    '<strong>Contagem regressiva:</strong> Abaixo dos números aparece a data em UTC e também no seu horário local.',
+    '<strong>Contagem regressiva:</strong> No final da intro aparece o próximo evento do servidor, com a data em UTC e no seu horário local. «Adicionar ao calendário» salva no seu calendário.',
   'guides.web.5':
     '<strong>Lore:</strong> O botão «Lore» (canto superior esquerdo) abre «Antes do Nova», «Nova» e «Personagens». A história avança com Anterior / Próximo ou com as setas ← → do teclado.',
   'guides.web.6': '<strong>Voltar:</strong> Em qualquer página, «← Voltar» ou a tecla Esc levam você de volta à intro.',

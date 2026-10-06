@@ -12,7 +12,7 @@ La web es estática y se publica con GitHub Pages tal cual está en `main`: **no
 npm start                 # sirve la carpeta en http://localhost:8000 (o: python3 -m http.server 8000)
 npm run check             # formato + lint con Biome (en CI: npx biome ci .)
 npm run fix               # arregla formato y lint
-npm run test:unit         # i18n + árbol de relaciones, sin navegador ni emuladores
+npm run test:unit         # i18n, árbol de relaciones y calendario, sin navegador ni emuladores
 npm run test:rules        # firestore.rules contra el emulador de Firestore (necesita Java 11+)
 npm run test:e2e          # la web real en Chromium (Playwright) contra emuladores de Firestore y Auth
 npm test                  # los tres
@@ -38,6 +38,6 @@ JS vanilla con módulos ES nativos, sin framework ni bundler (salvo el SDK de Fi
 ## Convenciones
 
 - Biome: 2 espacios, comillas simples, punto y coma, líneas de 120. `vendor/` y `fonts/` quedan fuera.
-- Las horas se guardan en UTC (p.ej. `data-end` de `#countdown` en `index.html` termina en `Z`; `js/countdown.js` muestra además la hora local).
+- Las horas se guardan en UTC (p.ej. los `start` de `js/data/events.js`, los eventos de la cuenta atrás, terminan en `Z`; `js/countdown.js` muestra además la hora local).
 - Las normas del servidor de Minecraft (claves `rules.minecraft.*` de los diccionarios) no se cambian sin confirmación de Hugo.
 - Cada cambio va en su propio PR; no se fusiona sin permiso.
