@@ -15,6 +15,7 @@
 //   session.currentUser -> usuario con sesión iniciada, o null
 
 import { getLanguage, t } from '../i18n.js';
+import { isExpiringImageUrl } from '../utils.js';
 
 export const CHRONICLE_LIMITS = { titulo: 80, texto: 2000, imagenUrl: 1000 }; // los de firestore.rules
 
@@ -182,6 +183,10 @@ export function createChronicle({ session, cronicaCol, reportError, els }) {
     }
     if (imagenUrl && !/^https?:\/\//i.test(imagenUrl)) {
       setFeedback(t('pj.errPhoto'), true);
+      return;
+    }
+    if (isExpiringImageUrl(imagenUrl)) {
+      setFeedback(t('pj.errDiscordLink'), true);
       return;
     }
     const fb = session.fb;
