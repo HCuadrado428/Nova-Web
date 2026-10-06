@@ -453,6 +453,19 @@ body[data-view='personajes'] .personajes-page {
   gap: 10px;
   align-items: flex-start;
 }
+.personajes-upload-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+.personajes-upload-btn {
+  align-self: flex-start;
+  margin-top: 6px;
+}
+.personajes-upload-field .personajes-upload-btn {
+  margin-top: 0;
+}
 .personajes-editor-block-relacion {
   display: flex;
   flex-wrap: wrap;

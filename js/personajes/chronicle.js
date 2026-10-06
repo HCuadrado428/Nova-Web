@@ -16,6 +16,7 @@
 
 import { getLanguage, t } from '../i18n.js';
 import { isExpiringImageUrl } from '../utils.js';
+import { attachUploadButton } from './upload.js';
 
 export const CHRONICLE_LIMITS = { titulo: 80, texto: 2000, imagenUrl: 1000 }; // los de firestore.rules
 
@@ -30,6 +31,7 @@ export function createChronicle({ session, cronicaCol, reportError, els }) {
     feedback.textContent = text || '';
     feedback.classList.toggle('is-fail', fail);
   };
+  attachUploadButton(imageInput, setFeedback);
 
   function resetForm() {
     editingId = null;
