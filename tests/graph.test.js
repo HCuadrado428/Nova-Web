@@ -123,6 +123,34 @@ describe('layoutGraph', () => {
     assert.ok(dist('Persona más cercana a él') > dist('hijo'));
   });
 
+  test('los grupos sueltos no se mezclan: cada uno en su rincón', () => {
+    const { positions } = layoutGraph(graph);
+    const box = (ids) => {
+      const ps = ids.map((id) => positions.get(id));
+      return {
+        x1: Math.min(...ps.map((p) => p.x)),
+        x2: Math.max(...ps.map((p) => p.x)),
+        y1: Math.min(...ps.map((p) => p.y)),
+        y2: Math.max(...ps.map((p) => p.y)),
+      };
+    };
+    const familia = box(['a', 'b', 'c', 'd']);
+    const otros = box(['e', 'f', 'g', 'h']);
+    const separados = familia.x2 < otros.x1 || otros.x2 < familia.x1 || familia.y2 < otros.y1 || otros.y2 < familia.y1;
+    assert.ok(separados, JSON.stringify({ familia, otros }));
+  });
+
+  test('el dibujo toma la forma de la caja: apaisado en ordenador, alargado en móvil', () => {
+    // Una cadena larga: sin girarla saldría siempre igual.
+    const cadena = buildGraph(
+      Array.from({ length: 8 }, (_, i) => pj(`p${i}`, i < 7 ? [rel(`p${i + 1}`, 'amigo')] : [])),
+    );
+    const ancho = layoutGraph(cadena, { aspect: 16 / 9 });
+    const alto = layoutGraph(cadena, { aspect: 9 / 16 });
+    assert.ok(ancho.width > ancho.height, `${ancho.width}x${ancho.height}`);
+    assert.ok(alto.height > alto.width, `${alto.width}x${alto.height}`);
+  });
+
   test('un grafo vacío no rompe nada', () => {
     const { positions, width, height } = layoutGraph({ nodes: [], edges: [] });
     assert.equal(positions.size, 0);
