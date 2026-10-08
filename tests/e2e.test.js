@@ -956,6 +956,8 @@ describe('Personajes', () => {
     assert.equal(await page.locator('.relations-node').count(), 2);
     assert.equal(await page.locator('.relations-edge').count(), 1);
     assert.equal(await text(page, '.relations-edge-label'), 'hermano');
+    // Con sitio de sobra, la etiqueta se ve (solo se esconden las que no caben).
+    assert.ok(await page.locator('.relations-edge-label').isVisible());
     assert.equal(await text(page, '.relations-list li'), 'Kira → hermano → Zed');
     assert.ok(await page.locator('#personajes-relations-empty').isHidden()); // todos tienen relación
 

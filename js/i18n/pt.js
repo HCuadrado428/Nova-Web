@@ -238,7 +238,8 @@ export default {
   'chron.deleteError': 'Não foi possível apagar a entrada.',
   'chron.loadError': 'Não foi possível carregar a crônica.',
   'pj.treeTitle': 'RELAÇÕES',
-  'pj.treeHint': 'Toque em um personagem para ver o perfil. Para ampliar: botões + / −, pinça ou a roda do mouse.',
+  'pj.treeHint':
+    'Toque em um personagem para ver o perfil. Para ampliar: botões + / −, pinça ou a roda do mouse. Se nem todos os rótulos couberem, amplie para ver mais.',
   'pj.treeZoomIn': 'Ampliar',
   'pj.treeZoomOut': 'Reduzir',
   'pj.treeZoomReset': 'Remover o zoom',

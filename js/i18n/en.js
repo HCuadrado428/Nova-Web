@@ -236,7 +236,8 @@ export default {
   'chron.deleteError': 'The entry could not be deleted.',
   'chron.loadError': 'The chronicle could not be loaded.',
   'pj.treeTitle': 'RELATIONSHIPS',
-  'pj.treeHint': 'Tap a character to see their profile. To zoom: + / − buttons, pinch or the mouse wheel.',
+  'pj.treeHint':
+    'Tap a character to see their profile. To zoom: + / − buttons, pinch or the mouse wheel. If not all labels fit, zoom in to see more.',
   'pj.treeZoomIn': 'Zoom in',
   'pj.treeZoomOut': 'Zoom out',
   'pj.treeZoomReset': 'Reset zoom',

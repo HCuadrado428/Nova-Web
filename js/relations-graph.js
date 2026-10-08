@@ -135,7 +135,8 @@ function layoutComponent(ids, edges, spacing, iterations) {
     const i = index.get(e.a);
     const j = index.get(e.b);
     if (i === undefined || j === undefined) continue;
-    const len = Math.max(spacing, estimateLabelWidth(e.labels) + 90);
+    // Con tope: si no, unas pocas etiquetas muy largas estiran todo el dibujo.
+    const len = Math.min(260, Math.max(spacing, estimateLabelWidth(e.labels) + 90));
     d[i][j] = d[j][i] = Math.min(d[i][j], len);
   }
   for (let k = 0; k < n; k++) {
@@ -411,6 +412,7 @@ export function renderRelationsGraph(
     });
     // Al pasar por encima (o con el foco) se resaltan sus relaciones.
     const highlight = (on) => {
+      setFocus(on ? node.id : null);
       svg.classList.toggle('is-highlighting', on);
       for (const el of svg.querySelectorAll('[data-a], [data-b]')) {
         el.classList.toggle('is-related', on && (el.dataset.a === node.id || el.dataset.b === node.id));
@@ -423,24 +425,68 @@ export function renderRelationsGraph(
     nodesLayer.append(g);
   });
 
-  placeEdgeLabels(labelsLayer, nodesLayer, graph, positions, r);
+  // Las etiquetas se ven siempre al mismo tamaño en pantalla, haya o no
+  // zoom: su tamaño en el dibujo es "k" (1 = 14px a escala 1:1 del dibujo).
+  // Las que no caben sin pisar otra cosa se esconden (al acercar hay más
+  // sitio y van apareciendo); al señalar un personaje se colocan solo las
+  // suyas, para que se lean todas.
+  let k = 1;
+  let focus = null;
+  let anyHidden = false;
+  const placeLabels = () => {
+    const hidden = placeEdgeLabels(labelsLayer, nodesLayer, graph, positions, r, k, focus, { w: width, h: height });
+    if (!focus) anyHidden = hidden;
+  };
+  function setFocus(id) {
+    if (id === focus) return;
+    focus = id;
+    if (anyHidden) placeLabels(); // si se veían todas, se quedan donde están
+  }
+  let timer = null;
+  const onView = (pxPerUnit) => {
+    const nextK = Math.min(Math.max(LABEL_SCREEN_SCALE / pxPerUnit, 0.3), LABEL_MAX_K);
+    if (Math.abs(nextK - k) < 0.01) return;
+    k = nextK;
+    // Mientras se hace zoom solo se cambia el tamaño; recolocarlas (más caro)
+    // espera a que el gesto pare.
+    for (const g of labelsLayer.children) {
+      g.setAttribute('transform', `translate(${g.dataset.cx} ${g.dataset.cy}) scale(${k})`);
+    }
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      if (svg.isConnected) placeLabels();
+    }, 150);
+  };
+  const controls = setupZoom(svg, width, height, zoomLabels, onView); // ya calcula "k"
+  placeLabels();
+  clearTimeout(timer);
   // Los nombres usan la fuente pixelada, más ancha: si aún no había cargado,
   // se miden mal. Se vuelven a colocar cuando llega.
   if (document.fonts && document.fonts.status !== 'loaded') {
     document.fonts.ready.then(() => {
-      if (svg.isConnected) placeEdgeLabels(labelsLayer, nodesLayer, graph, positions, r);
+      if (svg.isConnected) placeLabels();
     });
   }
-  container.append(setupZoom(svg, width, height, zoomLabels));
+  container.append(controls);
 }
+
+// Tamaño en pantalla de las etiquetas (respecto a los 14px de su fuente).
+const LABEL_SCREEN_SCALE = 0.9;
+// Sin zoom no crecen más que esto: si no, en el móvil serían mucho más
+// grandes que los nombres y los círculos.
+const LABEL_MAX_K = 1.5;
 
 // Etiquetas de las relaciones: una línea por etiqueta (si las dos partes
 // pusieron una, salen las dos, una encima de otra), con fondo oscuro para
 // leerse sobre las líneas. Cada una se coloca en el primer punto de su línea
 // (del centro hacia los extremos) donde no pisa ningún círculo, ningún nombre
 // ni otra etiqueta; si no lo hay, justo al lado de la línea; y si tampoco,
-// donde menos pisa.
-function placeEdgeLabels(labelsLayer, nodesLayer, graph, positions, r) {
+// donde menos pisa. k: tamaño de las etiquetas (ver renderRelationsGraph).
+// Normalmente, las que no tienen sitio libre se esconden; con "focus" (el id
+// de un personaje) solo se ponen las suyas, y todas a la vista. Devuelve true
+// si ha escondido alguna.
+// frame: tamaño del dibujo; lo que se salga de él cuenta como pisado.
+function placeEdgeLabels(labelsLayer, nodesLayer, graph, positions, r, k = 1, focus = null, frame = null) {
   labelsLayer.replaceChildren();
   const boxOf = (el, fallback) => {
     try {
@@ -472,9 +518,10 @@ function placeEdgeLabels(labelsLayer, nodesLayer, graph, positions, r) {
   const STEPS = [0.5, 0.4, 0.6, 0.3, 0.7, 0.22, 0.78];
   // Primero las etiquetas más grandes: son las que menos sitios tienen.
   const edges = graph.edges
-    .filter((e) => e.labels.length)
+    .filter((e) => e.labels.length && (!focus || e.a === focus || e.b === focus))
     .sort((x, y) => y.labels.length - x.labels.length || estimateLabelWidth(y.labels) - estimateLabelWidth(x.labels));
 
+  let anyCrowded = false;
   for (const edge of edges) {
     const group = svgEl('g', { class: 'relations-edge-label' });
     group.dataset.a = edge.a;
@@ -495,11 +542,12 @@ function placeEdgeLabels(labelsLayer, nodesLayer, graph, positions, r) {
     const w = estimateLabelWidth(edge.labels);
     const h = edge.labels.length * LINE;
     const t = boxOf(text, { x: -w / 2, y: -h / 2, w, h });
-    const box = { x: t.x - 5, y: t.y - 2, w: t.w + 10, h: t.h + 4 };
-    bg.setAttribute('x', box.x);
-    bg.setAttribute('y', box.y);
-    bg.setAttribute('width', box.w);
-    bg.setAttribute('height', box.h);
+    const local = { x: t.x - 5, y: t.y - 2, w: t.w + 10, h: t.h + 4 };
+    bg.setAttribute('x', local.x);
+    bg.setAttribute('y', local.y);
+    bg.setAttribute('width', local.w);
+    bg.setAttribute('height', local.h);
+    const box = { x: local.x * k, y: local.y * k, w: local.w * k, h: local.h * k };
 
     const p = positions.get(edge.a);
     const q = positions.get(edge.b);
@@ -516,14 +564,24 @@ function placeEdgeLabels(labelsLayer, nodesLayer, graph, positions, r) {
         const cy = p.y + (q.y - p.y) * step + ny * offset;
         const at = { x: cx + box.x, y: cy + box.y, w: box.w, h: box.h };
         // Lo que se aparta de la línea cuenta un poco, para preferir no hacerlo.
-        const cost = taken.reduce((sum, o) => sum + overlap(at, o), 0) + (offset ? 1 : 0);
+        const outside = frame ? at.w * at.h - overlap(at, { x: 0, y: 0, w: frame.w, h: frame.h }) : 0;
+        const cost = taken.reduce((sum, o) => sum + overlap(at, o), outside) + (offset ? 1 : 0);
         if (!best || cost < best.cost) best = { cost, cx, cy, at };
         if (cost <= (offset ? 1 : 0)) break search; // sitio libre
       }
     }
-    group.setAttribute('transform', `translate(${best.cx} ${best.cy})`);
-    taken.push(best.at);
+    group.dataset.cx = best.cx;
+    group.dataset.cy = best.cy;
+    group.setAttribute('transform', `translate(${best.cx} ${best.cy}) scale(${k})`);
+    if (focus) group.classList.add('is-related');
+    if (best.cost > 1 && !focus) {
+      group.classList.add('is-crowded'); // escondida: no ocupa sitio
+      anyCrowded = true;
+    } else {
+      taken.push(best.at);
+    }
   }
+  return anyCrowded;
 }
 
 const MAX_ZOOM = 4;
@@ -531,7 +589,8 @@ const BUTTON_STEP = 1.5;
 const DRAG_THRESHOLD = 6; // px: menos que esto es un clic, no un arrastre
 
 // Zoom y desplazamiento sobre el viewBox. Devuelve la botonera (+ / − / 1:1).
-function setupZoom(svg, width, height, labels) {
+// onView(pxPorUnidad) se llama cada vez que cambia lo que se ve.
+function setupZoom(svg, width, height, labels, onView) {
   let scale = 1;
   let x = 0; // esquina superior izquierda de lo que se ve, en coordenadas del dibujo
   let y = 0;
@@ -578,6 +637,7 @@ function setupZoom(svg, width, height, labels) {
     x = Math.min(Math.max(x, base.x), base.x + base.w - w);
     y = Math.min(Math.max(y, base.y), base.y + base.h - h);
     svg.setAttribute('viewBox', `${x} ${y} ${w} ${h}`);
+    if (svg.clientWidth) onView?.(Math.min(svg.clientWidth / w, svg.clientHeight / h));
     const zoomed = scale > 1;
     svg.classList.toggle('is-zoomed', zoomed);
     zoomInBtn.disabled = scale >= MAX_ZOOM;

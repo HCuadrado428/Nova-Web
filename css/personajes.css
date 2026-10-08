@@ -286,6 +286,11 @@ body[data-view='personajes'] .personajes-page {
 .relations-graph.is-highlighting .relations-edge-label:not(.is-related) {
   opacity: 0.15;
 }
+/* Etiqueta sin sitio libre: se esconde hasta que se acerca el zoom o se
+   señala a uno de sus personajes (js/relations-graph.js). */
+.relations-edge-label.is-crowded {
+  display: none;
+}
 .relations-edge.is-related {
   stroke: var(--glitch-cyan);
 }

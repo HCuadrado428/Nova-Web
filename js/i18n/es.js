@@ -239,7 +239,8 @@ export default {
   'chron.deleteError': 'No se pudo borrar la entrada.',
   'chron.loadError': 'No se pudo cargar la crónica.',
   'pj.treeTitle': 'RELACIONES',
-  'pj.treeHint': 'Pulsa un personaje para ver su perfil. Para acercar: botones + / −, pellizco o la rueda del ratón.',
+  'pj.treeHint':
+    'Pulsa un personaje para ver su perfil. Para acercar: botones + / −, pellizco o la rueda del ratón. Si no caben todas las etiquetas, al acercar salen más.',
   'pj.treeZoomIn': 'Acercar',
   'pj.treeZoomOut': 'Alejar',
   'pj.treeZoomReset': 'Quitar el zoom',
