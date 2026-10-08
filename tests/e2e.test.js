@@ -886,10 +886,12 @@ describe('Personajes', () => {
     assert.equal(await editor.inputValue(), 'Segunda versión'); // no se ha perdido
 
     await bob.locator('.personajes-comment-edit-actions button', { hasText: 'Guardar' }).click();
-    // Ya había 3 comentarios antes de guardar: hay que esperar a que llegue la edición.
+    // Ya había 3 comentarios antes de guardar: hay que esperar a que llegue la
+    // edición, ya confirmada por el servidor (hasta entonces la hora de la
+    // edición está pendiente y aún no sale "(editado)").
     await bob.waitForFunction(() =>
       [...document.querySelectorAll('.personajes-comment-text')].some((el) =>
-        el.textContent.includes('Segunda versión'),
+        el.textContent.includes('Segunda versión (editado)'),
       ),
     );
     const textos = await commentTexts(bob);

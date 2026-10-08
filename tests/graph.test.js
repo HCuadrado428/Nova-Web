@@ -151,6 +151,38 @@ describe('layoutGraph', () => {
     assert.ok(alto.height > alto.width, `${alto.width}x${alto.height}`);
   });
 
+  test('las líneas no se cruzan ni pasan por encima de otro personaje si se puede evitar', () => {
+    // Una rueda (un centro unido a seis que forman un anillo): se puede dibujar sin cruces.
+    const ids = ['c', 'r1', 'r2', 'r3', 'r4', 'r5', 'r6'];
+    const rueda = buildGraph([
+      pj(
+        'c',
+        ids.slice(1).map((id) => rel(id)),
+      ),
+      ...ids.slice(1).map((id, i) => pj(id, [rel(ids[1 + ((i + 1) % 6)])])),
+    ]);
+    for (const aspect of [0.6, 1.6]) {
+      const { positions } = layoutGraph(rueda, { aspect });
+      const lines = rueda.edges.map((e) => [e.a, e.b, positions.get(e.a), positions.get(e.b)]);
+      const side = (a, b, c) => (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
+      for (const [a, b, p, q] of lines) {
+        for (const [c, d, r, t] of lines) {
+          if ([a, b].includes(c) || [a, b].includes(d)) continue;
+          const cruzan = side(p, q, r) * side(p, q, t) < 0 && side(r, t, p) * side(r, t, q) < 0;
+          assert.ok(!cruzan, `${a}-${b} cruza ${c}-${d} (aspect ${aspect})`);
+        }
+        for (const [id, o] of positions) {
+          if (id === a || id === b) continue;
+          const dx = q.x - p.x;
+          const dy = q.y - p.y;
+          const k = Math.min(1, Math.max(0, ((o.x - p.x) * dx + (o.y - p.y) * dy) / (dx * dx + dy * dy)));
+          const dist = Math.hypot(p.x + k * dx - o.x, p.y + k * dy - o.y);
+          assert.ok(dist > 30, `${a}-${b} pasa por encima de ${id} (aspect ${aspect})`);
+        }
+      }
+    }
+  });
+
   test('un grafo vacío no rompe nada', () => {
     const { positions, width, height } = layoutGraph({ nodes: [], edges: [] });
     assert.equal(positions.size, 0);

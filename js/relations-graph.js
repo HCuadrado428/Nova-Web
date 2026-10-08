@@ -226,6 +226,137 @@ function removeOverlaps(items, gap = 24) {
   }
 }
 
+// ¿Se cruzan los segmentos p-q y r-s? (sin contar los que solo se tocan)
+function segmentsCross(p, q, r, s) {
+  const side = (a, b, c) => (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
+  return side(p, q, r) * side(p, q, s) < 0 && side(r, s, p) * side(r, s, q) < 0;
+}
+
+// ¿Pasa la línea p-q por encima del círculo de c (sin ser suya)?
+function passesOver(p, q, c, radius) {
+  if (c.x < Math.min(p.x, q.x) - radius || c.x > Math.max(p.x, q.x) + radius) return false;
+  if (c.y < Math.min(p.y, q.y) - radius || c.y > Math.max(p.y, q.y) + radius) return false;
+  const dx = q.x - p.x;
+  const dy = q.y - p.y;
+  const t = Math.min(1, Math.max(0, ((c.x - p.x) * dx + (c.y - p.y) * dy) / (dx * dx + dy * dy || 1)));
+  return Math.hypot(p.x + t * dx - c.x, p.y + t * dy - c.y) < radius;
+}
+
+// Desenreda las líneas: prueba a intercambiar de sitio cada pareja de
+// personajes y se queda con el cambio si hay menos cruces, menos líneas que
+// pasan por encima de otro personaje y sin alargar mucho las relaciones.
+// Devuelve true si ha movido algo.
+function untangle(items, pairs, spacing) {
+  const HIT = 2; // una línea encima de un personaje molesta más que un cruce
+  const LENGTH = 0.3; // por cada "spacing" de largo
+  const adj = items.map(() => []);
+  pairs.forEach(([a, b], e) => {
+    adj[a].push(e);
+    adj[b].push(e);
+  });
+  // Lo que cuesta lo que depende de los personajes "who" (sus líneas y lo que pasa por encima de ellos).
+  const localCost = (who) => {
+    const own = new Set(who.flatMap((i) => adj[i]));
+    let cost = 0;
+    for (const e of own) {
+      const [a, b] = pairs[e];
+      const p = items[a];
+      const q = items[b];
+      cost += (LENGTH * Math.hypot(p.x - q.x, p.y - q.y)) / spacing;
+      const minX = Math.min(p.x, q.x);
+      const maxX = Math.max(p.x, q.x);
+      const minY = Math.min(p.y, q.y);
+      const maxY = Math.max(p.y, q.y);
+      for (let f = 0; f < pairs.length; f++) {
+        const [c, d] = pairs[f];
+        if (f === e || c === a || c === b || d === a || d === b) continue;
+        const r = items[c];
+        const t = items[d];
+        // Descarte rápido: si las cajas de las dos líneas no se tocan, no se cruzan.
+        if (Math.max(r.x, t.x) < minX || Math.min(r.x, t.x) > maxX) continue;
+        if (Math.max(r.y, t.y) < minY || Math.min(r.y, t.y) > maxY) continue;
+        if (segmentsCross(p, q, r, t)) cost++;
+      }
+      for (let k = 0; k < items.length; k++) {
+        if (k !== a && k !== b && passesOver(p, q, items[k], 36)) cost += HIT;
+      }
+    }
+    for (const i of who) {
+      for (let e = 0; e < pairs.length; e++) {
+        if (!own.has(e) && passesOver(items[pairs[e][0]], items[pairs[e][1]], items[i], 36)) cost += HIT;
+      }
+    }
+    return cost;
+  };
+  const swap = (i, j) => {
+    const { x, y } = items[i];
+    items[i].x = items[j].x;
+    items[i].y = items[j].y;
+    items[j].x = x;
+    items[j].y = y;
+  };
+  let changed = false;
+  // Solo con los cercanos (cambiar con uno lejano casi nunca ayuda) y con un
+  // tope de intentos, para que con muchos personajes no tarde: el tope es
+  // por intentos, no por tiempo, así que el dibujo sigue saliendo igual.
+  let budget = 1500;
+  const near = spacing * 3;
+  for (let pass = 0; pass < 4 && budget > 0; pass++) {
+    let improved = false;
+    for (let i = 0; i < items.length; i++) {
+      for (let j = i + 1; j < items.length && budget > 0; j++) {
+        if (Math.hypot(items[i].x - items[j].x, items[i].y - items[j].y) > near) continue;
+        budget--;
+        const before = localCost([i, j]);
+        swap(i, j);
+        if (localCost([i, j]) < before - 1e-6) improved = true;
+        else swap(i, j); // no mejora: se deja como estaba
+      }
+    }
+    if (!improved) break;
+    changed = true;
+  }
+
+  // Luego, empujoncitos: cada personaje prueba a moverse un poco en ocho
+  // direcciones (sin pisar a nadie) por si así deja de estorbar a una línea.
+  const fits = (i) =>
+    items.every((o, k) => {
+      if (k === i) return true;
+      const a = items[i];
+      const ox = a.box.hw + o.box.hw + 30 - Math.abs(a.x - o.x);
+      const oy = (a.y <= o.y ? a.box.bottom + o.box.top : o.box.bottom + a.box.top) + 30 - Math.abs(a.y - o.y);
+      return ox <= 0 || oy <= 0;
+    });
+  budget = 400;
+  for (let pass = 0; pass < 4 && budget > 0; pass++) {
+    let improved = false;
+    for (let i = 0; i < items.length && budget > 0; i++) {
+      budget--;
+      let best = localCost([i]);
+      const home = { x: items[i].x, y: items[i].y };
+      let to = null;
+      for (const dist of [spacing * 0.3, spacing * 0.6]) {
+        for (let d = 0; d < 8; d++) {
+          items[i].x = home.x + Math.cos((d * Math.PI) / 4) * dist;
+          items[i].y = home.y + Math.sin((d * Math.PI) / 4) * dist;
+          if (!fits(i)) continue;
+          const cost = localCost([i]);
+          if (cost < best - 0.5) {
+            best = cost;
+            to = { x: items[i].x, y: items[i].y };
+          }
+        }
+      }
+      items[i].x = (to || home).x;
+      items[i].y = (to || home).y;
+      if (to) improved = true;
+    }
+    if (!improved) break;
+    changed = true;
+  }
+  return changed;
+}
+
 // Gira el grupo para que su lado largo vaya a lo largo de la caja (a lo ancho
 // en el ordenador, a lo alto en el móvil) y lo deja con la esquina en 0,0.
 function orient(items, landscape) {
@@ -288,6 +419,11 @@ export function layoutGraph(graph, { iterations = 300, spacing = 140, aspect = 1
       }
     }
     removeOverlaps(items, 40);
+    if (items.length > 3) {
+      const index = new Map(ids.map((id, i) => [id, i]));
+      const pairs = graph.edges.filter((e) => index.has(e.a)).map((e) => [index.get(e.a), index.get(e.b)]);
+      if (untangle(items, pairs, spacing)) removeOverlaps(items, 40);
+    }
     const b = bounds(items);
     for (const p of items) {
       p.x -= b.minX;
