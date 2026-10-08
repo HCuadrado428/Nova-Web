@@ -379,6 +379,7 @@
         <div class="personajes-directory-tools">
           <button class="rules-switch-btn" id="personajes-relations-btn" type="button" data-i18n="pj.treeBtn">Árbol de relaciones</button>
           <button class="rules-switch-btn" id="personajes-cronica-btn" type="button" data-i18n="chron.btn">Crónica</button>
+          <button class="rules-switch-btn" id="personajes-memorial-btn" type="button" data-i18n="pj.memorialBtn">Memorial</button>
         </div>
         <div class="personajes-grid" id="personajes-grid"></div>
       </div>
@@ -393,6 +394,14 @@
         <p class="personajes-empty" id="personajes-relations-empty" hidden></p>
         <h3 class="personajes-comments-title relations-list-title" id="personajes-relations-list-title" data-i18n="pj.treeListTitle">Todas las relaciones</h3>
         <ul class="relations-list" id="personajes-relations-list"></ul>
+      </div>
+
+      <!-- Memorial: los personajes que sus jugadores han marcado como caídos (js/personajes/status.js) -->
+      <div class="personajes-view" id="personajes-view-memorial">
+        <button class="lore-nav-btn" id="personajes-memorial-back-btn" type="button" data-i18n="pj.backToDirectory">← Directorio</button>
+        <h2 class="rules-title glitch" data-text="MEMORIAL" data-i18n="pj.memorialTitle">MEMORIAL</h2>
+        <p class="personajes-field-hint relations-hint" data-i18n="pj.memorialIntro">Los personajes que han caído en NOVA 2. Que no se olviden.</p>
+        <div class="memorial-list" id="personajes-memorial-list"></div>
       </div>
 
       <!-- Crónica de la temporada: la escriben los jugadores (js/personajes/chronicle.js) -->
@@ -423,6 +432,8 @@
         <h2 class="rules-title glitch" id="personajes-profile-name" data-text="Personaje">Personaje</h2>
         <p class="personajes-profile-mcuser" id="personajes-profile-mcuser" hidden></p>
         <p class="personajes-profile-faccion" id="personajes-profile-faccion" hidden></p>
+        <p class="personajes-profile-estado" id="personajes-profile-estado" hidden></p>
+        <p class="personajes-profile-epitafio" id="personajes-profile-epitafio" hidden></p>
         <div class="personajes-blocks" id="personajes-profile-blocks"></div>
 
         <div class="personajes-comments" id="personajes-comments">
@@ -451,6 +462,21 @@
         <input class="personajes-input" id="personajes-input-faccion" type="text" maxlength="40" list="personajes-facciones-datalist" placeholder="Reino del Norte" data-i18n-attr="placeholder:pj.fieldFactionPlaceholder">
         <datalist id="personajes-facciones-datalist"></datalist>
         <p class="personajes-field-hint" data-i18n="pj.fieldFactionHint">Elige una de la lista o escribe una nueva. Los personajes con el mismo nombre de facción salen juntos en el directorio y del mismo color en el árbol.</p>
+
+        <label class="personajes-field-label" for="personajes-input-estado" data-i18n="pj.fieldEstado">Estado</label>
+        <select class="personajes-input" id="personajes-input-estado">
+          <option value="" data-i18n="pj.estadoVivo">Vivo</option>
+          <option value="desaparecido" data-i18n="pj.estadoDesaparecido">Desaparecido</option>
+          <option value="caido" data-i18n="pj.estadoCaido">Caído</option>
+        </select>
+        <!-- Solo se ven con el estado "Caído" (js/personajes.js) -->
+        <div class="personajes-caido-fields" id="personajes-caido-fields" hidden>
+          <label class="personajes-field-label" for="personajes-input-caido-el" data-i18n="pj.fieldCaidoEl">Fecha de la caída (opcional)</label>
+          <input class="personajes-input" id="personajes-input-caido-el" type="date">
+          <label class="personajes-field-label" for="personajes-input-epitafio" data-i18n="pj.fieldEpitafio">Epitafio (opcional)</label>
+          <input class="personajes-input" id="personajes-input-epitafio" type="text" maxlength="140" placeholder="Cayó defendiendo la torre norte." data-i18n-attr="placeholder:pj.fieldEpitafioPlaceholder">
+        </div>
+        <p class="personajes-field-hint" data-i18n="pj.fieldEstadoHint">Los personajes caídos salen en gris en el directorio y en el árbol, y tienen su sitio en el Memorial.</p>
 
         <label class="personajes-field-label" for="personajes-input-foto" data-i18n="pj.fieldPhoto">Link de foto de perfil (opcional)</label>
         <input class="personajes-input" id="personajes-input-foto" type="url" placeholder="https://...">

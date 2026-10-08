@@ -62,6 +62,23 @@ describe('personajes', () => {
     assertFails(setDoc(doc(db('bob'), 'personajes/bob'), nuevo({ faccion: 'x'.repeat(41) }))));
   test('NO: facción que no es texto', () =>
     assertFails(setDoc(doc(db('bob'), 'personajes/bob'), nuevo({ faccion: 7 }))));
+  test('crear caído, con fecha y epitafio', () =>
+    assertSucceeds(
+      setDoc(
+        doc(db('bob'), 'personajes/bob'),
+        nuevo({ estado: 'caido', caidoEl: '2026-10-03', epitafio: 'Cayó defendiendo la torre.' }),
+      ),
+    ));
+  test('crear desaparecido, sin fecha ni epitafio', () =>
+    assertSucceeds(
+      setDoc(doc(db('bob'), 'personajes/bob'), nuevo({ estado: 'desaparecido', caidoEl: null, epitafio: null })),
+    ));
+  test('NO: estado desconocido', () =>
+    assertFails(setDoc(doc(db('bob'), 'personajes/bob'), nuevo({ estado: 'inmortal' }))));
+  test('NO: fecha de caída que no es AAAA-MM-DD', () =>
+    assertFails(setDoc(doc(db('bob'), 'personajes/bob'), nuevo({ estado: 'caido', caidoEl: '3/10/2026' }))));
+  test('NO: epitafio de más de 140 caracteres', () =>
+    assertFails(setDoc(doc(db('bob'), 'personajes/bob'), nuevo({ estado: 'caido', epitafio: 'x'.repeat(141) }))));
   test('NO: crear el de otra persona', () => assertFails(setDoc(doc(db('bob'), 'personajes/alice'), nuevo())));
   test('NO: anónimo', () => assertFails(setDoc(doc(db(null), 'personajes/x'), nuevo())));
   test('NO: campo extra', () => assertFails(setDoc(doc(db('bob'), 'personajes/bob'), nuevo({ admin: true }))));

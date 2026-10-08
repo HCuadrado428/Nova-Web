@@ -28,7 +28,7 @@ service cloud.firestore {
 
     match /personajes/{uid} {
       function validPersonaje(data) {
-        return data.keys().hasOnly(['nombre', 'minecraftUsername', 'faccion', 'fotoUrl', 'bloques', 'actualizadoEn', 'creadoEn'])
+        return data.keys().hasOnly(['nombre', 'minecraftUsername', 'faccion', 'estado', 'caidoEl', 'epitafio', 'fotoUrl', 'bloques', 'actualizadoEn', 'creadoEn'])
           && data.nombre is string
           && data.nombre.size() > 0
           && data.nombre.size() <= 60
@@ -36,6 +36,12 @@ service cloud.firestore {
               || (data.minecraftUsername is string && data.minecraftUsername.matches('^[A-Za-z0-9_]{1,16}$')))
           // Facción: texto libre que escribe cada jugador (js/personajes/factions.js).
           && optionalString(data.get('faccion', null), 40)
+          // Estado (js/personajes/status.js): null = vivo. La fecha de la caída
+          // es un día sin hora ('AAAA-MM-DD') y el epitafio, un texto corto.
+          && (data.get('estado', null) == null || data.estado in ['desaparecido', 'caido'])
+          && (data.get('caidoEl', null) == null
+              || (data.caidoEl is string && data.caidoEl.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')))
+          && optionalString(data.get('epitafio', null), 140)
           && (data.get('fotoUrl', null) == null
               || (data.fotoUrl is string && data.fotoUrl.size() <= 1000 && data.fotoUrl.matches('^https?://.+')))
           && data.bloques is list

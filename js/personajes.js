@@ -13,17 +13,19 @@
 // vistas internas conmutadas por .is-active.
 // Las piezas que no dependen del resto viven en js/personajes/: la carga de
 // Firebase (firebase.js), los bloques del perfil (blocks.js), los
-// comentarios (comments.js), las facciones (factions.js) y la Crónica (chronicle.js).
+// comentarios (comments.js), las facciones (factions.js), el estado y el
+// Memorial (status.js) y la Crónica (chronicle.js).
 
 import { channelSwitch, closeMenuToggle, isView, setView } from './views.js';
 import { isExpiringImageUrl, normalizeSearchTerm } from './utils.js';
-import { onLanguageChange, t } from './i18n.js';
+import { getLanguage, onLanguageChange, t } from './i18n.js';
 import { buildGraph, renderRelationsGraph } from './relations-graph.js';
 import { isFirebaseConfigured, loadFirebase } from './personajes/firebase.js';
 import { buildPersonajeBlockElement } from './personajes/blocks.js';
 import { createComments } from './personajes/comments.js';
 import { FACTION_MAX, factionKey, listFactions } from './personajes/factions.js';
 import { createChronicle } from './personajes/chronicle.js';
+import { EPITAFIO_MAX, estadoOf, formatFechaCaida, isFechaValida, listCaidos } from './personajes/status.js';
 import { attachUploadButton } from './personajes/upload.js';
 
 // Enganche para el link directo a un personaje (#personaje/<uid>): lo monta
@@ -54,6 +56,7 @@ export function initPersonajes() {
     editor: document.getElementById('personajes-view-editor'),
     relations: document.getElementById('personajes-view-relations'),
     cronica: document.getElementById('personajes-view-cronica'),
+    memorial: document.getElementById('personajes-view-memorial'),
   };
   const grid = document.getElementById('personajes-grid');
   const searchInput = document.getElementById('personajes-search-input');
@@ -66,6 +69,9 @@ export function initPersonajes() {
   const relationsHintEl = document.getElementById('personajes-relations-hint');
   const relationsListTitleEl = document.getElementById('personajes-relations-list-title');
   const relationsListEl = document.getElementById('personajes-relations-list');
+  const memorialBtn = document.getElementById('personajes-memorial-btn');
+  const memorialBackBtn = document.getElementById('personajes-memorial-back-btn');
+  const memorialListEl = document.getElementById('personajes-memorial-list');
   const cronicaBtn = document.getElementById('personajes-cronica-btn');
   const cronicaBackBtn = document.getElementById('personajes-cronica-back-btn');
   const cronicaEls = {
@@ -85,6 +91,8 @@ export function initPersonajes() {
   const profileNameEl = document.getElementById('personajes-profile-name');
   const profileMcUserEl = document.getElementById('personajes-profile-mcuser');
   const profileFaccionEl = document.getElementById('personajes-profile-faccion');
+  const profileEstadoEl = document.getElementById('personajes-profile-estado');
+  const profileEpitafioEl = document.getElementById('personajes-profile-epitafio');
   const profileBlocksEl = document.getElementById('personajes-profile-blocks');
   const commentsListEl = document.getElementById('personajes-comments-list');
   const commentForm = document.getElementById('personajes-comment-form');
@@ -97,6 +105,10 @@ export function initPersonajes() {
   const mcUserInput = document.getElementById('personajes-input-mcuser');
   const faccionInput = document.getElementById('personajes-input-faccion');
   const faccionesDatalist = document.getElementById('personajes-facciones-datalist');
+  const estadoInput = document.getElementById('personajes-input-estado');
+  const caidoFieldsEl = document.getElementById('personajes-caido-fields');
+  const caidoElInput = document.getElementById('personajes-input-caido-el');
+  const epitafioInput = document.getElementById('personajes-input-epitafio');
   const fotoInput = document.getElementById('personajes-input-foto');
   const editorBlocksEl = document.getElementById('personajes-editor-blocks');
   const nombresDatalist = document.getElementById('personajes-nombres-datalist');
@@ -165,6 +177,16 @@ export function initPersonajes() {
     !views.cronica ||
     !cronicaBtn ||
     !cronicaBackBtn ||
+    !views.memorial ||
+    !memorialBtn ||
+    !memorialBackBtn ||
+    !memorialListEl ||
+    !profileEstadoEl ||
+    !profileEpitafioEl ||
+    !estadoInput ||
+    !caidoFieldsEl ||
+    !caidoElInput ||
+    !epitafioInput ||
     Object.values(cronicaEls).some((el) => !el)
   )
     return;
@@ -189,10 +211,19 @@ export function initPersonajes() {
   let editorBloques = [];
   let editingExisting = false;
   let hadFaccion = false; // la ficha que se edita ya tenía facción (ver el guardado)
+  let hadEstado = false; // ídem con el estado, la fecha de la caída o el epitafio
   let allPersonajes = []; // [{ id, data }], cache del directorio: alimenta el buscador y el autocompletado de relaciones
   let factions = []; // listFactions(allPersonajes): [{ key, name, count, color }]
   let factionFilter = ''; // clave de la facción elegida en el directorio ('' = todas)
   const factionOf = (data) => factions.find((f) => f.key === factionKey(data.faccion));
+  // "Desaparecido", "Caído" o "Caído el 3 oct 2026" ('' si está vivo).
+  const estadoLabel = (data) => {
+    const estado = estadoOf(data);
+    if (estado === 'desaparecido') return t('pj.estadoDesaparecido');
+    if (estado !== 'caido') return '';
+    const date = formatFechaCaida(data.caidoEl, getLanguage());
+    return date ? t('pj.estadoCaidoEl', { date }) : t('pj.estadoCaido');
+  };
 
   // Aviso general de la sección (errores de carga, de login...), visible
   // sobre cualquiera de las tres vistas internas. Se limpia al cambiar de vista.
@@ -351,6 +382,14 @@ export function initPersonajes() {
         tag.textContent = faction.name;
         card.appendChild(tag);
       }
+      const estado = estadoOf(data);
+      if (estado) {
+        card.dataset.estado = estado; // el CSS los pone en gris
+        const tag = document.createElement('span');
+        tag.className = 'personajes-estado-tag';
+        tag.textContent = estadoLabel(data);
+        card.appendChild(tag);
+      }
       card.addEventListener('click', () => openProfile(id, data));
       grid.appendChild(card);
     });
@@ -417,7 +456,9 @@ export function initPersonajes() {
     for (const f of factions) factionFilterEl.append(chip(f.key, `${f.name} (${f.count})`, f.color));
   }
   onLanguageChange(() => {
-    if (views.directory.classList.contains('is-active')) renderFactionFilter();
+    if (!views.directory.classList.contains('is-active')) return;
+    renderFactionFilter();
+    if (allPersonajes.length) renderGrid(); // las etiquetas de estado van en el idioma de la web
   });
 
   // ---- Árbol de relaciones (js/relations-graph.js) ----
@@ -487,6 +528,61 @@ export function initPersonajes() {
   });
   relationsBackBtn.addEventListener('click', () => showView('directory'));
 
+  // ---- Memorial (js/personajes/status.js) ----
+  // Usa la caché del directorio, igual que el árbol.
+  function renderMemorial() {
+    const caidos = listCaidos(allPersonajes);
+    memorialListEl.innerHTML = '';
+    if (!caidos.length) {
+      const msg = document.createElement('p');
+      msg.className = 'personajes-empty';
+      msg.textContent = t('pj.memorialEmpty');
+      memorialListEl.appendChild(msg);
+      return;
+    }
+    for (const { id, data } of caidos) {
+      const card = document.createElement('button');
+      card.type = 'button';
+      card.className = 'memorial-card';
+      card.dataset.id = id;
+      if (data.fotoUrl) {
+        const img = document.createElement('img');
+        img.className = 'memorial-card-photo';
+        img.src = data.fotoUrl;
+        img.alt = '';
+        img.loading = 'lazy';
+        img.addEventListener('error', () => img.remove());
+        card.appendChild(img);
+      }
+      const name = document.createElement('span');
+      name.className = 'memorial-card-name';
+      name.textContent = data.nombre || t('pj.noName');
+      const fecha = document.createElement('span');
+      fecha.className = 'memorial-card-date';
+      fecha.textContent = estadoLabel(data);
+      card.append(name, fecha);
+      const epitafio = (data.epitafio || '').trim();
+      if (epitafio) {
+        const ep = document.createElement('span');
+        ep.className = 'memorial-card-epitafio';
+        ep.textContent = t('pj.epitafio', { text: epitafio });
+        card.appendChild(ep);
+      }
+      card.addEventListener('click', () => openProfile(id, data));
+      memorialListEl.appendChild(card);
+    }
+  }
+
+  memorialBtn.addEventListener('click', () => {
+    setProfileHash(null);
+    showView('memorial');
+    renderMemorial();
+  });
+  memorialBackBtn.addEventListener('click', () => showView('directory'));
+  onLanguageChange(() => {
+    if (views.memorial.classList.contains('is-active')) renderMemorial();
+  });
+
   function openChronicle() {
     setProfileHash(null);
     showView('cronica');
@@ -541,6 +637,12 @@ export function initPersonajes() {
     profileFaccionEl.hidden = !faccion;
     profileFaccionEl.textContent = faccion ? t('pj.faction', { name: faccion }) : '';
     profileFaccionEl.style.setProperty('--faction-color', factionOf(data)?.color || '');
+    profileEstadoEl.dataset.estado = estadoOf(data) || '';
+    profileEstadoEl.textContent = estadoLabel(data);
+    profileEstadoEl.hidden = !profileEstadoEl.textContent;
+    const epitafio = estadoOf(data) === 'caido' ? (data.epitafio || '').trim() : '';
+    profileEpitafioEl.textContent = epitafio ? t('pj.epitafio', { text: epitafio }) : '';
+    profileEpitafioEl.hidden = !epitafio;
     profileBlocksEl.innerHTML = '';
     for (const bloque of data.bloques || []) {
       profileBlocksEl.appendChild(
@@ -709,6 +811,12 @@ export function initPersonajes() {
   addSpotifyBtn.addEventListener('click', () => addBlock('spotify'));
   addRelacionBtn.addEventListener('click', () => addBlock('relacion'));
 
+  // La fecha y el epitafio solo tienen sentido para los caídos.
+  function updateCaidoFields() {
+    caidoFieldsEl.hidden = estadoInput.value !== 'caido';
+  }
+  estadoInput.addEventListener('change', updateCaidoFields);
+
   function openEditor(data) {
     setProfileHash(null);
     editingExisting = !!data;
@@ -716,6 +824,11 @@ export function initPersonajes() {
     mcUserInput.value = data ? data.minecraftUsername || '' : '';
     faccionInput.value = data ? data.faccion || '' : '';
     hadFaccion = !!data?.faccion;
+    estadoInput.value = estadoOf(data) || '';
+    caidoElInput.value = isFechaValida(data?.caidoEl) ? data.caidoEl : '';
+    epitafioInput.value = data?.epitafio || '';
+    hadEstado = !!(data?.estado || data?.caidoEl || data?.epitafio);
+    updateCaidoFields();
     fotoInput.value = data ? data.fotoUrl || '' : '';
     editorBloques = data && Array.isArray(data.bloques) ? data.bloques.map((b) => ({ ...b })) : [];
     renderEditorBlocks();
@@ -779,6 +892,17 @@ export function initPersonajes() {
       setFeedback(t('pj.errFactionLong'), 'fail');
       return;
     }
+    const estado = estadoInput.value || null;
+    const caidoEl = estado === 'caido' ? caidoElInput.value.trim() : '';
+    if (caidoEl && !isFechaValida(caidoEl)) {
+      setFeedback(t('pj.errCaidoEl'), 'fail');
+      return;
+    }
+    const epitafio = estado === 'caido' ? epitafioInput.value.trim().replace(/\s+/g, ' ') : '';
+    if (epitafio.length > EPITAFIO_MAX) {
+      setFeedback(t('pj.errEpitafioLong'), 'fail');
+      return;
+    }
     const relacionInvalida = editorBloques.some((b) => b.tipo === 'relacion' && (b.nombre || '').trim() && !b.uid);
     if (relacionInvalida) {
       setFeedback(t('pj.errRelation'), 'fail');
@@ -802,6 +926,8 @@ export function initPersonajes() {
       // Solo se manda si hay facción (o había, para quitarla): así las fichas
       // sin facción se siguen guardando aunque firestore.rules aún no la admita.
       ...(faccion || hadFaccion ? { faccion: faccion || null } : {}),
+      // Igual con el estado: un personaje vivo que nunca lo cambió no lo manda.
+      ...(estado || hadEstado ? { estado, caidoEl: caidoEl || null, epitafio: epitafio || null } : {}),
       fotoUrl: fotoUrl || null,
       bloques,
       actualizadoEn: fb.serverTimestamp(),
@@ -815,12 +941,16 @@ export function initPersonajes() {
       .then(() => {
         editingExisting = true;
         hadFaccion = !!faccion;
+        hadEstado = !!estado;
         setHasCharacter(true);
         currentProfileUid = currentUser.uid;
         openProfile(currentUser.uid, {
           nombre,
           minecraftUsername: minecraftUsername || null,
           faccion: faccion || null,
+          estado,
+          caidoEl: caidoEl || null,
+          epitafio: epitafio || null,
           fotoUrl: fotoUrl || null,
           bloques,
         });
