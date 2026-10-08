@@ -30,6 +30,14 @@ describe('buildGraph', () => {
     assert.deepEqual(ac.labels, []);
   });
 
+  test('cada nodo lleva el estado de su personaje (null si está vivo)', () => {
+    const g = buildGraph([pj('a', [rel('b')], { estado: 'caido' }), pj('b', [], { estado: 'raro' })]);
+    assert.deepEqual(
+      g.nodes.map((n) => n.estado),
+      ['caido', null],
+    );
+  });
+
   test('se ignoran relaciones rotas: personaje borrado, consigo mismo, otros bloques', () => {
     const g = buildGraph([
       pj('a', [rel('borrado', 'x'), rel('a', 'yo'), { tipo: 'texto', contenido: 'hola' }, rel('b', 'rival')]),

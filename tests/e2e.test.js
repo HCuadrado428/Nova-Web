@@ -619,6 +619,82 @@ describe('Personajes', () => {
     await page.context().close();
   });
 
+  test('estado del personaje: caído con fecha y epitafio, en gris y en el Memorial', async () => {
+    await env.withSecurityRulesDisabled((ctx) =>
+      updateDoc(doc(ctx.firestore(), 'personajes/kira'), { estado: 'desaparecido' }),
+    );
+    const page = await openPage({ signedInAs: { uid: 'yo', name: 'Probador' } });
+    await enter(page);
+    await openPersonajes(page);
+    assert.equal(await page.locator('.personajes-card[data-estado="desaparecido"]').count(), 1);
+    assert.equal(await text(page, '.personajes-estado-tag'), 'Desaparecido');
+
+    // Memorial vacío: Kira solo ha desaparecido.
+    await page.click('#personajes-memorial-btn');
+    await page.locator('#personajes-view-memorial.is-active').waitFor();
+    assert.equal(await text(page, '#personajes-memorial-list'), 'Nadie ha caído todavía.');
+    await page.click('#personajes-memorial-back-btn');
+
+    await page.locator('#personajes-mine-btn:not([hidden])').waitFor();
+    await page.click('#personajes-mine-btn');
+    await page.locator('#personajes-view-editor.is-active').waitFor();
+    assert.ok(await page.locator('#personajes-caido-fields').isHidden());
+    await page.fill('#personajes-input-nombre', 'Nuevo');
+    await page.selectOption('#personajes-input-estado', 'caido');
+    assert.ok(await page.locator('#personajes-caido-fields').isVisible());
+    await page.fill('#personajes-input-caido-el', '2026-10-03');
+    await page.fill('#personajes-input-epitafio', 'Cayó defendiendo la torre.');
+    await page.click('#personajes-save-btn');
+    await page.waitForFunction(() => document.getElementById('personajes-profile-name').textContent === 'Nuevo');
+    assert.match(await text(page, '#personajes-profile-estado'), /^Caído el 3 oct\.? 2026$/);
+    assert.equal(await text(page, '#personajes-profile-epitafio'), '«Cayó defendiendo la torre.»');
+    let guardado;
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      guardado = (await getDoc(doc(ctx.firestore(), 'personajes', page.uid))).data();
+    });
+    assert.equal(guardado.estado, 'caido');
+    assert.equal(guardado.caidoEl, '2026-10-03');
+    assert.equal(guardado.epitafio, 'Cayó defendiendo la torre.');
+
+    await page.click('#personajes-profile-back-btn');
+    await page.waitForFunction(() => document.querySelectorAll('.personajes-card').length === 3);
+    assert.equal(await page.locator('.personajes-card[data-estado="caido"]').count(), 1);
+
+    // En el Memorial, y desde ahí a su ficha.
+    await page.click('#personajes-memorial-btn');
+    await page.locator('#personajes-view-memorial.is-active').waitFor();
+    assert.deepEqual(await page.locator('.memorial-card-name').allTextContents(), ['Nuevo']);
+    assert.equal(await text(page, '.memorial-card-epitafio'), '«Cayó defendiendo la torre.»');
+    await page.click('.memorial-card');
+    await page.locator('#personajes-view-profile.is-active').waitFor();
+    assert.equal(await text(page, '#personajes-profile-name'), 'Nuevo');
+
+    // Árbol: Kira sale marcada como desaparecida; Zed, vivo, sin marca.
+    await page.click('#personajes-profile-back-btn');
+    await page.waitForFunction(() => document.querySelectorAll('.personajes-card').length === 3);
+    await page.click('#personajes-relations-btn');
+    await page.locator('#personajes-view-relations.is-active').waitFor();
+    const estado = (id) => page.locator(`.relations-node[data-id="${id}"]`).getAttribute('data-estado');
+    assert.equal(await estado('kira'), 'desaparecido');
+    assert.equal(await estado('zed'), null);
+
+    // Vuelve a estar vivo: se borran la fecha y el epitafio.
+    await page.click('#personajes-relations-back-btn');
+    await page.click('#personajes-mine-btn');
+    await page.locator('#personajes-view-editor.is-active').waitFor();
+    assert.equal(await page.inputValue('#personajes-input-estado'), 'caido');
+    await page.selectOption('#personajes-input-estado', '');
+    await page.click('#personajes-save-btn');
+    await page.locator('#personajes-view-profile.is-active').waitFor();
+    assert.ok(await page.locator('#personajes-profile-estado').isHidden());
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      guardado = (await getDoc(doc(ctx.firestore(), 'personajes', page.uid))).data();
+    });
+    assert.deepEqual([guardado.estado, guardado.caidoEl, guardado.epitafio], [null, null, null]);
+    assert.deepEqual(page.errors, []);
+    await page.context().close();
+  });
+
   test('subir imágenes: la foto y un bloque de imagen se suben a Cloudinary y se guarda su link', async () => {
     const page = await openPage({ signedInAs: { uid: 'subidor', name: 'Subidor' } });
     // Cloudinary falso: nunca se sube nada de verdad desde los tests.

@@ -19,6 +19,8 @@
 // ratón, pellizcando en móvil o con el gesto de pellizco del touchpad; con
 // zoom se arrastra para moverse. Sin zoom, bajar la rueda baja la página.
 
+import { estadoOf } from './personajes/status.js';
+
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
 // personajes: [{ id, data }] (la caché del directorio).
@@ -51,6 +53,7 @@ export function buildGraph(personajes) {
       name: p.data.nombre || '',
       foto: p.data.fotoUrl || null,
       faccion: p.data.faccion || null,
+      estado: estadoOf(p.data),
     }))
     .sort((x, y) => x.id.localeCompare(y.id)); // orden estable: mismo dibujo siempre
 
@@ -224,6 +227,7 @@ export function renderRelationsGraph(
       'aria-label': nodeLabel(node.name),
     });
     g.dataset.id = node.id;
+    if (node.estado) g.dataset.estado = node.estado; // el CSS pone en gris a los caídos
     const color = nodeColor(node);
     if (color) g.style.setProperty('--node-color', color);
     const clipId = `relations-clip-${i}`;

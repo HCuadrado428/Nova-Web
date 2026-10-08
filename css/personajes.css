@@ -153,6 +153,8 @@ body[data-view='personajes'] .personajes-page {
 /* ---- Árbol de relaciones (js/relations-graph.js) ---- */
 .personajes-directory-tools {
   display: flex;
+  flex-wrap: wrap; /* en el móvil no caben los tres botones en una fila */
+  row-gap: 8px;
   justify-content: center;
   margin: -8px 0 24px;
 }
@@ -810,4 +812,105 @@ body[data-view='personajes'] .personajes-page {
   justify-content: flex-end;
   gap: 6px;
   margin-top: 12px;
+}
+
+/* Estado del personaje y Memorial (js/personajes/status.js). data-estado lo
+   pone el JS: "desaparecido" o "caido" (los vivos no lo llevan). */
+.personajes-input option {
+  background: #0d0d0d;
+  color: var(--text-main);
+}
+.personajes-card[data-estado] {
+  border-color: rgba(234, 230, 218, 0.3);
+}
+.personajes-card[data-estado='desaparecido'] {
+  border-style: dashed;
+}
+.personajes-card[data-estado='desaparecido'] .personajes-card-photo {
+  opacity: 0.45;
+}
+.personajes-card[data-estado='caido'] .personajes-card-photo,
+.memorial-card-photo {
+  filter: grayscale(1);
+}
+.personajes-card[data-estado='caido'] .personajes-card-name {
+  color: var(--text-dim);
+}
+.personajes-estado-tag {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  font-style: italic;
+}
+.personajes-profile-estado {
+  margin: 6px 0 0;
+  font-size: 0.8rem;
+  font-style: italic;
+  color: var(--text-dim);
+}
+.personajes-profile-epitafio {
+  margin: 10px 0 0;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-style: italic;
+  color: rgba(234, 230, 218, 0.7);
+}
+.personajes-profile-estado[hidden],
+.personajes-profile-epitafio[hidden] {
+  display: none;
+}
+.relations-node[data-estado='caido'] image {
+  filter: grayscale(1);
+}
+.relations-node[data-estado='caido'] .relations-node-ring {
+  stroke: var(--text-dim);
+  stroke-dasharray: 4 3;
+}
+.relations-node[data-estado='desaparecido'] {
+  opacity: 0.55;
+}
+.memorial-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 18px;
+  margin-top: 24px;
+}
+.memorial-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px;
+  font: inherit;
+  text-align: center;
+  background: rgba(234, 230, 218, 0.03);
+  border: 1px solid rgba(234, 230, 218, 0.25);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.memorial-card:hover {
+  background: rgba(234, 230, 218, 0.08);
+}
+.memorial-card-photo {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: calc(var(--radius) - 2px);
+  opacity: 0.85;
+}
+.memorial-card-name {
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  letter-spacing: 1px;
+  color: var(--text-main);
+}
+.memorial-card-date {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+}
+.memorial-card-epitafio {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-style: italic;
+  color: rgba(234, 230, 218, 0.7);
 }
