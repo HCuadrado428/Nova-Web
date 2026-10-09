@@ -8,12 +8,11 @@
 // etiqueta; si las dos partes la declaran (hermano / hermana), sale una sola
 // línea con las dos etiquetas.
 //
-// La colocación (layoutGraph) separa los grupos de personajes conectados,
-// coloca cada uno de forma que las distancias en el dibujo sigan a las del
-// árbol (los amigos cerca, sin enredos) y los reparte según la forma de la
-// caja; no usa nada aleatorio, así que sale siempre igual para los mismos
-// datos. Las funciones buildGraph() y layoutGraph() no tocan el DOM (se
-// prueban en tests/graph.test.js); renderRelationsGraph() es la que dibuja el SVG.
+// La colocación es una simulación de fuerzas sencilla (los círculos se
+// repelen, las relaciones tiran como muelles) con posiciones iniciales fijas,
+// así que el dibujo sale siempre igual para los mismos datos. Las funciones
+// buildGraph() y layoutGraph() no tocan el DOM (se prueban en
+// tests/graph.test.js); renderRelationsGraph() es la que dibuja el SVG.
 //
 // Zoom: se cambia el viewBox del SVG (así las letras y las fotos se ven más
 // grandes y nítidas). Se acerca con los botones + / −, con la rueda del
@@ -82,240 +81,94 @@ export function estimateLabelWidth(labels) {
   return Math.max(0, ...labels.map((l) => l.length)) * 7.5;
 }
 
-// Medio ancho y alto de lo que ocupa un personaje: el círculo (radio 30) y,
-// debajo, su nombre en la fuente pixelada (~13px por letra).
-function nodeBox(node) {
-  return { hw: Math.max(40, [...node.name].length * 6.5 + 10), top: 40, bottom: 62 };
-}
-
-// Grupos de personajes conectados entre sí (cada uno se coloca por separado),
-// del más grande al más pequeño.
-function components(graph) {
-  const adj = new Map(graph.nodes.map((n) => [n.id, []]));
-  for (const e of graph.edges) {
-    adj.get(e.a).push(e.b);
-    adj.get(e.b).push(e.a);
-  }
-  const seen = new Set();
-  const groups = [];
-  for (const node of graph.nodes) {
-    if (seen.has(node.id)) continue;
-    const ids = [];
-    const queue = [node.id];
-    seen.add(node.id);
-    while (queue.length) {
-      const id = queue.shift();
-      ids.push(id);
-      for (const other of adj.get(id)) {
-        if (!seen.has(other)) {
-          seen.add(other);
-          queue.push(other);
-        }
-      }
-    }
-    groups.push(ids.sort((x, y) => x.localeCompare(y)));
-  }
-  return groups.sort((x, y) => y.length - x.length || x[0].localeCompare(y[0]));
-}
-
-// Coloca un grupo conectado. Cada pareja de personajes "quiere" estar a la
-// distancia de su camino más corto en el árbol (cada relación mide más o menos
-// según lo larga que sea su etiqueta), y se busca el dibujo que mejor cumple
-// todas esas distancias a la vez ("stress majorization"). Así los grupos de
-// amigos quedan juntos, los lejanos lejos y apenas se cruzan líneas. Empieza
-// desde un punto de partida calculado (MDS clásico), no al azar, por lo que el
-// dibujo sale siempre igual. Devuelve [{ x, y }] en el orden de "ids".
-function layoutComponent(ids, edges, spacing, iterations) {
-  const n = ids.length;
-  if (n === 1) return [{ x: 0, y: 0 }];
-  const index = new Map(ids.map((id, i) => [id, i]));
-  // Distancias de camino más corto (Floyd-Warshall: pocos personajes).
-  const d = Array.from({ length: n }, (_, i) => Array.from({ length: n }, (_, j) => (i === j ? 0 : Infinity)));
-  for (const e of edges) {
-    const i = index.get(e.a);
-    const j = index.get(e.b);
-    if (i === undefined || j === undefined) continue;
-    const len = Math.max(spacing, estimateLabelWidth(e.labels) + 90);
-    d[i][j] = d[j][i] = Math.min(d[i][j], len);
-  }
-  for (let k = 0; k < n; k++) {
-    for (let i = 0; i < n; i++) {
-      for (let j = 0; j < n; j++) {
-        if (d[i][k] + d[k][j] < d[i][j]) d[i][j] = d[i][k] + d[k][j];
-      }
-    }
-  }
-
-  // Punto de partida: MDS clásico (los dos ejes principales de las distancias).
-  const d2 = d.map((row) => row.map((v) => v * v));
-  const rowMean = d2.map((row) => row.reduce((a, b) => a + b, 0) / n);
-  const allMean = rowMean.reduce((a, b) => a + b, 0) / n;
-  const B = d2.map((row, i) => row.map((v, j) => -0.5 * (v - rowMean[i] - rowMean[j] + allMean)));
-  const axes = [];
-  for (let axis = 0; axis < 2; axis++) {
-    let v = ids.map((_, i) => Math.sin(i * 1.7 + axis + 1)); // arranque fijo, no aleatorio
-    let value = 0;
-    for (let it = 0; it < 100; it++) {
-      let next = B.map((row) => row.reduce((sum, b, j) => sum + b * v[j], 0));
-      for (const prev of axes) {
-        const dot = next.reduce((sum, x, i) => sum + x * prev.v[i], 0);
-        next = next.map((x, i) => x - dot * prev.v[i]);
-      }
-      const norm = Math.hypot(...next);
-      if (norm < 1e-9) break;
-      value = norm;
-      v = next.map((x) => x / norm);
-    }
-    axes.push({ v, value });
-  }
-  const pos = ids.map((_, i) => ({
-    x: axes[0].v[i] * Math.sqrt(axes[0].value) + i * 1e-3,
-    y: axes[1].v[i] * Math.sqrt(axes[1].value) + ((i * 7) % 5) * 1e-3,
-  }));
-
-  // Stress majorization: cada personaje se mueve al punto que mejor respeta
-  // sus distancias a todos los demás (pesando más las cercanas).
-  for (let it = 0; it < iterations; it++) {
-    for (let i = 0; i < n; i++) {
-      let sx = 0;
-      let sy = 0;
-      let sw = 0;
-      for (let j = 0; j < n; j++) {
-        if (i === j) continue;
-        const w = 1 / (d[i][j] * d[i][j]);
-        const dx = pos[i].x - pos[j].x;
-        const dy = pos[i].y - pos[j].y;
-        const dist = Math.hypot(dx, dy) || 1e-3;
-        sx += w * (pos[j].x + (d[i][j] * dx) / dist);
-        sy += w * (pos[j].y + (d[i][j] * dy) / dist);
-        sw += w;
-      }
-      pos[i] = { x: sx / sw, y: sy / sw };
-    }
-  }
-  return pos;
-}
-
-// Separa a los personajes cuyos círculos o nombres se pisan, empujándolos
-// por el eje en el que menos se solapan.
-function removeOverlaps(items, gap = 24) {
-  for (let pass = 0; pass < 60; pass++) {
-    let moved = false;
-    for (let i = 0; i < items.length; i++) {
-      for (let j = i + 1; j < items.length; j++) {
-        const a = items[i];
-        const b = items[j];
-        const ox = a.box.hw + b.box.hw + gap - Math.abs(a.x - b.x);
-        const above = a.y <= b.y ? a : b;
-        const below = above === a ? b : a;
-        const oy = above.box.bottom + below.box.top + gap - (below.y - above.y);
-        if (ox <= 0 || oy <= 0) continue;
-        moved = true;
-        if (ox < oy) {
-          const s = (a.x < b.x || (a.x === b.x && i < j) ? -1 : 1) * (ox / 2);
-          a.x += s;
-          b.x -= s;
-        } else {
-          above.y -= oy / 2;
-          below.y += oy / 2;
-        }
-      }
-    }
-    if (!moved) break;
-  }
-}
-
-// Gira el grupo para que su lado largo vaya a lo largo de la caja (a lo ancho
-// en el ordenador, a lo alto en el móvil) y lo deja con la esquina en 0,0.
-function orient(items, landscape) {
-  const cx = items.reduce((s, p) => s + p.x, 0) / items.length;
-  const cy = items.reduce((s, p) => s + p.y, 0) / items.length;
-  let xx = 0;
-  let yy = 0;
-  let xy = 0;
-  for (const p of items) {
-    xx += (p.x - cx) ** 2;
-    yy += (p.y - cy) ** 2;
-    xy += (p.x - cx) * (p.y - cy);
-  }
-  // Ángulo del eje principal; se gira para llevarlo a horizontal o vertical.
-  const angle = 0.5 * Math.atan2(2 * xy, xx - yy);
-  const turn = (landscape ? 0 : Math.PI / 2) - angle;
-  const cos = Math.cos(turn);
-  const sin = Math.sin(turn);
-  for (const p of items) {
-    const dx = p.x - cx;
-    const dy = p.y - cy;
-    p.x = dx * cos - dy * sin;
-    p.y = dx * sin + dy * cos;
-  }
-}
-
-function bounds(items) {
-  const minX = Math.min(...items.map((p) => p.x - p.box.hw));
-  const maxX = Math.max(...items.map((p) => p.x + p.box.hw));
-  const minY = Math.min(...items.map((p) => p.y - p.box.top));
-  const maxY = Math.max(...items.map((p) => p.y + p.box.bottom));
-  return { minX, minY, w: maxX - minX, h: maxY - minY };
-}
-
 // Devuelve { positions: Map(id -> {x, y}), width, height } con los nodos ya
 // colocados y el tamaño del lienzo que los contiene (con margen).
-// aspect: ancho / alto de la caja donde se va a ver (para aprovecharla: el
-// dibujo sale apaisado en el ordenador y alargado en el móvil).
-export function layoutGraph(graph, { iterations = 300, spacing = 140, aspect = 1.6 } = {}) {
-  const margin = 30;
+export function layoutGraph(graph, { iterations = 400, spacing = 140 } = {}) {
+  const n = graph.nodes.length;
   const pos = new Map();
-  if (!graph.nodes.length) return { positions: pos, width: margin * 2 + 140, height: margin * 2 + 140 };
-  const byId = new Map(graph.nodes.map((node) => [node.id, node]));
-  const landscape = aspect >= 1;
-
-  // Cada grupo conectado se coloca, se ordena y se gira por su cuenta...
-  const blocks = components(graph).map((ids) => {
-    const xy = layoutComponent(ids, graph.edges, spacing, iterations);
-    const items = ids.map((id, i) => ({ id, x: xy[i].x, y: xy[i].y, box: nodeBox(byId.get(id)) }));
-    if (items.length > 2) {
-      orient(items, landscape);
-      // Si el grupo es más redondo que la caja, se estira por el lado largo
-      // (hasta 1,6 veces): aprovecha el sitio y despeja el centro, que es
-      // donde se amontonan las etiquetas.
-      const b = bounds(items);
-      const stretch = Math.min(1.6, Math.max(1, landscape ? (aspect * b.h) / b.w : b.w / (aspect * b.h)));
-      for (const p of items) {
-        if (landscape) p.x *= stretch;
-        else p.y *= stretch;
-      }
-    }
-    removeOverlaps(items, 40);
-    const b = bounds(items);
-    for (const p of items) {
-      p.x -= b.minX;
-      p.y -= b.minY;
-    }
-    return { items, w: b.w, h: b.h };
+  // Posición inicial: en círculo, según el orden (estable) de los nodos.
+  const radius = Math.max(spacing, (spacing * n) / (2 * Math.PI));
+  graph.nodes.forEach((node, i) => {
+    const angle = (2 * Math.PI * i) / Math.max(n, 1);
+    pos.set(node.id, { x: Math.cos(angle) * radius, y: Math.sin(angle) * radius });
   });
 
-  // ...y luego se colocan en filas (los grandes primero), con un ancho de
-  // fila pensado para que el conjunto tenga la forma de la caja.
-  const gap = 50;
-  const area = blocks.reduce((s, b) => s + (b.w + gap) * (b.h + gap), 0);
-  const rowWidth = Math.max(...blocks.map((b) => b.w), Math.sqrt(area * aspect));
-  let x = 0;
-  let y = 0;
-  let rowH = 0;
-  let width = 0;
-  for (const block of blocks) {
-    if (x > 0 && x + block.w > rowWidth) {
-      x = 0;
-      y += rowH + gap;
-      rowH = 0;
+  // Cada relación es un muelle; si tiene etiquetas largas, más largo, para
+  // que el texto quepa entre los dos círculos.
+  const neighbors = graph.edges.map((e) => [e.a, e.b, Math.max(spacing, estimateLabelWidth(e.labels) + 90)]);
+  for (let step = 0; step < iterations; step++) {
+    const cooling = 1 - step / iterations; // los movimientos se van calmando
+    const force = new Map(graph.nodes.map((node) => [node.id, { x: 0, y: 0 }]));
+
+    // Repulsión entre todos los pares (pocos personajes: O(n²) sobra).
+    for (let i = 0; i < n; i++) {
+      for (let j = i + 1; j < n; j++) {
+        const p = pos.get(graph.nodes[i].id);
+        const q = pos.get(graph.nodes[j].id);
+        let dx = p.x - q.x;
+        let dy = p.y - q.y;
+        let dist = Math.hypot(dx, dy);
+        if (dist < 0.01) {
+          dx = 0.01 * (i + 1);
+          dy = 0.01 * (j + 1);
+          dist = Math.hypot(dx, dy);
+        }
+        const push = (spacing * spacing) / dist;
+        const fx = (dx / dist) * push;
+        const fy = (dy / dist) * push;
+        force.get(graph.nodes[i].id).x += fx;
+        force.get(graph.nodes[i].id).y += fy;
+        force.get(graph.nodes[j].id).x -= fx;
+        force.get(graph.nodes[j].id).y -= fy;
+      }
     }
-    for (const p of block.items) pos.set(p.id, { x: p.x + x + margin, y: p.y + y + margin });
-    x += block.w + gap;
-    rowH = Math.max(rowH, block.h);
-    width = Math.max(width, x - gap);
+    // Atracción de las relaciones (muelles de longitud "spacing").
+    for (const [a, b, length] of neighbors) {
+      const p = pos.get(a);
+      const q = pos.get(b);
+      const dx = q.x - p.x;
+      const dy = q.y - p.y;
+      const dist = Math.max(Math.hypot(dx, dy), 0.01);
+      const pull = ((dist - length) * dist) / length;
+      const fx = (dx / dist) * pull * 0.5;
+      const fy = (dy / dist) * pull * 0.5;
+      force.get(a).x += fx;
+      force.get(a).y += fy;
+      force.get(b).x -= fx;
+      force.get(b).y -= fy;
+    }
+    // Gravedad hacia el centro: pliega las cadenas largas (A-B-C-D...) en
+    // vez de dejarlas estiradas en línea, y acerca los grupos sueltos.
+    for (const node of graph.nodes) {
+      const p = pos.get(node.id);
+      const f = force.get(node.id);
+      f.x -= p.x * 0.08;
+      f.y -= p.y * 0.08;
+      const len = Math.hypot(f.x, f.y);
+      const maxMove = spacing * 0.2 * cooling + 1;
+      const k = len > maxMove ? maxMove / len : 1;
+      p.x += f.x * k;
+      p.y += f.y * k;
+    }
   }
-  return { positions: pos, width: width + margin * 2, height: y + rowH + margin * 2 };
+
+  // Encuadre: se desplaza todo para que quepa con margen, contando también
+  // lo que asoma el nombre de cada personaje a los lados (fuente pixelada,
+  // ~13px por letra), para que los nombres largos no queden cortados.
+  const margin = 70;
+  const half = new Map(graph.nodes.map((node) => [node.id, Math.max(margin, [...node.name].length * 6.5 + 10)]));
+  const lefts = graph.nodes.map((node) => pos.get(node.id).x - half.get(node.id));
+  const rights = graph.nodes.map((node) => pos.get(node.id).x + half.get(node.id));
+  const ys = [...pos.values()].map((p) => p.y);
+  const minX = n ? Math.min(...lefts) : 0;
+  const minY = n ? Math.min(...ys) : 0;
+  const width = n ? Math.max(...rights) - minX : margin * 2;
+  const height = (n ? Math.max(...ys) - minY : 0) + margin * 2;
+  for (const p of pos.values()) {
+    p.x -= minX;
+    p.y = p.y - minY + margin;
+  }
+  return { positions: pos, width, height };
 }
 
 function svgEl(name, attrs = {}) {
@@ -339,19 +192,21 @@ export function renderRelationsGraph(
 ) {
   container.innerHTML = '';
   if (!graph.nodes.length) return;
+  const { positions, width, height } = layoutGraph(graph);
   const r = 30;
 
-  const svg = svgEl('svg', { class: 'relations-graph', role: 'group' });
+  const svg = svgEl('svg', {
+    class: 'relations-graph',
+    viewBox: `0 0 ${Math.round(width)} ${Math.round(height)}`,
+    role: 'group',
+  });
+
   const edgesLayer = svgEl('g', { class: 'relations-edges' });
   const labelsLayer = svgEl('g', { class: 'relations-edge-labels' });
   const nodesLayer = svgEl('g', { class: 'relations-nodes' });
   svg.append(edgesLayer, labelsLayer, nodesLayer);
-  // Ya en la página: hace falta para medir los textos (getBBox) al colocarlos
-  // y la forma de la caja, que decide si el dibujo sale apaisado o alargado.
+  // Ya en la página: hace falta para medir los textos (getBBox) al colocarlos.
   container.append(svg);
-  const aspect = svg.clientWidth && svg.clientHeight ? svg.clientWidth / svg.clientHeight : undefined;
-  const { positions, width, height } = layoutGraph(graph, { aspect });
-  svg.setAttribute('viewBox', `0 0 ${Math.round(width)} ${Math.round(height)}`);
 
   for (const edge of graph.edges) {
     const p = positions.get(edge.a);
@@ -438,8 +293,7 @@ export function renderRelationsGraph(
 // pusieron una, salen las dos, una encima de otra), con fondo oscuro para
 // leerse sobre las líneas. Cada una se coloca en el primer punto de su línea
 // (del centro hacia los extremos) donde no pisa ningún círculo, ningún nombre
-// ni otra etiqueta; si no lo hay, justo al lado de la línea; y si tampoco,
-// donde menos pisa.
+// ni otra etiqueta; si no hay ninguno libre, donde menos pisa.
 function placeEdgeLabels(labelsLayer, nodesLayer, graph, positions, r) {
   labelsLayer.replaceChildren();
   const boxOf = (el, fallback) => {
@@ -503,23 +357,14 @@ function placeEdgeLabels(labelsLayer, nodesLayer, graph, positions, r) {
 
     const p = positions.get(edge.a);
     const q = positions.get(edge.b);
-    // Si no hay hueco encima de la línea, se prueba un poco a cada lado
-    // (pegada a ella, para que se vea de qué relación es).
-    const len = Math.hypot(q.x - p.x, q.y - p.y) || 1;
-    const nx = -(q.y - p.y) / len;
-    const ny = (q.x - p.x) / len;
-    const side = Math.abs(nx) * (box.w / 2) + Math.abs(ny) * (box.h / 2) + 2;
     let best = null;
-    search: for (const offset of [0, side, -side]) {
-      for (const step of STEPS) {
-        const cx = p.x + (q.x - p.x) * step + nx * offset;
-        const cy = p.y + (q.y - p.y) * step + ny * offset;
-        const at = { x: cx + box.x, y: cy + box.y, w: box.w, h: box.h };
-        // Lo que se aparta de la línea cuenta un poco, para preferir no hacerlo.
-        const cost = taken.reduce((sum, o) => sum + overlap(at, o), 0) + (offset ? 1 : 0);
-        if (!best || cost < best.cost) best = { cost, cx, cy, at };
-        if (cost <= (offset ? 1 : 0)) break search; // sitio libre
-      }
+    for (const step of STEPS) {
+      const cx = p.x + (q.x - p.x) * step;
+      const cy = p.y + (q.y - p.y) * step;
+      const at = { x: cx + box.x, y: cy + box.y, w: box.w, h: box.h };
+      const cost = taken.reduce((sum, o) => sum + overlap(at, o), 0);
+      if (!best || cost < best.cost) best = { cost, cx, cy, at };
+      if (!cost) break;
     }
     group.setAttribute('transform', `translate(${best.cx} ${best.cy})`);
     taken.push(best.at);
