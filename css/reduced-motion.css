@@ -69,4 +69,7 @@
   .btn-primary::after {
     display: none;
   }
+  .relations-graph.is-focus {
+    animation: none;
+  }
 }

@@ -69,6 +69,11 @@ export function initPersonajes() {
   const relationsHintEl = document.getElementById('personajes-relations-hint');
   const relationsListTitleEl = document.getElementById('personajes-relations-list-title');
   const relationsListEl = document.getElementById('personajes-relations-list');
+  const relationsToolbarEl = document.getElementById('personajes-relations-toolbar');
+  const relationsModeFocusBtn = document.getElementById('personajes-relations-mode-focus');
+  const relationsModeAllBtn = document.getElementById('personajes-relations-mode-all');
+  const relationsPickerLabel = document.getElementById('personajes-relations-picker-label');
+  const relationsPicker = document.getElementById('personajes-relations-picker');
   const memorialBtn = document.getElementById('personajes-memorial-btn');
   const memorialBackBtn = document.getElementById('personajes-memorial-back-btn');
   const memorialListEl = document.getElementById('personajes-memorial-list');
@@ -168,6 +173,11 @@ export function initPersonajes() {
     !relationsHintEl ||
     !relationsListTitleEl ||
     !relationsListEl ||
+    !relationsToolbarEl ||
+    !relationsModeFocusBtn ||
+    !relationsModeAllBtn ||
+    !relationsPickerLabel ||
+    !relationsPicker ||
     !factionFilterEl ||
     !relationsLegendEl ||
     !profileFaccionEl ||
@@ -464,21 +474,74 @@ export function initPersonajes() {
   // ---- Árbol de relaciones (js/relations-graph.js) ----
   // Usa la caché del directorio (allPersonajes), que ya está cargada porque
   // al árbol solo se llega desde el directorio.
+  // Dos formas de verlo: "por personaje" (uno en el centro y sus relaciones
+  // alrededor; la de siempre) o "todos" (el árbol entero).
+  let relationsMode = 'focus';
+  let relationsFocus = null; // id del personaje del centro
+
+  // Al entrar: tu personaje si tiene relaciones; si no, el que más tiene.
+  function defaultFocus(graph) {
+    const own = currentUser?.uid;
+    if (own && graph.nodes.some((n) => n.id === own)) return own;
+    const degree = new Map();
+    for (const e of graph.edges) {
+      degree.set(e.a, (degree.get(e.a) || 0) + 1);
+      degree.set(e.b, (degree.get(e.b) || 0) + 1);
+    }
+    return [...graph.nodes].sort(
+      (x, y) => degree.get(y.id) - degree.get(x.id) || x.name.localeCompare(y.name) || x.id.localeCompare(y.id),
+    )[0]?.id;
+  }
+
+  function focusOn(id) {
+    relationsMode = 'focus';
+    relationsFocus = id;
+    renderRelations();
+  }
+
   function renderRelations() {
     const graph = buildGraph(allPersonajes);
     const nameOf = (id) => allPersonajes.find((p) => p.id === id)?.data.nombre || t('pj.noName');
     const hasEdges = graph.edges.length > 0;
+    if (!graph.nodes.some((n) => n.id === relationsFocus)) relationsFocus = defaultFocus(graph);
+    const focusMode = relationsMode === 'focus' && hasEdges;
+
+    // Botones de modo y selector de personaje.
+    relationsModeFocusBtn.classList.toggle('is-active', relationsMode === 'focus');
+    relationsModeAllBtn.classList.toggle('is-active', relationsMode === 'all');
+    relationsModeFocusBtn.setAttribute('aria-pressed', String(relationsMode === 'focus'));
+    relationsModeAllBtn.setAttribute('aria-pressed', String(relationsMode === 'all'));
+    relationsToolbarEl.hidden = !hasEdges;
+    relationsPickerLabel.hidden = !focusMode;
+    relationsPicker.innerHTML = '';
+    for (const node of [...graph.nodes].sort((x, y) => nameOf(x.id).localeCompare(nameOf(y.id)))) {
+      const option = document.createElement('option');
+      option.value = node.id;
+      option.textContent = nameOf(node.id);
+      option.selected = node.id === relationsFocus;
+      relationsPicker.append(option);
+    }
 
     renderRelationsGraph(relationsGraphEl, graph, {
       onSelect: goToProfile,
-      nodeLabel: (name) => t('pj.treeNodeLabel', { name: name || t('pj.noName') }),
+      focus: focusMode ? relationsFocus : null,
+      onFocus: focusOn,
+      nodeLabel: (name, action) =>
+        t(action === 'focus' ? 'pj.treeFocusLabel' : 'pj.treeNodeLabel', { name: name || t('pj.noName') }),
       nodeColor: (node) => factionOf({ faccion: node.faccion })?.color || null,
       zoomLabels: { in: t('pj.treeZoomIn'), out: t('pj.treeZoomOut'), reset: t('pj.treeZoomReset') },
     });
     relationsHintEl.hidden = !hasEdges;
+    relationsHintEl.dataset.i18n = focusMode ? 'pj.treeHint' : 'pj.treeHintAll';
+    relationsHintEl.textContent = t(relationsHintEl.dataset.i18n);
 
-    // Leyenda de colores: solo las facciones que salen en el árbol.
-    const inGraph = new Set(graph.nodes.map((n) => factionKey(n.faccion)));
+    // Leyenda de colores: solo las facciones que salen en el dibujo.
+    const shown = focusMode
+      ? graph.nodes.filter((n) =>
+          graph.edges.some((e) => (e.a === relationsFocus || e.b === relationsFocus) && (e.a === n.id || e.b === n.id)),
+        )
+      : graph.nodes;
+    const inGraph = new Set(shown.map((n) => factionKey(n.faccion)));
     relationsLegendEl.innerHTML = '';
     for (const f of factions.filter((f) => inGraph.has(f.key))) {
       const li = document.createElement('li');
@@ -489,6 +552,9 @@ export function initPersonajes() {
     }
     relationsLegendEl.hidden = !relationsLegendEl.children.length;
     relationsListTitleEl.hidden = !hasEdges;
+    relationsListTitleEl.textContent = focusMode
+      ? t('pj.treeListTitleFocus', { name: nameOf(relationsFocus) })
+      : t('pj.treeListTitle');
 
     // Aviso: vacío del todo, o cuántos personajes se quedan fuera por no tener relaciones.
     if (!hasEdges) relationsEmptyEl.textContent = t('pj.treeEmpty');
@@ -508,9 +574,10 @@ export function initPersonajes() {
     };
     // Cada relación con su dirección, tal cual la puso su autor:
     // "Kira → hermano → Zed" (en el dibujo, la pareja comparte una línea).
-    const declarations = [...graph.declarations].sort(
-      (x, y) => nameOf(x.from).localeCompare(nameOf(y.from)) || nameOf(x.to).localeCompare(nameOf(y.to)),
-    );
+    // En la vista por personaje, solo las suyas (de él o hacia él).
+    const declarations = graph.declarations
+      .filter((d) => !focusMode || d.from === relationsFocus || d.to === relationsFocus)
+      .sort((x, y) => nameOf(x.from).localeCompare(nameOf(y.from)) || nameOf(x.to).localeCompare(nameOf(y.to)));
     for (const { from, to, label } of declarations) {
       const li = document.createElement('li');
       const labelEl = document.createElement('span');
@@ -527,6 +594,12 @@ export function initPersonajes() {
     renderRelations();
   });
   relationsBackBtn.addEventListener('click', () => showView('directory'));
+  relationsModeFocusBtn.addEventListener('click', () => focusOn(relationsFocus));
+  relationsModeAllBtn.addEventListener('click', () => {
+    relationsMode = 'all';
+    renderRelations();
+  });
+  relationsPicker.addEventListener('change', () => focusOn(relationsPicker.value));
 
   // ---- Memorial (js/personajes/status.js) ----
   // Usa la caché del directorio, igual que el árbol.

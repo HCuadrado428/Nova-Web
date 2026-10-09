@@ -1,7 +1,7 @@
 // Lógica del árbol de relaciones (js/relations-graph.js), sin navegador.
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { buildGraph, layoutGraph } from '../js/relations-graph.js';
+import { buildGraph, focusLayout, layoutGraph, wrapLabel } from '../js/relations-graph.js';
 
 const rel = (uid, etiqueta = '') => ({ tipo: 'relacion', uid, nombre: uid, etiqueta });
 const pj = (id, bloques = [], extra = {}) => ({ id, data: { nombre: id.toUpperCase(), bloques, ...extra } });
@@ -155,5 +155,88 @@ describe('layoutGraph', () => {
     const { positions, width, height } = layoutGraph({ nodes: [], edges: [] });
     assert.equal(positions.size, 0);
     assert.ok(width > 0 && height > 0);
+  });
+});
+
+describe('focusLayout (vista por personaje)', () => {
+  // Kira con cinco relaciones; Zed además conoce a Nyx.
+  const graph = buildGraph([
+    pj('kira', [
+      rel('zed', 'hermano'),
+      rel('ash', 'rival'),
+      rel('bo', 'amiga'),
+      rel('cy', 'mentor'),
+      rel('dee', 'socia'),
+    ]),
+    pj('zed', [rel('kira', 'hermana'), rel('nyx', 'pareja')]),
+    pj('ash'),
+    pj('bo'),
+    pj('cy'),
+    pj('dee'),
+    pj('nyx'),
+  ]);
+
+  test('el elegido en el centro y solo sus relaciones alrededor', () => {
+    const view = focusLayout(graph, 'kira');
+    assert.deepEqual(
+      view.nodes.map((n) => n.id),
+      ['kira', 'ash', 'bo', 'cy', 'dee', 'zed'],
+    );
+    assert.ok(view.nodes[0].center);
+    assert.ok(view.edges.every((e) => e.a === 'kira'));
+    assert.equal(view.positions.has('nyx'), false);
+  });
+
+  test('todos a la misma distancia del centro, sin amontonarse', () => {
+    const view = focusLayout(graph, 'kira');
+    const c = view.positions.get('kira');
+    const ring = view.nodes.slice(1).map((n) => view.positions.get(n.id));
+    const radii = ring.map((p) => Math.hypot(p.x - c.x, p.y - c.y));
+    for (const r of radii) assert.ok(Math.abs(r - radii[0]) < 1e-6);
+    for (let i = 0; i < ring.length; i++) {
+      for (let j = i + 1; j < ring.length; j++) {
+        assert.ok(Math.hypot(ring[i].x - ring[j].x, ring[i].y - ring[j].y) > 100);
+      }
+    }
+  });
+
+  test('la relación va con cada nombre: primero lo que dice el del centro', () => {
+    const zed = focusLayout(graph, 'kira').nodes.find((n) => n.id === 'zed');
+    assert.deepEqual(zed.caption, ['hermano', 'hermana']);
+    assert.equal(zed.more, 1); // además conoce a Nyx
+    const kira = focusLayout(graph, 'zed').nodes.find((n) => n.id === 'kira');
+    assert.deepEqual(kira.caption, ['hermana', 'hermano']);
+    assert.equal(kira.more, 4);
+  });
+
+  test('en la mitad de arriba el texto va encima, para que la línea al centro no lo cruce', () => {
+    const view = focusLayout(graph, 'kira');
+    const c = view.positions.get('kira');
+    for (const n of view.nodes.slice(1)) {
+      const radius = Math.hypot(n.x - c.x, n.y - c.y);
+      assert.equal(n.above, (n.y - c.y) / radius < -0.35, n.id); // bien arriba: no los de los lados
+    }
+  });
+
+  test('todo cabe en el lienzo', () => {
+    const view = focusLayout(graph, 'kira');
+    for (const p of view.positions.values()) {
+      assert.ok(p.x > 0 && p.x < view.width && p.y > 0 && p.y < view.height);
+    }
+  });
+
+  test('un personaje que no está en el árbol: null', () => {
+    assert.equal(focusLayout(graph, 'nadie'), null);
+  });
+});
+
+describe('wrapLabel', () => {
+  test('corta por palabras y parte las palabras larguísimas', () => {
+    assert.deepEqual(wrapLabel('hermano'), ['hermano']);
+    assert.deepEqual(wrapLabel('Lo sigue a todas partes (son amigos...?)'), [
+      'Lo sigue a todas partes',
+      '(son amigos...?)',
+    ]);
+    assert.deepEqual(wrapLabel('a'.repeat(30)), ['a'.repeat(26), 'aaaa']);
   });
 });

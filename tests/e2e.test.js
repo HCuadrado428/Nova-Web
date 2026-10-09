@@ -886,10 +886,12 @@ describe('Personajes', () => {
     assert.equal(await editor.inputValue(), 'Segunda versión'); // no se ha perdido
 
     await bob.locator('.personajes-comment-edit-actions button', { hasText: 'Guardar' }).click();
-    // Ya había 3 comentarios antes de guardar: hay que esperar a que llegue la edición.
+    // Ya había 3 comentarios antes de guardar: hay que esperar a que llegue la
+    // edición, ya confirmada por el servidor (hasta entonces la hora de la
+    // edición está pendiente y aún no sale "(editado)").
     await bob.waitForFunction(() =>
       [...document.querySelectorAll('.personajes-comment-text')].some((el) =>
-        el.textContent.includes('Segunda versión'),
+        el.textContent.includes('Segunda versión (editado)'),
       ),
     );
     const textos = await commentTexts(bob);
@@ -952,10 +954,15 @@ describe('Personajes', () => {
     await page.click('#personajes-relations-btn');
     await page.locator('#personajes-view-relations.is-active').waitFor();
 
-    // Semilla: Kira declara a Zed como "hermano".
+    // Semilla: Kira declara a Zed como "hermano". Se abre "por personaje":
+    // Kira en el centro (es la que más relaciones tiene; empata y va por nombre)
+    // y Zed al lado, con la relación bajo su nombre.
     assert.equal(await page.locator('.relations-node').count(), 2);
     assert.equal(await page.locator('.relations-edge').count(), 1);
-    assert.equal(await text(page, '.relations-edge-label'), 'hermano');
+    assert.equal(await page.locator('.relations-node.is-center').getAttribute('aria-label'), 'Ver el perfil de Kira');
+    assert.equal(await text(page, '.relations-node[data-id="zed"] .relations-node-caption'), 'hermano');
+    assert.equal(await page.locator('#personajes-relations-picker').inputValue(), 'kira');
+    assert.equal(await text(page, '#personajes-relations-list-title'), 'Relaciones de Kira');
     assert.equal(await text(page, '.relations-list li'), 'Kira → hermano → Zed');
     assert.ok(await page.locator('#personajes-relations-empty').isHidden()); // todos tienen relación
 
@@ -987,6 +994,16 @@ describe('Personajes', () => {
     await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
     await page.mouse.wheel(0, 200);
     assert.equal(await viewBox(), initialViewBox);
+    // Bajar la página ha podido mover el árbol (con desplazamiento suave): se
+    // espera a que pare y se vuelve a poner el ratón encima.
+    let moved = await page.locator('.relations-graph').boundingBox();
+    for (let i = 0; i < 20; i++) {
+      await sleep(100);
+      const now = await page.locator('.relations-graph').boundingBox();
+      if (now.y === moved.y) break;
+      moved = now;
+    }
+    await page.mouse.move(moved.x + moved.width / 2, moved.y + moved.height / 2);
     await page.mouse.wheel(0, -200);
     await page.waitForFunction(
       (vb) => document.querySelector('.relations-graph').getAttribute('viewBox') !== vb,
@@ -995,7 +1012,17 @@ describe('Personajes', () => {
     assert.ok((await size()) < Number(initialViewBox.split(' ')[2]));
     await page.click('.relations-zoom-reset');
 
-    // Pulsar un personaje del árbol abre su perfil.
+    // "Todos": el árbol entero, con la etiqueta sobre la línea.
+    await page.click('#personajes-relations-mode-all');
+    assert.equal(await page.locator('.relations-graph.is-focus').count(), 0);
+    assert.equal(await text(page, '.relations-edge-label'), 'hermano');
+    assert.ok(await page.locator('#personajes-relations-picker').isHidden());
+    await page.click('#personajes-relations-mode-focus');
+
+    // Pulsar a alguien del círculo lo pone en el centro; pulsar al del centro abre su perfil.
+    await page.locator('.relations-node[aria-label="Ver las relaciones de Zed"]').click();
+    await page.locator('.relations-node.is-center[data-id="zed"]').waitFor();
+    assert.equal(await page.locator('#personajes-relations-picker').inputValue(), 'zed');
     await page.locator('.relations-node[aria-label="Ver el perfil de Zed"]').click();
     await page.waitForFunction(() => document.getElementById('personajes-profile-name').textContent === 'Zed');
     assert.deepEqual(page.errors, []);

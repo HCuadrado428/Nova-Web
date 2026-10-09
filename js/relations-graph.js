@@ -318,6 +318,101 @@ export function layoutGraph(graph, { iterations = 300, spacing = 140, aspect = 1
   return { positions: pos, width: width + margin * 2, height: y + rowH + margin * 2 };
 }
 
+// Corta una etiqueta en líneas de como mucho "max" letras (por palabras; una
+// palabra más larga se parte).
+export function wrapLabel(text, max = 26) {
+  const lines = [];
+  let line = '';
+  for (const word of text.split(/\s+/).filter(Boolean)) {
+    const chars = [...word];
+    const parts = [];
+    for (let i = 0; i < chars.length; i += max) parts.push(chars.slice(i, i + max).join(''));
+    for (const part of parts) {
+      if (!line) line = part;
+      else if ([...line].length + 1 + [...part].length <= max) line += ` ${part}`;
+      else {
+        lines.push(line);
+        line = part;
+      }
+    }
+  }
+  if (line) lines.push(line);
+  return lines;
+}
+
+// Vista "por personaje": el elegido en el centro y cada persona con la que
+// tiene relación en un círculo alrededor, con la relación escrita debajo de
+// su nombre (o encima, en la mitad de arriba, para que la línea al centro no
+// la cruce). Solo hay líneas del centro hacia fuera, así que no se cruzan.
+// Devuelve null si el personaje no está en el árbol; si no,
+// { positions, width, height, nodes, edges }, donde cada nodo lleva además
+// center, caption (líneas de texto), above (texto encima) y more (cuántas
+// relaciones más tiene, aparte de la del centro).
+export function focusLayout(graph, focusId, { r = 30 } = {}) {
+  const byId = new Map(graph.nodes.map((node) => [node.id, node]));
+  const center = byId.get(focusId);
+  if (!center) return null;
+  const degree = new Map();
+  for (const e of graph.edges) {
+    degree.set(e.a, (degree.get(e.a) || 0) + 1);
+    degree.set(e.b, (degree.get(e.b) || 0) + 1);
+  }
+  // Primero lo que dice el del centro de cada uno; luego lo que dice el otro.
+  const said = (from, to) => graph.declarations.filter((d) => d.from === from && d.to === to && d.label);
+  const neighbors = graph.edges
+    .filter((e) => e.a === focusId || e.b === focusId)
+    .map((e) => byId.get(e.a === focusId ? e.b : e.a))
+    .sort((x, y) => x.name.localeCompare(y.name) || x.id.localeCompare(y.id))
+    .map((node) => {
+      const labels = [...new Set([...said(focusId, node.id), ...said(node.id, focusId)].map((d) => d.label))];
+      const caption = labels.flatMap((label) => wrapLabel(label));
+      const w = Math.max(2 * r + 10, [...node.name].length * 13, ...caption.map((l) => [...l].length * 7.5));
+      return { ...node, caption, w, more: (degree.get(node.id) || 1) - 1 };
+    });
+
+  const LINE = 16;
+  const n = neighbors.length;
+  // Radio: que quepan todos en la vuelta, con hueco entre uno y otro.
+  const radius = Math.max(n <= 2 ? 220 : 200, neighbors.reduce((sum, node) => sum + node.w + 30, 0) / (2 * Math.PI));
+  const nodes = [
+    { ...center, center: true, caption: [], above: false, more: 0, x: 0, y: 0, w: [...center.name].length * 13 },
+  ];
+  neighbors.forEach((node, i) => {
+    // Uno: a la derecha; dos: a los lados; más: en círculo empezando arriba.
+    const angle = n === 1 ? 0 : n === 2 ? i * Math.PI : -Math.PI / 2 + (2 * Math.PI * i) / n;
+    const x = Math.cos(angle) * radius;
+    const y = Math.sin(angle) * radius;
+    nodes.push({ ...node, center: false, above: Math.sin(angle) < -0.35, x, y });
+  });
+
+  // Encuadre, contando nombres y textos.
+  const margin = 30;
+  const boxes = nodes.map((node) => {
+    const text = 26 + node.caption.length * LINE;
+    return {
+      left: node.x - Math.max(node.w, 2 * r) / 2,
+      right: node.x + Math.max(node.w, 2 * r) / 2,
+      top: node.y - r - (node.above ? text : 0),
+      bottom: node.y + r + (node.above ? 0 : text),
+    };
+  });
+  const minX = Math.min(...boxes.map((b) => b.left));
+  const minY = Math.min(...boxes.map((b) => b.top));
+  const positions = new Map();
+  for (const node of nodes) {
+    node.x += margin - minX;
+    node.y += margin - minY;
+    positions.set(node.id, { x: node.x, y: node.y });
+  }
+  return {
+    positions,
+    width: Math.max(...boxes.map((b) => b.right)) - minX + 2 * margin,
+    height: Math.max(...boxes.map((b) => b.bottom)) - minY + 2 * margin,
+    nodes,
+    edges: neighbors.map((node) => ({ a: focusId, b: node.id, labels: [] })),
+  };
+}
+
 function svgEl(name, attrs = {}) {
   const el = document.createElementNS(SVG_NS, name);
   for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
@@ -332,7 +427,9 @@ export function renderRelationsGraph(
   graph,
   {
     onSelect,
-    nodeLabel = (name) => name,
+    focus = null, // id: vista "por personaje" centrada en él (ver focusLayout)
+    onFocus, // focus: se llama al pulsar a alguien que no es el del centro
+    nodeLabel = (name) => name, // (nombre, 'profile' | 'focus'): qué hace pulsarlo
     nodeColor = () => null, // color del borde (p.ej. el de su facción); null = el de siempre
     zoomLabels = { in: '+', out: '−', reset: '1:1' },
   } = {},
@@ -340,8 +437,10 @@ export function renderRelationsGraph(
   container.innerHTML = '';
   if (!graph.nodes.length) return;
   const r = 30;
+  const view = focus ? focusLayout(graph, focus, { r }) : null;
+  if (view) graph = { ...graph, nodes: view.nodes, edges: view.edges };
 
-  const svg = svgEl('svg', { class: 'relations-graph', role: 'group' });
+  const svg = svgEl('svg', { class: `relations-graph${view ? ' is-focus' : ''}`, role: 'group' });
   const edgesLayer = svgEl('g', { class: 'relations-edges' });
   const labelsLayer = svgEl('g', { class: 'relations-edge-labels' });
   const nodesLayer = svgEl('g', { class: 'relations-nodes' });
@@ -350,7 +449,7 @@ export function renderRelationsGraph(
   // y la forma de la caja, que decide si el dibujo sale apaisado o alargado.
   container.append(svg);
   const aspect = svg.clientWidth && svg.clientHeight ? svg.clientWidth / svg.clientHeight : undefined;
-  const { positions, width, height } = layoutGraph(graph, { aspect });
+  const { positions, width, height } = view || layoutGraph(graph, { aspect });
   svg.setAttribute('viewBox', `0 0 ${Math.round(width)} ${Math.round(height)}`);
 
   for (const edge of graph.edges) {
@@ -369,9 +468,10 @@ export function renderRelationsGraph(
       transform: `translate(${x} ${y})`,
       tabindex: '0',
       role: 'button',
-      'aria-label': nodeLabel(node.name),
+      'aria-label': nodeLabel(node.name, view && !node.center ? 'focus' : 'profile'),
     });
     g.dataset.id = node.id;
+    if (node.center) g.classList.add('is-center');
     if (node.estado) g.dataset.estado = node.estado; // el CSS pone en gris a los caídos
     const color = nodeColor(node);
     if (color) g.style.setProperty('--node-color', color);
@@ -397,11 +497,32 @@ export function renderRelationsGraph(
       g.append(initial);
     }
     g.append(svgEl('circle', { r, class: 'relations-node-ring' }));
-    const name = svgEl('text', { y: r + 18, class: 'relations-node-name', 'text-anchor': 'middle' });
+    // Nombre y, en la vista por personaje, la relación (encima o debajo).
+    const caption = node.caption || [];
+    const LINE = 16;
+    const nameY = node.above ? -r - 12 - caption.length * LINE : r + 18;
+    const name = svgEl('text', { y: nameY, class: 'relations-node-name', 'text-anchor': 'middle' });
     name.textContent = node.name;
     g.append(name);
+    caption.forEach((line, j) => {
+      const text = svgEl('text', {
+        y: nameY + 18 + j * LINE,
+        class: 'relations-node-caption',
+        'text-anchor': 'middle',
+      });
+      text.textContent = line;
+      g.append(text);
+    });
+    // Cuántas relaciones más tiene: invita a pulsarlo para verlas.
+    if (node.more > 0) {
+      const badge = svgEl('g', { class: 'relations-node-more', transform: `translate(${r * 0.75} ${-r * 0.75})` });
+      const label = svgEl('text', { 'text-anchor': 'middle', dy: '0.35em' });
+      label.textContent = `+${node.more}`;
+      badge.append(svgEl('circle', { r: 12 }), label);
+      g.append(badge);
+    }
 
-    const select = () => onSelect?.(node.id);
+    const select = () => (view && !node.center ? onFocus?.(node.id) : onSelect?.(node.id));
     g.addEventListener('click', select);
     g.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {

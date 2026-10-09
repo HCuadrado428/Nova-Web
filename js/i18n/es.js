@@ -239,7 +239,15 @@ export default {
   'chron.deleteError': 'No se pudo borrar la entrada.',
   'chron.loadError': 'No se pudo cargar la crónica.',
   'pj.treeTitle': 'RELACIONES',
-  'pj.treeHint': 'Pulsa un personaje para ver su perfil. Para acercar: botones + / −, pellizco o la rueda del ratón.',
+  'pj.treeHint':
+    'Pulsa a alguien del círculo para ver sus relaciones, o al del centro para abrir su perfil. El +3 indica cuántas relaciones más tiene.',
+  'pj.treeHintAll':
+    'Pulsa un personaje para ver su perfil. Para acercar: botones + / −, pellizco o la rueda del ratón.',
+  'pj.treeModeFocus': 'Por personaje',
+  'pj.treeModeAll': 'Todos',
+  'pj.treeFocusPick': 'Ver las relaciones de',
+  'pj.treeFocusLabel': 'Ver las relaciones de {name}',
+  'pj.treeListTitleFocus': 'Relaciones de {name}',
   'pj.treeZoomIn': 'Acercar',
   'pj.treeZoomOut': 'Alejar',
   'pj.treeZoomReset': 'Quitar el zoom',

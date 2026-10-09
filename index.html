@@ -388,7 +388,17 @@
       <div class="personajes-view" id="personajes-view-relations">
         <button class="lore-nav-btn" id="personajes-relations-back-btn" type="button" data-i18n="pj.backToDirectory">← Directorio</button>
         <h2 class="rules-title glitch" data-text="RELACIONES" data-i18n="pj.treeTitle">RELACIONES</h2>
-        <p class="personajes-field-hint relations-hint" id="personajes-relations-hint" data-i18n="pj.treeHint">Pulsa un personaje para ver su perfil. Para acercar: botones + / −, pellizco o la rueda del ratón.</p>
+        <div class="relations-toolbar" id="personajes-relations-toolbar">
+          <div class="relations-modes">
+            <button class="rules-switch-btn is-active" id="personajes-relations-mode-focus" type="button" data-i18n="pj.treeModeFocus">Por personaje</button>
+            <button class="rules-switch-btn" id="personajes-relations-mode-all" type="button" data-i18n="pj.treeModeAll">Todos</button>
+          </div>
+          <label class="relations-picker-label" id="personajes-relations-picker-label">
+            <span data-i18n="pj.treeFocusPick">Ver las relaciones de</span>
+            <select class="personajes-input relations-picker" id="personajes-relations-picker"></select>
+          </label>
+        </div>
+        <p class="personajes-field-hint relations-hint" id="personajes-relations-hint" data-i18n="pj.treeHint">Pulsa a alguien del círculo para ver sus relaciones, o al del centro para abrir su perfil. El +3 indica cuántas relaciones más tiene.</p>
         <div class="relations-graph-wrap" id="personajes-relations-graph"></div>
         <ul class="relations-legend" id="personajes-relations-legend" aria-label="Facciones" data-i18n-attr="aria-label:pj.treeLegendLabel" hidden></ul>
         <p class="personajes-empty" id="personajes-relations-empty" hidden></p>
