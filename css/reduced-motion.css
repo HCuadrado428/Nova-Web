@@ -6,6 +6,9 @@
   .intro-glitch-bars {
     display: none;
   }
+  .lore-upcoming-static {
+    animation: none;
+  }
   .glitch::before,
   .glitch::after {
     display: none;

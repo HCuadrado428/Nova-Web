@@ -54,6 +54,9 @@ export default {
   'lore.prev': '← Anterior',
   'lore.next': 'Siguiente →',
   'lore.backToStart': 'Volver al inicio',
+  'lore.upcoming': 'Próxima emisión',
+  'lore.upcomingIn': 'Se emite en {time}',
+  'lore.upcomingProgress': 'En espera',
   // ---- Normas (admiten <strong>) ----
   'rules.tabObjetos': 'Objetos',
   'rules.discord.title': 'NORMAS · DISCORD',

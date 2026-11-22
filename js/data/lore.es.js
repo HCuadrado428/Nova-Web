@@ -19,6 +19,11 @@
        (poster opcional: imagen que se ve antes de darle a play)
      { type: 'reveal', src: '...', text: '...' }     -> foto + texto enorme,
                                                          temblando y glitcheado
+   Cualquier pase puede llevar además emisionEn: '2026-12-01T20:00:00Z'
+   (en UTC, terminada en Z). Hasta esa hora, ese pase y los que vienen
+   detrás no se ven: en su sitio sale una pantalla de estática con la cuenta
+   atrás de la "próxima emisión" (js/lore-schedule.js). Pon la misma fecha
+   en el mismo pase de lore.en.js y lore.pt.js (el test lo comprueba).
    Un párrafo puede ser un string normal (se pinta como HTML, así que vale
    un <br> para saltar de línea), o un objeto
    { text, emphasis: true } para destacarlo (rojo, más grande).

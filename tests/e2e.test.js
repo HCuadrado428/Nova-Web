@@ -123,6 +123,7 @@ async function openPage({
   locale = 'es-ES', // idioma del navegador: decide el idioma inicial de la web
   timezoneId = 'Europe/Madrid', // zona horaria del navegador
   now = null, // fecha falsa del navegador (el reloj sigue corriendo desde ahí)
+  scripts = {}, // archivos JS servidos con otro contenido: { '**/ruta.js': 'código' }
 } = {}) {
   const context = await browser.newContext({
     locale,
@@ -134,6 +135,9 @@ async function openPage({
   await context.route('**/__test__/auth-helper.js', (r) =>
     r.fulfill({ contentType: 'text/javascript', body: authHelper }),
   );
+  for (const [glob, body] of Object.entries(scripts)) {
+    await context.route(glob, (r) => r.fulfill({ contentType: 'text/javascript', body }));
+  }
   if (blockFirebase) await context.route('**/vendor/firebase.js', (r) => r.abort());
   // Estado del servidor: nunca se consulta la API real desde los tests.
   await context.route('https://api.mcsrvstat.us/**', (r) =>
@@ -312,6 +316,35 @@ describe('web sin Firebase', () => {
     await page.click('#lore-back-btn');
     await sleep(CHANNEL_MS);
     assert.equal(await page.locator('video').count(), 0);
+    await page.context().close();
+  });
+
+  test('Lore por emisiones: estática con cuenta atrás y el pase aparece solo a su hora', async () => {
+    // El último pase de "Nova" (la revelación) se emite el 1 de diciembre a las 20:00 UTC.
+    const lore = readFileSync(new URL('../js/data/lore.es.js', import.meta.url), 'utf8').replace(
+      "text: 'Pero tú no eres de este lugar.'",
+      "emisionEn: '2026-12-01T20:00:00Z', text: 'Pero tú no eres de este lugar.'",
+    );
+    const page = await openPage({ now: '2026-11-30T17:59:58Z', scripts: { '**/js/data/lore.es.js': lore } });
+    await enter(page);
+    await page.click('#lore-menu-btn');
+    await page.click('#lore-nova-btn');
+    await sleep(CHANNEL_MS);
+    assert.equal(await text(page, '#lore-progress'), '1 / 9');
+    for (let i = 0; i < 9; i++) await page.keyboard.press('ArrowRight');
+    assert.equal(await text(page, '#lore-progress'), 'En espera');
+    assert.equal(await text(page, '.lore-upcoming-label'), 'Próxima emisión');
+    assert.match(await text(page, '.lore-upcoming-timer'), /^Se emite en 1 d 0[12] h \d\d min \d\d s$/);
+    assert.equal(await text(page, '.lore-upcoming-date'), '1 dic, 20:00 UTC · En tu hora: 1 dic, 21:00 CET');
+    assert.equal(await text(page, '#lore-next-btn'), 'Volver al inicio');
+    assert.equal(await page.locator('.lore-slide-reveal').count(), 0);
+
+    // Llega la hora con la estática en pantalla: la revelación ocupa su sitio.
+    await page.clock.fastForward('26:00:05');
+    await page.locator('.lore-slide-reveal').waitFor();
+    assert.equal(await text(page, '#lore-progress'), '10 / 10');
+    assert.equal(await page.locator('.lore-slide-upcoming').count(), 0);
+    assert.deepEqual(page.errors, []);
     await page.context().close();
   });
 

@@ -7,6 +7,7 @@ import { duckStaticAudio, restoreStaticAudio, playStingerNow } from './audio.js'
 import { channelSwitch, closeMenuToggle, isView, setView } from './views.js';
 import { isTypingOrMediaTarget } from './utils.js';
 import { getLanguage, t } from './i18n.js';
+import { airedTrack, formatRemaining } from './lore-schedule.js';
 
 function buildLoreSlideElement(slide) {
   const el = document.createElement('div');
@@ -77,6 +78,33 @@ function buildLoreSlideElement(slide) {
   return el;
 }
 
+// Pantalla de estática que ocupa el sitio del siguiente pase mientras no se
+// ha emitido (ver js/lore-schedule.js). La cuenta atrás la rellena initLore.
+function buildUpcomingSlideElement() {
+  const el = document.createElement('div');
+  el.className = 'lore-slide lore-slide-upcoming';
+  const label = t('lore.upcoming');
+  el.innerHTML = `
+    <div class="lore-upcoming-static" aria-hidden="true"></div>
+    <p class="lore-upcoming-label glitch"></p>
+    <p class="lore-upcoming-timer" role="timer"></p>
+    <p class="lore-upcoming-date"></p>`;
+  const labelEl = el.querySelector('.lore-upcoming-label');
+  labelEl.textContent = label;
+  labelEl.dataset.text = label;
+  return el;
+}
+
+// "1 dic, 20:00 UTC · En tu hora: 1 dic, 21:00 CET" (igual que la cuenta
+// atrás de los eventos).
+function formatAirDate(ms) {
+  const base = { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' };
+  const date = new Date(ms);
+  const utc = new Intl.DateTimeFormat(getLanguage(), { ...base, timeZone: 'UTC' }).format(date);
+  const local = new Intl.DateTimeFormat(getLanguage(), { ...base, timeZoneName: 'short' }).format(date);
+  return t('countdown.date', { utc, local });
+}
+
 export function initLore() {
   const antesBtn = document.getElementById('lore-antes-btn');
   const novaBtn = document.getElementById('lore-nova-btn');
@@ -91,19 +119,48 @@ export function initLore() {
 
   // El Lore del idioma actual (el español si faltara alguno).
   const tracks = () => LORE_BY_LANGUAGE[getLanguage()] || LORE_BY_LANGUAGE.es;
-  let currentTrack = tracks().nova;
+  let currentKey = 'nova';
   let currentSlide = 0;
+  // Lo que se ve de la pista: los pases ya emitidos y, si queda alguno por
+  // emitir, la fecha del siguiente (que se pinta como un pase más al final).
+  let currentTrack = [];
+  let nextAir = null;
+  let upcomingTimer = null;
+  const lastIndex = () => currentTrack.length - (nextAir === null ? 1 : 0);
+
+  const tickUpcoming = (timerEl) => {
+    clearTimeout(upcomingTimer);
+    const left = nextAir - Date.now();
+    if (left <= 0) {
+      // Ya se ha emitido: el pase nuevo ocupa el sitio de la estática.
+      renderSlide(currentSlide);
+      return;
+    }
+    timerEl.textContent = t('lore.upcomingIn', { time: formatRemaining(left) });
+    // Al siguiente cambio de segundo (no cada 1000 ms fijos, que se desfasa).
+    upcomingTimer = setTimeout(() => tickUpcoming(timerEl), (left % 1000) + 20);
+  };
 
   const renderSlide = (index) => {
+    clearTimeout(upcomingTimer);
     restoreStaticAudio(); // por si se cambia de pase con un vídeo aún sonando
+    ({ slides: currentTrack, next: nextAir } = airedTrack(tracks()[currentKey], Date.now()));
     loreSlidesEl.innerHTML = '';
-    loreSlidesEl.appendChild(buildLoreSlideElement(currentTrack[index]));
 
-    if (currentTrack[index].type === 'reveal') playStingerNow(0.16);
+    if (index >= currentTrack.length) {
+      const el = buildUpcomingSlideElement();
+      el.querySelector('.lore-upcoming-date').textContent = formatAirDate(nextAir);
+      loreSlidesEl.appendChild(el);
+      tickUpcoming(el.querySelector('.lore-upcoming-timer'));
+      progressEl.textContent = t('lore.upcomingProgress');
+    } else {
+      loreSlidesEl.appendChild(buildLoreSlideElement(currentTrack[index]));
+      if (currentTrack[index].type === 'reveal') playStingerNow(0.16);
+      progressEl.textContent = `${index + 1} / ${currentTrack.length}`;
+    }
 
     prevBtn.classList.toggle('is-hidden', index === 0);
-    nextBtn.textContent = index === currentTrack.length - 1 ? t('lore.backToStart') : t('lore.next');
-    progressEl.textContent = `${index + 1} / ${currentTrack.length}`;
+    nextBtn.textContent = index === lastIndex() ? t('lore.backToStart') : t('lore.next');
 
     lorePage.scrollTop = 0;
   };
@@ -114,11 +171,12 @@ export function initLore() {
   const switchTo = (showLore, trackKey) =>
     channelSwitch(() => {
       if (showLore) {
-        currentTrack = tracks()[trackKey];
+        currentKey = trackKey;
         currentSlide = 0;
         renderSlide(currentSlide);
         setView('lore');
       } else {
+        clearTimeout(upcomingTimer);
         loreSlidesEl.innerHTML = ''; // corta el vídeo si seguía sonando
         restoreStaticAudio();
         setView('home');
@@ -126,7 +184,7 @@ export function initLore() {
     });
 
   const goNext = () => {
-    if (currentSlide >= currentTrack.length - 1) {
+    if (currentSlide >= lastIndex()) {
       switchTo(false);
       return;
     }

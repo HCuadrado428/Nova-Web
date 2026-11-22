@@ -56,6 +56,7 @@ describe('Lore', () => {
           poster: s.poster,
           heading: s.heading,
           centered: s.centered,
+          emisionEn: s.emisionEn,
           hasAlt: !!s.alt,
           hasText: !!s.text,
           paragraphs: s.paragraphs?.map((p) => (typeof p === 'string' ? 'normal' : 'destacado')),
