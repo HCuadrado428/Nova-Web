@@ -6,6 +6,10 @@
   .intro-glitch-bars {
     display: none;
   }
+  .lore-upcoming-static,
+  .lore-slide .is-typing::after {
+    animation: none;
+  }
   .glitch::before,
   .glitch::after {
     display: none;

@@ -6,7 +6,8 @@ import { LORE_BY_LANGUAGE } from './data/lore.js';
 import { duckStaticAudio, restoreStaticAudio, playStingerNow } from './audio.js';
 import { channelSwitch, closeMenuToggle, isView, setView } from './views.js';
 import { isTypingOrMediaTarget } from './utils.js';
-import { getLanguage, t } from './i18n.js';
+import { getLanguage, onLanguageChange, t } from './i18n.js';
+import { airedTrack, formatRemaining } from './lore-schedule.js';
 
 function buildLoreSlideElement(slide) {
   const el = document.createElement('div');
@@ -60,6 +61,21 @@ function buildLoreSlideElement(slide) {
     p.textContent = slide.text;
     el.appendChild(img);
     el.appendChild(p);
+  } else if (slide.type === 'chat') {
+    // Conversación: cada línea en el color de quien habla (ver lore.es.js).
+    el.classList.add('lore-slide-chat');
+    for (const line of slide.lines) {
+      const p = document.createElement('p');
+      p.className = `lore-chat-line lore-chat-${line.who}`;
+      p.textContent = line.text;
+      el.appendChild(p);
+    }
+    if (slide.note) {
+      const note = document.createElement('p');
+      note.className = 'lore-chat-note';
+      note.textContent = slide.note;
+      el.appendChild(note);
+    }
   } else {
     el.classList.add('lore-slide-text');
     if (slide.centered) el.classList.add('is-centered');
@@ -77,6 +93,92 @@ function buildLoreSlideElement(slide) {
   return el;
 }
 
+// Pantalla de estática que ocupa el sitio del siguiente pase mientras no se
+// ha emitido (ver js/lore-schedule.js). La cuenta atrás la rellena initLore.
+function buildUpcomingSlideElement() {
+  const el = document.createElement('div');
+  el.className = 'lore-slide lore-slide-upcoming';
+  const label = t('lore.upcoming');
+  el.innerHTML = `
+    <div class="lore-upcoming-static" aria-hidden="true"></div>
+    <p class="lore-upcoming-label glitch"></p>
+    <p class="lore-upcoming-timer" role="timer"></p>
+    <p class="lore-upcoming-date"></p>`;
+  const labelEl = el.querySelector('.lore-upcoming-label');
+  labelEl.textContent = label;
+  labelEl.dataset.text = label;
+  return el;
+}
+
+// "1 dic, 20:00 UTC · En tu hora: 1 dic, 21:00 CET" (igual que la cuenta
+// atrás de los eventos).
+function formatAirDate(ms) {
+  const base = { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' };
+  const date = new Date(ms);
+  const utc = new Intl.DateTimeFormat(getLanguage(), { ...base, timeZone: 'UTC' }).format(date);
+  const local = new Intl.DateTimeFormat(getLanguage(), { ...base, timeZoneName: 'short' }).format(date);
+  return t('countdown.date', { utc, local });
+}
+
+// Efecto "alguien lo está escribiendo" (pases con typed: true y todas las
+// conversaciones): los elementos se escriben uno detrás de otro, letra a
+// letra, con un cursor que parpadea; el cursor se queda en el último.
+// Con "reducir movimiento" sale todo escrito de golpe.
+const TYPE_MS = 32; // por letra
+const TYPE_PAUSE_MS = 450; // entre una línea y la siguiente
+const TYPE_START_MS = 700; // espera inicial: que acabe la transición de canal
+
+function typeOut(elements) {
+  const items = elements.map((el) => ({ el, text: el.textContent }));
+  let timer = null;
+  let current = 0;
+  let chars = 0;
+  const setCursor = (el) => {
+    for (const { el: other } of items) other.classList.toggle('is-typing', other === el);
+  };
+  const finish = () => {
+    clearTimeout(timer);
+    for (const { el, text } of items) {
+      el.hidden = false;
+      el.textContent = text;
+    }
+    setCursor(items.at(-1)?.el);
+    current = items.length;
+  };
+  const step = () => {
+    const item = items[current];
+    if (!item) return;
+    item.el.hidden = false;
+    setCursor(item.el);
+    chars += 1;
+    item.el.textContent = item.text.slice(0, chars);
+    if (chars < item.text.length) {
+      timer = setTimeout(step, TYPE_MS);
+      return;
+    }
+    current += 1;
+    chars = 0;
+    if (current < items.length) timer = setTimeout(step, TYPE_PAUSE_MS);
+  };
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    finish();
+  } else {
+    for (const { el } of items) {
+      el.textContent = '';
+      el.hidden = true;
+    }
+    timer = setTimeout(step, TYPE_START_MS);
+  }
+  return {
+    isTyping: () => current < items.length,
+    finish,
+    cancel: () => clearTimeout(timer),
+  };
+}
+
+// Nombre del botón de cada pista con fecha (data-track en el HTML) una vez emitida.
+const TRACK_LABELS = { templos: () => t('menu.loreTemplos') };
+
 export function initLore() {
   const antesBtn = document.getElementById('lore-antes-btn');
   const novaBtn = document.getElementById('lore-nova-btn');
@@ -91,19 +193,59 @@ export function initLore() {
 
   // El Lore del idioma actual (el español si faltara alguno).
   const tracks = () => LORE_BY_LANGUAGE[getLanguage()] || LORE_BY_LANGUAGE.es;
-  let currentTrack = tracks().nova;
+  let currentKey = 'nova';
   let currentSlide = 0;
+  // Lo que se ve de la pista: los pases ya emitidos y, si queda alguno por
+  // emitir, la fecha del siguiente (que se pinta como un pase más al final).
+  let currentTrack = [];
+  let nextAir = null;
+  let upcomingTimer = null;
+  let typing = null; // el efecto de escritura del pase actual, si lo tiene
+  const stopTyping = () => {
+    typing?.cancel();
+    typing = null;
+  };
+  const lastIndex = () => currentTrack.length - (nextAir === null ? 1 : 0);
+
+  const tickUpcoming = (timerEl) => {
+    clearTimeout(upcomingTimer);
+    const left = nextAir - Date.now();
+    if (left <= 0) {
+      // Ya se ha emitido: el pase nuevo ocupa el sitio de la estática.
+      renderSlide(currentSlide);
+      return;
+    }
+    timerEl.textContent = t('lore.upcomingIn', { time: formatRemaining(left) });
+    // Al siguiente cambio de segundo (no cada 1000 ms fijos, que se desfasa).
+    upcomingTimer = setTimeout(() => tickUpcoming(timerEl), (left % 1000) + 20);
+  };
 
   const renderSlide = (index) => {
+    clearTimeout(upcomingTimer);
+    stopTyping();
     restoreStaticAudio(); // por si se cambia de pase con un vídeo aún sonando
+    ({ slides: currentTrack, next: nextAir } = airedTrack(tracks()[currentKey], Date.now()));
     loreSlidesEl.innerHTML = '';
-    loreSlidesEl.appendChild(buildLoreSlideElement(currentTrack[index]));
 
-    if (currentTrack[index].type === 'reveal') playStingerNow(0.16);
+    if (index >= currentTrack.length) {
+      const el = buildUpcomingSlideElement();
+      el.querySelector('.lore-upcoming-date').textContent = formatAirDate(nextAir);
+      loreSlidesEl.appendChild(el);
+      tickUpcoming(el.querySelector('.lore-upcoming-timer'));
+      progressEl.textContent = t('lore.upcomingProgress');
+    } else {
+      const slide = currentTrack[index];
+      const el = buildLoreSlideElement(slide);
+      loreSlidesEl.appendChild(el);
+      if (slide.type === 'reveal') playStingerNow(0.16);
+      if (slide.type === 'chat' || slide.typed) {
+        typing = typeOut([...el.querySelectorAll('.lore-chat-line, .lore-chat-note, .lore-paragraph')]);
+      }
+      progressEl.textContent = `${index + 1} / ${currentTrack.length}`;
+    }
 
     prevBtn.classList.toggle('is-hidden', index === 0);
-    nextBtn.textContent = index === currentTrack.length - 1 ? t('lore.backToStart') : t('lore.next');
-    progressEl.textContent = `${index + 1} / ${currentTrack.length}`;
+    nextBtn.textContent = index === lastIndex() ? t('lore.backToStart') : t('lore.next');
 
     lorePage.scrollTop = 0;
   };
@@ -114,11 +256,13 @@ export function initLore() {
   const switchTo = (showLore, trackKey) =>
     channelSwitch(() => {
       if (showLore) {
-        currentTrack = tracks()[trackKey];
+        currentKey = trackKey;
         currentSlide = 0;
         renderSlide(currentSlide);
         setView('lore');
       } else {
+        clearTimeout(upcomingTimer);
+        stopTyping();
         loreSlidesEl.innerHTML = ''; // corta el vídeo si seguía sonando
         restoreStaticAudio();
         setView('home');
@@ -126,7 +270,12 @@ export function initLore() {
     });
 
   const goNext = () => {
-    if (currentSlide >= currentTrack.length - 1) {
+    // A mitad de escribir, "Siguiente" primero termina de escribir el pase.
+    if (typing?.isTyping()) {
+      typing.finish();
+      return;
+    }
+    if (currentSlide >= lastIndex()) {
       switchTo(false);
       return;
     }
@@ -149,6 +298,37 @@ export function initLore() {
     switchTo(true, 'nova');
   });
   loreBackBtn.addEventListener('click', () => switchTo(false));
+
+  // Botones de pistas con fecha de emisión (data-track, p.ej. Los 3 templos):
+  // desactivados y con la cuenta atrás hasta que se emite su primer pase.
+  for (const btn of document.querySelectorAll('#lore-submenu [data-track]')) {
+    const key = btn.dataset.track;
+    const labelEl = btn.querySelector('.lore-btn-label');
+    const countdownEl = btn.querySelector('.lore-btn-countdown');
+    let timer = null;
+    const tick = () => {
+      clearTimeout(timer);
+      const { slides, next } = airedTrack(tracks()[key], Date.now());
+      const aired = slides.length > 0;
+      btn.disabled = !aired;
+      labelEl.textContent = aired ? TRACK_LABELS[key]() : t('lore.upcoming');
+      countdownEl.hidden = aired;
+      if (aired) return;
+      const left = next - Date.now();
+      countdownEl.textContent = formatRemaining(left);
+      timer = setTimeout(tick, (left % 1000) + 20);
+    };
+    btn.addEventListener('click', () => {
+      closeMenuToggle('lore-menu-btn', 'lore-submenu');
+      switchTo(true, key);
+    });
+    onLanguageChange(tick);
+    // Al volver a la pestaña, al momento (los temporizadores van con retraso en segundo plano).
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) tick();
+    });
+    tick();
+  }
   nextBtn.addEventListener('click', goNext);
   prevBtn.addEventListener('click', goPrev);
 

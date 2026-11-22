@@ -37,6 +37,7 @@ export default {
   // ---- Menús Lore / Normas ----
   'menu.lore': 'Lore',
   'menu.loreAntes': 'Antes del Nova',
+  'menu.loreTemplos': 'Los 3 templos',
   'menu.personajes': 'Personajes',
   'menu.cronica': 'Crónica',
   'menu.rules': 'Normas',
@@ -54,6 +55,9 @@ export default {
   'lore.prev': '← Anterior',
   'lore.next': 'Siguiente →',
   'lore.backToStart': 'Volver al inicio',
+  'lore.upcoming': 'Próxima emisión',
+  'lore.upcomingIn': 'Se emite en {time}',
+  'lore.upcomingProgress': 'En espera',
   // ---- Normas (admiten <strong>) ----
   'rules.tabObjetos': 'Objetos',
   'rules.discord.title': 'NORMAS · DISCORD',

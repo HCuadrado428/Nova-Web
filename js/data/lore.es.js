@@ -19,6 +19,18 @@
        (poster opcional: imagen que se ve antes de darle a play)
      { type: 'reveal', src: '...', text: '...' }     -> foto + texto enorme,
                                                          temblando y glitcheado
+     { type: 'chat', lines: [{ who, text }], note }  -> conversación: cada
+                          línea en el color de quien habla (rojo, azul,
+                          morado o rosa); note (opcional) va al final, en
+                          gris. Se escribe letra a letra, como si alguien
+                          la estuviera tecleando.
+   Un pase de texto con typed: true también se escribe letra a letra (solo
+   para texto sin HTML).
+   Cualquier pase puede llevar además emisionEn: '2026-12-01T20:00:00Z'
+   (en UTC, terminada en Z). Hasta esa hora, ese pase y los que vienen
+   detrás no se ven: en su sitio sale una pantalla de estática con la cuenta
+   atrás de la "próxima emisión" (js/lore-schedule.js). Pon la misma fecha
+   en el mismo pase de lore.en.js y lore.pt.js (el test lo comprueba).
    Un párrafo puede ser un string normal (se pinta como HTML, así que vale
    un <br> para saltar de línea), o un objeto
    { text, emphasis: true } para destacarlo (rojo, más grande).
@@ -145,7 +157,41 @@ export const LORE_TRACK_NOVA = [
   },
 ];
 
+/* ---------------------------------------------------
+   Los 3 templos: una conversación ({ type: 'chat' }) que se emite el
+   25 nov 2026 a las 21:00 UTC. Hasta entonces, el botón del menú Lore sale
+   desactivado con la cuenta atrás (js/lore.js). Cada línea lleva quién habla
+   (rojo, azul, morado o rosa: es el color de su texto) y note es la
+   acotación final, en gris.
+--------------------------------------------------- */
+export const LORE_TRACK_TEMPLOS = [
+  {
+    type: 'chat',
+    emisionEn: '2026-11-25T21:00:00Z',
+    lines: [
+      { who: 'morado', text: 'Señores, tengo algo importante que explicaros.' },
+      { who: 'rojo', text: '¿Qué sucede?' },
+      { who: 'morado', text: 'Tengo una forma de [Censored]' },
+      { who: 'azul', text: 'Sí, claro, ¿qué más?' },
+      { who: 'rosa', text: 'Calla. Déjale hablar.' },
+      {
+        who: 'morado',
+        text: 'Hace mucho tiempo, antes de ser lo que soy… Tenía una misión. No la cumplí. Debí destruir 10 templos para proteger las gemas. Gemas capaces de [censored]',
+      },
+      { who: 'rojo', text: '¿Cuántas quedan en pie?' },
+      { who: 'morado', text: '…3.' },
+      { who: 'azul', text: '¿Y dónde están?' },
+      { who: 'morado', text: 'Fuera del límite. Lo tuve que cerrar para que no ocurrieran… Cosas peores.' },
+      { who: 'rosa', text: 'Por eso este mundo es tan cerrado…' },
+      { who: 'morado', text: 'Afirmativo. Tenéis que hacer lo siguiente…' },
+    ],
+    note: '[El resto no se transcribió de la conversación.]',
+  },
+  { type: 'text', centered: true, typed: true, paragraphs: [{ text: 'ENERO', emphasis: true }] },
+];
+
 export const LORE_TRACKS = {
   antes: LORE_TRACK_ANTES,
   nova: LORE_TRACK_NOVA,
+  templos: LORE_TRACK_TEMPLOS,
 };

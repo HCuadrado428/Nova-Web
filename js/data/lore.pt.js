@@ -129,7 +129,36 @@ export const LORE_TRACK_NOVA = [
   },
 ];
 
+/* Os 3 templos: uma conversa ({ type: 'chat' }) que vai ao ar em 25 nov 2026
+   às 21:00 UTC. Mesma estrutura e data de lore.es.js. */
+export const LORE_TRACK_TEMPLOS = [
+  {
+    type: 'chat',
+    emisionEn: '2026-11-25T21:00:00Z',
+    lines: [
+      { who: 'morado', text: 'Senhores, tenho algo importante para vos explicar.' },
+      { who: 'rojo', text: 'O que está acontecendo?' },
+      { who: 'morado', text: 'Tenho uma forma de [Censored]' },
+      { who: 'azul', text: 'Sim, claro, o que mais?' },
+      { who: 'rosa', text: 'Cala a boca. Deixa falar.' },
+      {
+        who: 'morado',
+        text: 'Há muito tempo, antes de ser o que sou… Eu tinha uma missão. Não a cumpri. Eu devia destruir 10 templos para proteger as gemas. Gemas capazes de [censored]',
+      },
+      { who: 'rojo', text: 'Quantas ainda estão de pé?' },
+      { who: 'morado', text: '…3.' },
+      { who: 'azul', text: 'E onde elas estão?' },
+      { who: 'morado', text: 'Além do limite. Tive que fechá-lo para que não acontecessem… coisas piores.' },
+      { who: 'rosa', text: 'Por isso este mundo é tão fechado…' },
+      { who: 'morado', text: 'Afirmativo. Vocês têm que fazer o seguinte…' },
+    ],
+    note: '[O resto da conversa não foi transcrito.]',
+  },
+  { type: 'text', centered: true, typed: true, paragraphs: [{ text: 'JANEIRO', emphasis: true }] },
+];
+
 export const LORE_TRACKS = {
   antes: LORE_TRACK_ANTES,
   nova: LORE_TRACK_NOVA,
+  templos: LORE_TRACK_TEMPLOS,
 };

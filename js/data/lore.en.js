@@ -124,7 +124,36 @@ export const LORE_TRACK_NOVA = [
   },
 ];
 
+/* The 3 temples: a conversation ({ type: 'chat' }) aired on 25 Nov 2026 at
+   21:00 UTC. Same structure and date as lore.es.js. */
+export const LORE_TRACK_TEMPLOS = [
+  {
+    type: 'chat',
+    emisionEn: '2026-11-25T21:00:00Z',
+    lines: [
+      { who: 'morado', text: 'Gentlemen, I have something important to explain to you.' },
+      { who: 'rojo', text: "What's going on?" },
+      { who: 'morado', text: 'I have a way to [Censored]' },
+      { who: 'azul', text: 'Yeah, sure, what else?' },
+      { who: 'rosa', text: 'Quiet. Let them speak.' },
+      {
+        who: 'morado',
+        text: "A long time ago, before I became what I am… I had a mission. I didn't fulfil it. I was supposed to destroy 10 temples to protect the gems. Gems capable of [censored]",
+      },
+      { who: 'rojo', text: 'How many are still standing?' },
+      { who: 'morado', text: '…3.' },
+      { who: 'azul', text: 'And where are they?' },
+      { who: 'morado', text: "Beyond the limit. I had to close it so that… worse things wouldn't happen." },
+      { who: 'rosa', text: "That's why this world is so closed off…" },
+      { who: 'morado', text: 'Affirmative. Here is what you have to do…' },
+    ],
+    note: '[The rest of the conversation was not transcribed.]',
+  },
+  { type: 'text', centered: true, typed: true, paragraphs: [{ text: 'JANUARY', emphasis: true }] },
+];
+
 export const LORE_TRACKS = {
   antes: LORE_TRACK_ANTES,
   nova: LORE_TRACK_NOVA,
+  templos: LORE_TRACK_TEMPLOS,
 };

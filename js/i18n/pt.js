@@ -37,6 +37,7 @@ export default {
   // ---- Menus Lore / Regras ----
   'menu.lore': 'Lore',
   'menu.loreAntes': 'Antes do Nova',
+  'menu.loreTemplos': 'Os 3 templos',
   'menu.personajes': 'Personagens',
   'menu.cronica': 'Crônica',
   'menu.rules': 'Regras',
@@ -54,6 +55,9 @@ export default {
   'lore.prev': '← Anterior',
   'lore.next': 'Próximo →',
   'lore.backToStart': 'Voltar ao início',
+  'lore.upcoming': 'Próxima transmissão',
+  'lore.upcomingIn': 'No ar em {time}',
+  'lore.upcomingProgress': 'Em espera',
   // ---- Regras (podem conter <strong>) ----
   'rules.tabObjetos': 'Itens',
   'rules.discord.title': 'REGRAS · DISCORD',

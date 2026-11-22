@@ -36,6 +36,7 @@ export default {
   // ---- Lore / Rules menus ----
   'menu.lore': 'Lore',
   'menu.loreAntes': 'Before Nova',
+  'menu.loreTemplos': 'The 3 temples',
   'menu.personajes': 'Characters',
   'menu.cronica': 'Chronicle',
   'menu.rules': 'Rules',
@@ -53,6 +54,9 @@ export default {
   'lore.prev': '← Previous',
   'lore.next': 'Next →',
   'lore.backToStart': 'Back to start',
+  'lore.upcoming': 'Next broadcast',
+  'lore.upcomingIn': 'On air in {time}',
+  'lore.upcomingProgress': 'Standby',
   // ---- Rules (may contain <strong>) ----
   'rules.tabObjetos': 'Items',
   'rules.discord.title': 'RULES · DISCORD',

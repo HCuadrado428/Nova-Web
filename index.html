@@ -158,6 +158,11 @@
     <div class="submenu" id="lore-submenu">
       <button class="lore-btn" id="lore-antes-btn" type="button" data-i18n="menu.loreAntes">Antes del Nova</button>
       <button class="lore-btn" id="lore-nova-btn" type="button">Nova</button>
+      <!-- Los 3 templos: desactivado y con la cuenta atrás hasta que se emite (js/lore.js) -->
+      <button class="lore-btn lore-btn-scheduled" id="lore-templos-btn" type="button" data-track="templos" disabled>
+        <span class="lore-btn-label"></span>
+        <span class="lore-btn-countdown" role="timer"></span>
+      </button>
       <button class="lore-btn" id="lore-personajes-btn" type="button" data-i18n="menu.personajes">Personajes</button>
       <button class="lore-btn" id="lore-cronica-btn" type="button" data-i18n="menu.cronica">Crónica</button>
     </div>
