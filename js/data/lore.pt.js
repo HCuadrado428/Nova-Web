@@ -154,7 +154,7 @@ export const LORE_TRACK_TEMPLOS = [
     ],
     note: '[O resto da conversa não foi transcrito.]',
   },
-  { type: 'text', centered: true, paragraphs: [{ text: 'JANEIRO', emphasis: true }] },
+  { type: 'text', centered: true, typed: true, paragraphs: [{ text: 'JANEIRO', emphasis: true }] },
 ];
 
 export const LORE_TRACKS = {

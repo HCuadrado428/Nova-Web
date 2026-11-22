@@ -366,6 +366,14 @@ describe('web sin Firebase', () => {
     await sleep(CHANNEL_MS);
     assert.equal(await view(page), 'lore');
     assert.equal(await text(page, '#lore-progress'), '1 / 2');
+    // Se va escribiendo: al principio solo se ve la primera línea, a medias y con el cursor.
+    await page.locator('.lore-chat-line.is-typing').waitFor();
+    assert.equal(await page.locator('.lore-chat-line:visible').count(), 1);
+    assert.notEqual(await text(page, '.lore-chat-line'), 'Señores, tengo algo importante que explicaros.');
+    // "Siguiente" a mitad de escribir termina el pase en vez de pasar al siguiente.
+    await page.click('#lore-next-btn');
+    assert.equal(await text(page, '#lore-progress'), '1 / 2');
+    assert.equal(await page.locator('.lore-chat-line:visible').count(), 12);
     assert.equal(await text(page, '.lore-chat-line'), 'Señores, tengo algo importante que explicaros.');
     const colores = await page
       .locator('.lore-chat-line')
@@ -373,7 +381,8 @@ describe('web sin Firebase', () => {
     assert.deepEqual(colores.slice(0, 5), ['morado', 'rojo', 'morado', 'azul', 'rosa']);
     assert.equal(await text(page, '.lore-chat-note'), '[El resto no se transcribió de la conversación.]');
     await page.keyboard.press('ArrowRight');
-    assert.equal(await text(page, '.lore-paragraph-emphasis'), 'ENERO');
+    await page.waitForFunction(() => document.querySelector('.lore-paragraph-emphasis')?.textContent === 'ENERO');
+    assert.equal(await page.locator('.lore-paragraph-emphasis.is-typing').count(), 1); // el cursor se queda
     assert.deepEqual(page.errors, []);
     await page.context().close();
   });

@@ -61,6 +61,7 @@ describe('Lore', () => {
           hasText: !!s.text,
           lines: s.lines?.map((l) => l.who),
           hasNote: !!s.note,
+          typed: s.typed,
           paragraphs: s.paragraphs?.map((p) => (typeof p === 'string' ? 'normal' : 'destacado')),
         })),
       ]),

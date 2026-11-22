@@ -360,3 +360,17 @@ body[data-view='lore'] .lore-page {
   font-style: italic;
   color: rgba(234, 230, 218, 0.5);
 }
+
+/* Cursor del efecto de escritura (js/lore.js, typeOut): sigue a la línea
+   que se está escribiendo y se queda parpadeando en la última */
+.lore-slide .is-typing::after {
+  content: '▌';
+  margin-left: 2px;
+  color: currentColor;
+  animation: lore-cursor-blink 1s steps(1) infinite;
+}
+@keyframes lore-cursor-blink {
+  50% {
+    opacity: 0;
+  }
+}

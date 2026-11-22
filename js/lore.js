@@ -120,6 +120,62 @@ function formatAirDate(ms) {
   return t('countdown.date', { utc, local });
 }
 
+// Efecto "alguien lo está escribiendo" (pases con typed: true y todas las
+// conversaciones): los elementos se escriben uno detrás de otro, letra a
+// letra, con un cursor que parpadea; el cursor se queda en el último.
+// Con "reducir movimiento" sale todo escrito de golpe.
+const TYPE_MS = 32; // por letra
+const TYPE_PAUSE_MS = 450; // entre una línea y la siguiente
+const TYPE_START_MS = 700; // espera inicial: que acabe la transición de canal
+
+function typeOut(elements) {
+  const items = elements.map((el) => ({ el, text: el.textContent }));
+  let timer = null;
+  let current = 0;
+  let chars = 0;
+  const setCursor = (el) => {
+    for (const { el: other } of items) other.classList.toggle('is-typing', other === el);
+  };
+  const finish = () => {
+    clearTimeout(timer);
+    for (const { el, text } of items) {
+      el.hidden = false;
+      el.textContent = text;
+    }
+    setCursor(items.at(-1)?.el);
+    current = items.length;
+  };
+  const step = () => {
+    const item = items[current];
+    if (!item) return;
+    item.el.hidden = false;
+    setCursor(item.el);
+    chars += 1;
+    item.el.textContent = item.text.slice(0, chars);
+    if (chars < item.text.length) {
+      timer = setTimeout(step, TYPE_MS);
+      return;
+    }
+    current += 1;
+    chars = 0;
+    if (current < items.length) timer = setTimeout(step, TYPE_PAUSE_MS);
+  };
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    finish();
+  } else {
+    for (const { el } of items) {
+      el.textContent = '';
+      el.hidden = true;
+    }
+    timer = setTimeout(step, TYPE_START_MS);
+  }
+  return {
+    isTyping: () => current < items.length,
+    finish,
+    cancel: () => clearTimeout(timer),
+  };
+}
+
 // Nombre del botón de cada pista con fecha (data-track en el HTML) una vez emitida.
 const TRACK_LABELS = { templos: () => t('menu.loreTemplos') };
 
@@ -144,6 +200,11 @@ export function initLore() {
   let currentTrack = [];
   let nextAir = null;
   let upcomingTimer = null;
+  let typing = null; // el efecto de escritura del pase actual, si lo tiene
+  const stopTyping = () => {
+    typing?.cancel();
+    typing = null;
+  };
   const lastIndex = () => currentTrack.length - (nextAir === null ? 1 : 0);
 
   const tickUpcoming = (timerEl) => {
@@ -161,6 +222,7 @@ export function initLore() {
 
   const renderSlide = (index) => {
     clearTimeout(upcomingTimer);
+    stopTyping();
     restoreStaticAudio(); // por si se cambia de pase con un vídeo aún sonando
     ({ slides: currentTrack, next: nextAir } = airedTrack(tracks()[currentKey], Date.now()));
     loreSlidesEl.innerHTML = '';
@@ -172,8 +234,13 @@ export function initLore() {
       tickUpcoming(el.querySelector('.lore-upcoming-timer'));
       progressEl.textContent = t('lore.upcomingProgress');
     } else {
-      loreSlidesEl.appendChild(buildLoreSlideElement(currentTrack[index]));
-      if (currentTrack[index].type === 'reveal') playStingerNow(0.16);
+      const slide = currentTrack[index];
+      const el = buildLoreSlideElement(slide);
+      loreSlidesEl.appendChild(el);
+      if (slide.type === 'reveal') playStingerNow(0.16);
+      if (slide.type === 'chat' || slide.typed) {
+        typing = typeOut([...el.querySelectorAll('.lore-chat-line, .lore-chat-note, .lore-paragraph')]);
+      }
       progressEl.textContent = `${index + 1} / ${currentTrack.length}`;
     }
 
@@ -195,6 +262,7 @@ export function initLore() {
         setView('lore');
       } else {
         clearTimeout(upcomingTimer);
+        stopTyping();
         loreSlidesEl.innerHTML = ''; // corta el vídeo si seguía sonando
         restoreStaticAudio();
         setView('home');
@@ -202,6 +270,11 @@ export function initLore() {
     });
 
   const goNext = () => {
+    // A mitad de escribir, "Siguiente" primero termina de escribir el pase.
+    if (typing?.isTyping()) {
+      typing.finish();
+      return;
+    }
     if (currentSlide >= lastIndex()) {
       switchTo(false);
       return;

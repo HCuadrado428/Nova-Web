@@ -21,7 +21,11 @@
                                                          temblando y glitcheado
      { type: 'chat', lines: [{ who, text }], note }  -> conversación: cada
                           línea en el color de quien habla (rojo, azul,
-                          morado o rosa); note (opcional) va al final, en gris
+                          morado o rosa); note (opcional) va al final, en
+                          gris. Se escribe letra a letra, como si alguien
+                          la estuviera tecleando.
+   Un pase de texto con typed: true también se escribe letra a letra (solo
+   para texto sin HTML).
    Cualquier pase puede llevar además emisionEn: '2026-12-01T20:00:00Z'
    (en UTC, terminada en Z). Hasta esa hora, ese pase y los que vienen
    detrás no se ven: en su sitio sale una pantalla de estática con la cuenta
@@ -183,7 +187,7 @@ export const LORE_TRACK_TEMPLOS = [
     ],
     note: '[El resto no se transcribió de la conversación.]',
   },
-  { type: 'text', centered: true, paragraphs: [{ text: 'ENERO', emphasis: true }] },
+  { type: 'text', centered: true, typed: true, paragraphs: [{ text: 'ENERO', emphasis: true }] },
 ];
 
 export const LORE_TRACKS = {
