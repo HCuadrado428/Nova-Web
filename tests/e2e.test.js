@@ -348,6 +348,36 @@ describe('web sin Firebase', () => {
     await page.context().close();
   });
 
+  test('Los 3 templos: el botón sale desactivado con la cuenta atrás y se abre a su hora', async () => {
+    const page = await openPage({ now: '2026-11-25T20:58:00Z' });
+    await enter(page);
+    const btn = page.locator('#lore-templos-btn');
+    assert.equal(await btn.isDisabled(), true);
+    assert.equal(await text(page, '#lore-templos-btn .lore-btn-label'), 'Próxima emisión');
+    assert.match(await text(page, '#lore-templos-btn .lore-btn-countdown'), /^00 h 01 min \d\d s$/);
+
+    await page.clock.fastForward('02:05');
+    await page.waitForFunction(() => !document.getElementById('lore-templos-btn').disabled);
+    assert.equal(await text(page, '#lore-templos-btn .lore-btn-label'), 'Los 3 templos');
+    assert.equal(await page.locator('#lore-templos-btn .lore-btn-countdown').isHidden(), true);
+
+    await page.click('#lore-menu-btn');
+    await btn.click();
+    await sleep(CHANNEL_MS);
+    assert.equal(await view(page), 'lore');
+    assert.equal(await text(page, '#lore-progress'), '1 / 2');
+    assert.equal(await text(page, '.lore-chat-line'), 'Señores, tengo algo importante que explicaros.');
+    const colores = await page
+      .locator('.lore-chat-line')
+      .evaluateAll((ls) => ls.map((l) => l.className.split('-').pop()));
+    assert.deepEqual(colores.slice(0, 5), ['morado', 'rojo', 'morado', 'azul', 'rosa']);
+    assert.equal(await text(page, '.lore-chat-note'), '[El resto no se transcribió de la conversación.]');
+    await page.keyboard.press('ArrowRight');
+    assert.equal(await text(page, '.lore-paragraph-emphasis'), 'ENERO');
+    assert.deepEqual(page.errors, []);
+    await page.context().close();
+  });
+
   test('Guías: abrir, cambiar de pestaña y volver', async () => {
     const page = await openPage();
     await enter(page);

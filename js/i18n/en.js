@@ -36,6 +36,7 @@ export default {
   // ---- Lore / Rules menus ----
   'menu.lore': 'Lore',
   'menu.loreAntes': 'Before Nova',
+  'menu.loreTemplos': 'The 3 temples',
   'menu.personajes': 'Characters',
   'menu.cronica': 'Chronicle',
   'menu.rules': 'Rules',

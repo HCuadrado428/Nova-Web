@@ -207,3 +207,20 @@ body[data-view='adan'] .audio-toggle-btn {
 .audio-toggle-btn.is-muted:hover {
   background: rgba(255, 46, 99, 0.12);
 }
+
+/* Botón de una pista que aún no se ha emitido (Los 3 templos): el nombre
+   arriba y la cuenta atrás debajo, más pequeña */
+.lore-btn-scheduled {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.lore-btn-countdown {
+  font-size: 0.55rem;
+  letter-spacing: 1px;
+  text-transform: none;
+}
+.lore-btn-countdown[hidden] {
+  display: none;
+}

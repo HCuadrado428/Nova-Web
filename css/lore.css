@@ -324,3 +324,39 @@ body[data-view='lore'] .lore-page {
   font-size: 0.85rem;
   color: rgba(234, 230, 218, 0.6);
 }
+
+/* Conversación ({ type: 'chat' }): cada línea en el color de quien habla */
+.lore-slide-chat {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.lore-chat-line {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 1.05rem;
+  line-height: 1.7;
+}
+.lore-chat-rojo {
+  color: #ff4040;
+  text-shadow: 0 0 10px rgba(255, 64, 64, 0.35);
+}
+.lore-chat-azul {
+  color: var(--glitch-cyan);
+  text-shadow: 0 0 10px rgba(55, 240, 224, 0.35);
+}
+.lore-chat-morado {
+  color: #b57bff;
+  text-shadow: 0 0 10px rgba(181, 123, 255, 0.35);
+}
+.lore-chat-rosa {
+  color: #ff5fd7;
+  text-shadow: 0 0 10px rgba(255, 95, 215, 0.35);
+}
+.lore-chat-note {
+  margin: 12px 0 0;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-style: italic;
+  color: rgba(234, 230, 218, 0.5);
+}

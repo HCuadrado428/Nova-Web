@@ -6,7 +6,7 @@ import { LORE_BY_LANGUAGE } from './data/lore.js';
 import { duckStaticAudio, restoreStaticAudio, playStingerNow } from './audio.js';
 import { channelSwitch, closeMenuToggle, isView, setView } from './views.js';
 import { isTypingOrMediaTarget } from './utils.js';
-import { getLanguage, t } from './i18n.js';
+import { getLanguage, onLanguageChange, t } from './i18n.js';
 import { airedTrack, formatRemaining } from './lore-schedule.js';
 
 function buildLoreSlideElement(slide) {
@@ -61,6 +61,21 @@ function buildLoreSlideElement(slide) {
     p.textContent = slide.text;
     el.appendChild(img);
     el.appendChild(p);
+  } else if (slide.type === 'chat') {
+    // Conversación: cada línea en el color de quien habla (ver lore.es.js).
+    el.classList.add('lore-slide-chat');
+    for (const line of slide.lines) {
+      const p = document.createElement('p');
+      p.className = `lore-chat-line lore-chat-${line.who}`;
+      p.textContent = line.text;
+      el.appendChild(p);
+    }
+    if (slide.note) {
+      const note = document.createElement('p');
+      note.className = 'lore-chat-note';
+      note.textContent = slide.note;
+      el.appendChild(note);
+    }
   } else {
     el.classList.add('lore-slide-text');
     if (slide.centered) el.classList.add('is-centered');
@@ -104,6 +119,9 @@ function formatAirDate(ms) {
   const local = new Intl.DateTimeFormat(getLanguage(), { ...base, timeZoneName: 'short' }).format(date);
   return t('countdown.date', { utc, local });
 }
+
+// Nombre del botón de cada pista con fecha (data-track en el HTML) una vez emitida.
+const TRACK_LABELS = { templos: () => t('menu.loreTemplos') };
 
 export function initLore() {
   const antesBtn = document.getElementById('lore-antes-btn');
@@ -207,6 +225,37 @@ export function initLore() {
     switchTo(true, 'nova');
   });
   loreBackBtn.addEventListener('click', () => switchTo(false));
+
+  // Botones de pistas con fecha de emisión (data-track, p.ej. Los 3 templos):
+  // desactivados y con la cuenta atrás hasta que se emite su primer pase.
+  for (const btn of document.querySelectorAll('#lore-submenu [data-track]')) {
+    const key = btn.dataset.track;
+    const labelEl = btn.querySelector('.lore-btn-label');
+    const countdownEl = btn.querySelector('.lore-btn-countdown');
+    let timer = null;
+    const tick = () => {
+      clearTimeout(timer);
+      const { slides, next } = airedTrack(tracks()[key], Date.now());
+      const aired = slides.length > 0;
+      btn.disabled = !aired;
+      labelEl.textContent = aired ? TRACK_LABELS[key]() : t('lore.upcoming');
+      countdownEl.hidden = aired;
+      if (aired) return;
+      const left = next - Date.now();
+      countdownEl.textContent = formatRemaining(left);
+      timer = setTimeout(tick, (left % 1000) + 20);
+    };
+    btn.addEventListener('click', () => {
+      closeMenuToggle('lore-menu-btn', 'lore-submenu');
+      switchTo(true, key);
+    });
+    onLanguageChange(tick);
+    // Al volver a la pestaña, al momento (los temporizadores van con retraso en segundo plano).
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) tick();
+    });
+    tick();
+  }
   nextBtn.addEventListener('click', goNext);
   prevBtn.addEventListener('click', goPrev);
 
