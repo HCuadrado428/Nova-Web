@@ -262,7 +262,7 @@ describe('web sin Firebase', () => {
     await page.keyboard.press('Tab');
     assert.equal(await page.evaluate(() => document.activeElement.id), 'enter-gate');
     await page.keyboard.press('Tab');
-    assert.notEqual(await page.evaluate(() => document.activeElement.id), 'download-modpack');
+    assert.notEqual(await page.evaluate(() => document.activeElement.id), 'download-launcher');
     await page.keyboard.press('Shift+Tab');
     await page.keyboard.press('Enter'); // Enter sobre el botón = entrar
     await sleep(INTRO_MS);
@@ -489,13 +489,13 @@ describe('web sin Firebase', () => {
   test('idioma: cambiar con ES · EN · PT traduce todo y se recuerda', async () => {
     const page = await openPage();
     await enter(page);
-    assert.equal(await text(page, '#download-modpack'), 'Descargar Modpack');
+    assert.equal(await text(page, '#download-launcher'), 'Descargar Launcher');
     assert.equal(await text(page, '#server-status-text'), 'Online · 5/20 jugadores');
 
     await page.click('.lang-btn[data-lang="en"]');
     assert.equal(await page.evaluate(() => document.documentElement.lang), 'en');
     assert.equal(await page.title(), 'NOVA 2 — Modded Roleplay SMP');
-    assert.equal(await text(page, '#download-modpack'), 'Download Modpack');
+    assert.equal(await text(page, '#download-launcher'), 'Download Launcher');
     assert.equal(await text(page, '#lore-menu-btn'), 'Lore');
     assert.equal(await text(page, '#rules-menu-btn'), 'Rules');
     assert.equal(await text(page, '#audio-toggle-btn'), 'Mute');
@@ -523,7 +523,7 @@ describe('web sin Firebase', () => {
 
     // Portugués, y se recuerda al recargar.
     await page.click('.lang-btn[data-lang="pt"]');
-    assert.equal(await text(page, '#download-modpack'), 'Baixar Modpack');
+    assert.equal(await text(page, '#download-launcher'), 'Baixar Launcher');
     await page.reload();
     assert.equal(await text(page, '.enter-text'), 'TOQUE PARA ENTRAR');
     await enter(page);

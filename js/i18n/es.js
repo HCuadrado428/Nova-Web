@@ -5,7 +5,7 @@ export default {
   // ---- Pestaña del navegador y buscadores ----
   'meta.title': 'NOVA 2 — SMP Modeado de Rol',
   'meta.description':
-    'NOVA 2: la segunda temporada del SMP modeado de rol entre amigos. Descarga el modpack, únete al Discord y descubre la historia del mundo.',
+    'NOVA 2: la segunda temporada del SMP modeado de rol entre amigos. Descarga el launcher, únete al Discord y descubre la historia del mundo.',
   // ---- Pantalla de entrada ----
   'gate.label': 'Tocar para entrar',
   'gate.text': 'TOCA PARA ENTRAR',
@@ -15,7 +15,7 @@ export default {
   'boot.line2': 'RECONECTANDO...',
   'boot.line3': 'SINTONIZANDO...',
   // ---- Intro ----
-  'intro.download': 'Descargar Modpack',
+  'intro.download': 'Descargar Launcher',
   'intro.copyIp': 'Copiar IP',
   'intro.ipCopied': 'IP copiada',
   // ---- Selector de idioma ----
@@ -261,9 +261,9 @@ export default {
   'guides.start.title': 'GUÍA · EMPEZAR',
   'guides.start.intro': 'Lo básico para entrar a jugar al servidor.',
   'guides.start.1':
-    '<strong>Modpack:</strong> Pulsa «Descargar Modpack» en la intro. El servidor usa Forge 1.20.1, así que necesitas esa versión de Forge con los mods del modpack.',
+    '<strong>Launcher:</strong> Pulsa «Descargar Launcher» en la intro e instálalo (Windows). Él se encarga de Java, Forge 1.20.1 y los mods del servidor, y los mantiene al día. Si Windows avisa de que no reconoce el archivo, pulsa «Más información» y «Ejecutar de todas formas».',
   'guides.start.2':
-    '<strong>IP del servidor:</strong> Pulsa «Copiar IP» y pégala en Minecraft, en Multijugador → Añadir servidor.',
+    '<strong>IP del servidor:</strong> Con el launcher no hace falta: pulsa «Entrar al Nova 2» en el menú del juego. «Copiar IP» sigue en la intro por si la necesitas.',
   'guides.start.3':
     '<strong>Estado del servidor:</strong> En la intro verás si el servidor está Online y cuántos jugadores hay. Se actualiza solo cada minuto; si no aparece, es que no se ha podido consultar.',
   'guides.start.4':
