@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NOVA 2 — SMP Modeado de Rol</title>
-  <meta name="description" content="NOVA 2: la segunda temporada del SMP modeado de rol entre amigos. Descarga el modpack, únete al Discord y descubre la historia del mundo.">
+  <meta name="description" content="NOVA 2: la segunda temporada del SMP modeado de rol entre amigos. Descarga el launcher, únete al Discord y descubre la historia del mundo.">
 
   <!-- Vista previa al compartir el enlace (Discord, X, WhatsApp, etc.).
        Las URLs son absolutas a propósito: los bots que generan la vista
@@ -13,13 +13,13 @@
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://hcuadrado428.github.io/Nova-Web/">
   <meta property="og:title" content="NOVA 2 — SMP Modeado de Rol">
-  <meta property="og:description" content="La segunda temporada del SMP modeado de rol entre amigos. Descarga el modpack, únete al Discord y descubre la historia del mundo.">
+  <meta property="og:description" content="La segunda temporada del SMP modeado de rol entre amigos. Descarga el launcher, únete al Discord y descubre la historia del mundo.">
   <meta property="og:image" content="https://hcuadrado428.github.io/Nova-Web/images/og-image.jpg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="NOVA 2 — SMP Modeado de Rol">
-  <meta name="twitter:description" content="La segunda temporada del SMP modeado de rol entre amigos. Descarga el modpack, únete al Discord y descubre la historia del mundo.">
+  <meta name="twitter:description" content="La segunda temporada del SMP modeado de rol entre amigos. Descarga el launcher, únete al Discord y descubre la historia del mundo.">
   <meta name="twitter:image" content="https://hcuadrado428.github.io/Nova-Web/images/og-image.jpg">
 
   <!-- Fuentes: una tipo pixel para títulos y una legible para el cuerpo,
@@ -100,21 +100,19 @@
         <h1 class="intro-title glitch" id="intro-title" data-text="NOVA 2">NOVA 2</h1>
         <div class="intro-actions">
           <!--
-            ENLACE DEL MODPACK:
-            Sustituye el href de abajo por el enlace directo de descarga de tu .zip
-            cuando lo tengas alojado en un sitio de descarga directa (itch.io, CurseForge,
-            un Release de GitHub, etc.). Los enlaces de carpeta de Google Drive no siempre
-            descargan directo, así que en cuanto tengas un link definitivo, reemplázalo aquí.
-            Si copias un enlace de Drive, quita el "/u/0/", "/u/1/"... de la URL: indica
-            con cuál de TUS cuentas de Google estabas y a los demás les puede fallar.
+            DESCARGA DEL LAUNCHER:
+            Lleva al último Release del Nova Launcher (repo Launcher_Nova), donde está
+            el instalador de Windows. "/releases/latest" apunta siempre a la versión más
+            nueva, así que no hay que tocarlo al publicar otra. El launcher instala Java,
+            Forge y los mods del servidor: ya no hace falta bajar el modpack a mano.
           -->
-          <a class="btn btn-primary btn-lg" id="download-modpack"
-             href="https://drive.google.com/drive/folders/1d6L9iJC7T4NUyx9x8YVAl2wPVo0LmIGE"
-             target="_blank" rel="noopener" data-i18n="intro.download">Descargar Modpack</a>
-          <!-- Al lado del modpack (no debajo): son las dos cosas que hacen falta para jugar. -->
+          <a class="btn btn-primary btn-lg" id="download-launcher"
+             href="https://github.com/HCuadrado428/Launcher_Nova/releases/latest"
+             target="_blank" rel="noopener" data-i18n="intro.download">Descargar Launcher</a>
+          <!-- Al lado del launcher (no debajo): con el launcher no hace falta, pero es la IP para quien entre por su cuenta. -->
           <button class="btn btn-ghost btn-lg intro-copy-ip" id="copy-ip-btn" type="button" data-i18n="intro.copyIp">Copiar IP</button>
         </div>
-        <p class="modpack-version">Forge 1.20.1</p>
+        <p class="modpack-version">Windows · Forge 1.20.1</p>
         <!-- Estado del servidor en directo: lo rellena js/server-status.js.
              Oculto hasta tener respuesta (y si no la hay, se queda oculto). -->
         <p class="server-status" id="server-status" hidden>
@@ -300,8 +298,8 @@
         <h2 class="rules-title glitch" data-text="GUÍA · EMPEZAR" data-i18n="guides.start.title">GUÍA · EMPEZAR</h2>
         <p class="rules-intro" data-i18n="guides.start.intro">Lo básico para entrar a jugar al servidor.</p>
 
-        <p class="rules-item" data-i18n-html="guides.start.1"><strong>Modpack:</strong> Pulsa «Descargar Modpack» en la intro. El servidor usa Forge 1.20.1, así que necesitas esa versión de Forge con los mods del modpack.</p>
-        <p class="rules-item" data-i18n-html="guides.start.2"><strong>IP del servidor:</strong> Pulsa «Copiar IP» y pégala en Minecraft, en Multijugador → Añadir servidor.</p>
+        <p class="rules-item" data-i18n-html="guides.start.1"><strong>Launcher:</strong> Pulsa «Descargar Launcher» en la intro e instálalo (Windows). Él se encarga de Java, Forge 1.20.1 y los mods del servidor, y los mantiene al día. Si Windows avisa de que no reconoce el archivo, pulsa «Más información» y «Ejecutar de todas formas».</p>
+        <p class="rules-item" data-i18n-html="guides.start.2"><strong>IP del servidor:</strong> Con el launcher no hace falta: pulsa «Entrar al Nova 2» en el menú del juego. «Copiar IP» sigue en la intro por si la necesitas.</p>
         <p class="rules-item" data-i18n-html="guides.start.3"><strong>Estado del servidor:</strong> En la intro verás si el servidor está Online y cuántos jugadores hay. Se actualiza solo cada minuto; si no aparece, es que no se ha podido consultar.</p>
         <p class="rules-item" data-i18n-html="guides.start.4"><strong>Normas:</strong> Antes de jugar, lee las normas de Discord, Minecraft y Objetos en el botón «Normas» (arriba a la derecha).</p>
       </div>

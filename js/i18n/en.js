@@ -4,7 +4,7 @@ export default {
   // ---- Browser tab and search engines ----
   'meta.title': 'NOVA 2 — Modded Roleplay SMP',
   'meta.description':
-    'NOVA 2: the second season of our modded roleplay SMP among friends. Download the modpack, join the Discord and discover the story of the world.',
+    'NOVA 2: the second season of our modded roleplay SMP among friends. Download the launcher, join the Discord and discover the story of the world.',
   // ---- Entry screen ----
   'gate.label': 'Tap to enter',
   'gate.text': 'TAP TO ENTER',
@@ -14,7 +14,7 @@ export default {
   'boot.line2': 'RECONNECTING...',
   'boot.line3': 'TUNING IN...',
   // ---- Intro ----
-  'intro.download': 'Download Modpack',
+  'intro.download': 'Download Launcher',
   'intro.copyIp': 'Copy IP',
   'intro.ipCopied': 'IP copied',
   // ---- Language selector ----
@@ -258,9 +258,9 @@ export default {
   'guides.start.title': 'GUIDE · GETTING STARTED',
   'guides.start.intro': 'The basics to start playing on the server.',
   'guides.start.1':
-    '<strong>Modpack:</strong> Press "Download Modpack" on the intro. The server runs Forge 1.20.1, so you need that Forge version with the modpack\'s mods.',
+    '<strong>Launcher:</strong> Press "Download Launcher" on the intro and install it (Windows). It takes care of Java, Forge 1.20.1 and the server\'s mods, and keeps them up to date. If Windows warns that it doesn\'t recognise the file, press "More info" and "Run anyway".',
   'guides.start.2':
-    '<strong>Server IP:</strong> Press "Copy IP" and paste it in Minecraft, under Multiplayer → Add Server.',
+    '<strong>Server IP:</strong> With the launcher you don\'t need it: press "Entrar al Nova 2" on the game menu. "Copy IP" is still on the intro in case you need it.',
   'guides.start.3':
     '<strong>Server status:</strong> The intro shows whether the server is Online and how many players are on. It refreshes every minute; if it does not show up, it could not be checked.',
   'guides.start.4':
