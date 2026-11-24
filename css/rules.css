@@ -58,6 +58,12 @@ body[data-view='guides'] .guides-page {
   margin: 0 0 34px;
 }
 
+/* Botón de descarga de la guía del launcher (js/guides.js). */
+.guides-download {
+  text-align: center;
+  margin: 0 0 34px;
+}
+
 .rules-item {
   font-family: var(--font-body);
   font-size: 1.02rem;

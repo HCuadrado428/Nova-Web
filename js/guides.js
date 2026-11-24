@@ -24,13 +24,15 @@ export function initGuides() {
     page.scrollTop = 0;
   };
 
-  const switchTo = (showGuides) =>
+  const switchTo = (showGuides, panel = 'start') =>
     channelSwitch(() => {
-      if (showGuides) showPanel('start');
+      if (showGuides) showPanel(panel);
       setView(showGuides ? 'guides' : 'home');
     });
 
   openBtn.addEventListener('click', () => switchTo(true));
+  // «Descargar Launcher» de la intro abre directamente la guía de instalación.
+  document.getElementById('download-launcher')?.addEventListener('click', () => switchTo(true, 'launcher'));
   backBtn.addEventListener('click', () => switchTo(false));
   for (const btn of switchBtns) btn.addEventListener('click', () => showPanel(btn.dataset.guidesTarget));
 

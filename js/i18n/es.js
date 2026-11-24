@@ -258,6 +258,26 @@ export default {
   'guides.tabWeb': 'La web',
   'guides.tabPj': 'Personajes',
   'guides.tabRel': 'Relaciones',
+  // ---- Guía del launcher ----
+  'guides.tabLauncher': 'Launcher',
+  'guides.launcher.title': 'GUÍA · LAUNCHER',
+  'guides.launcher.intro':
+    'Cómo instalar el Nova Launcher. Él se encarga de Java, Forge y los mods; tú solo pulsas Jugar.',
+  'guides.launcher.download': 'Descargar instalador (Windows)',
+  'guides.launcher.1':
+    '<strong>Descarga:</strong> Pulsa el botón de arriba. Se abre la página de la última versión: descarga el archivo que termina en .exe.',
+  'guides.launcher.2':
+    '<strong>Si el navegador lo bloquea:</strong> Edge y Chrome a veces avisan de que el archivo no es seguro o «no se descarga habitualmente». Abre las descargas (Ctrl+J), pulsa los tres puntos junto al archivo y elige «Conservar»; después «Mostrar más» y «Conservar de todos modos». Los nombres pueden cambiar un poco según el navegador.',
+  'guides.launcher.3':
+    '<strong>Ejecútalo:</strong> Si sale una ventana azul que dice «Windows protegió su PC», pulsa «Más información» y luego «Ejecutar de todas formas».',
+  'guides.launcher.4':
+    '<strong>Por qué salen esos avisos:</strong> El instalador todavía no tiene firma digital, y Windows desconfía de los programas nuevos que ha descargado poca gente. El código del launcher es público y el instalador se compila directamente a partir de él.',
+  'guides.launcher.5':
+    '<strong>Inicia sesión:</strong> Entra con tu cuenta de Microsoft (la de Minecraft). Si no tienes premium, escribe tu nick.',
+  'guides.launcher.6':
+    '<strong>Juega:</strong> Pulsa «Instalar y jugar». La primera vez tarda entre 5 y 15 minutos porque descarga el juego y los mods; las siguientes, unos segundos. En el menú del juego, pulsa «Entrar al Nova 2».',
+  'guides.launcher.7':
+    '<strong>Si algo falla:</strong> En el launcher, pulsa «¿Problemas?»: guarda los registros en un archivo y mándalo por Discord.',
   'guides.start.title': 'GUÍA · EMPEZAR',
   'guides.start.intro': 'Lo básico para entrar a jugar al servidor.',
   'guides.start.1':

@@ -387,6 +387,29 @@ describe('web sin Firebase', () => {
     await page.context().close();
   });
 
+  test('Launcher: el botón de la intro abre la guía de instalación con la descarga', async () => {
+    const page = await openPage();
+    await enter(page);
+    await page.click('#download-launcher');
+    await sleep(CHANNEL_MS);
+    assert.equal(await view(page), 'guides');
+    assert.ok(await page.locator('#guides-panel-launcher').isVisible());
+    assert.ok(!(await page.locator('#guides-panel-start').isVisible()));
+    assert.equal(
+      await page.getAttribute('#launcher-download-link', 'href'),
+      'https://github.com/HCuadrado428/Launcher_Nova/releases/latest',
+    );
+    assert.equal(await text(page, '#launcher-download-link'), 'Descargar instalador (Windows)');
+    // Abrir Guías desde su botón sigue empezando por «Empezar».
+    await page.keyboard.press('Escape');
+    await sleep(CHANNEL_MS);
+    await page.click('#guides-open-btn');
+    await sleep(CHANNEL_MS);
+    assert.ok(await page.locator('#guides-panel-start').isVisible());
+    assert.deepEqual(page.errors, []);
+    await page.context().close();
+  });
+
   test('Guías: abrir, cambiar de pestaña y volver', async () => {
     const page = await openPage();
     await enter(page);
