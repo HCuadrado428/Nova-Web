@@ -101,14 +101,11 @@
         <div class="intro-actions">
           <!--
             DESCARGA DEL LAUNCHER:
-            Lleva al último Release del Nova Launcher (repo Launcher_Nova), donde está
-            el instalador de Windows. "/releases/latest" apunta siempre a la versión más
-            nueva, así que no hay que tocarlo al publicar otra. El launcher instala Java,
-            Forge y los mods del servidor: ya no hace falta bajar el modpack a mano.
+            No descarga directamente: abre la guía «Launcher» (js/guides.js), que tiene
+            el botón de descarga y los pasos para instalarlo, incluido qué hacer si el
+            navegador o Windows lo bloquean (el instalador no está firmado).
           -->
-          <a class="btn btn-primary btn-lg" id="download-launcher"
-             href="https://github.com/HCuadrado428/Launcher_Nova/releases/latest"
-             target="_blank" rel="noopener" data-i18n="intro.download">Descargar Launcher</a>
+          <button class="btn btn-primary btn-lg" id="download-launcher" type="button" data-i18n="intro.download">Descargar Launcher</button>
           <!-- Al lado del launcher (no debajo): con el launcher no hace falta, pero es la IP para quien entre por su cuenta. -->
           <button class="btn btn-ghost btn-lg intro-copy-ip" id="copy-ip-btn" type="button" data-i18n="intro.copyIp">Copiar IP</button>
         </div>
@@ -289,6 +286,7 @@
     <div class="rules-viewer">
       <div class="rules-switch">
         <button class="rules-switch-btn guides-switch-btn is-active" id="guides-switch-start" data-guides-target="start" type="button" data-i18n="guides.tabStart">Empezar</button>
+        <button class="rules-switch-btn guides-switch-btn" id="guides-switch-launcher" data-guides-target="launcher" type="button" data-i18n="guides.tabLauncher">Launcher</button>
         <button class="rules-switch-btn guides-switch-btn" id="guides-switch-web" data-guides-target="web" type="button" data-i18n="guides.tabWeb">La web</button>
         <button class="rules-switch-btn guides-switch-btn" id="guides-switch-pj" data-guides-target="pj" type="button" data-i18n="guides.tabPj">Personajes</button>
         <button class="rules-switch-btn guides-switch-btn" id="guides-switch-rel" data-guides-target="rel" type="button" data-i18n="guides.tabRel">Relaciones</button>
@@ -302,6 +300,27 @@
         <p class="rules-item" data-i18n-html="guides.start.2"><strong>IP del servidor:</strong> Con el launcher no hace falta: pulsa «Entrar al Nova 2» en el menú del juego. «Copiar IP» sigue en la intro por si la necesitas.</p>
         <p class="rules-item" data-i18n-html="guides.start.3"><strong>Estado del servidor:</strong> En la intro verás si el servidor está Online y cuántos jugadores hay. Se actualiza solo cada minuto; si no aparece, es que no se ha podido consultar.</p>
         <p class="rules-item" data-i18n-html="guides.start.4"><strong>Normas:</strong> Antes de jugar, lee las normas de Discord, Minecraft y Objetos en el botón «Normas» (arriba a la derecha).</p>
+      </div>
+
+      <!-- Guía del launcher: es adonde lleva «Descargar Launcher» de la intro.
+           El enlace apunta a "/releases/latest" del repo Launcher_Nova, que es
+           siempre la última versión: no hay que tocarlo al publicar otra. -->
+      <div class="rules-panel" id="guides-panel-launcher">
+        <h2 class="rules-title glitch" data-text="GUÍA · LAUNCHER" data-i18n="guides.launcher.title">GUÍA · LAUNCHER</h2>
+        <p class="rules-intro" data-i18n="guides.launcher.intro">Cómo instalar el Nova Launcher. Él se encarga de Java, Forge y los mods; tú solo pulsas Jugar.</p>
+        <p class="guides-download">
+          <a class="btn btn-primary btn-lg" id="launcher-download-link"
+             href="https://github.com/HCuadrado428/Launcher_Nova/releases/latest"
+             target="_blank" rel="noopener" data-i18n="guides.launcher.download">Descargar instalador (Windows)</a>
+        </p>
+
+        <p class="rules-item" data-i18n-html="guides.launcher.1"><strong>Descarga:</strong> Pulsa el botón de arriba. Se abre la página de la última versión: descarga el archivo que termina en .exe.</p>
+        <p class="rules-item" data-i18n-html="guides.launcher.2"><strong>Si el navegador lo bloquea:</strong> Edge y Chrome a veces avisan de que el archivo no es seguro o «no se descarga habitualmente». Abre las descargas (Ctrl+J), pulsa los tres puntos junto al archivo y elige «Conservar»; después «Mostrar más» y «Conservar de todos modos». Los nombres pueden cambiar un poco según el navegador.</p>
+        <p class="rules-item" data-i18n-html="guides.launcher.3"><strong>Ejecútalo:</strong> Si sale una ventana azul que dice «Windows protegió su PC», pulsa «Más información» y luego «Ejecutar de todas formas».</p>
+        <p class="rules-item" data-i18n-html="guides.launcher.4"><strong>Por qué salen esos avisos:</strong> El instalador todavía no tiene firma digital, y Windows desconfía de los programas nuevos que ha descargado poca gente. El código del launcher es público y el instalador se compila directamente a partir de él.</p>
+        <p class="rules-item" data-i18n-html="guides.launcher.5"><strong>Inicia sesión:</strong> Entra con tu cuenta de Microsoft (la de Minecraft). Si no tienes premium, escribe tu nick.</p>
+        <p class="rules-item" data-i18n-html="guides.launcher.6"><strong>Juega:</strong> Pulsa «Instalar y jugar». La primera vez tarda entre 5 y 15 minutos porque descarga el juego y los mods; las siguientes, unos segundos. En el menú del juego, pulsa «Entrar al Nova 2».</p>
+        <p class="rules-item" data-i18n-html="guides.launcher.7"><strong>Si algo falla:</strong> En el launcher, pulsa «¿Problemas?»: guarda los registros en un archivo y mándalo por Discord.</p>
       </div>
 
       <div class="rules-panel" id="guides-panel-web">

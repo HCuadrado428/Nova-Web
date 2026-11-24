@@ -257,6 +257,26 @@ export default {
   'guides.tabWeb': 'O site',
   'guides.tabPj': 'Personagens',
   'guides.tabRel': 'Relações',
+  // ---- Guía del launcher ----
+  'guides.tabLauncher': 'Launcher',
+  'guides.launcher.title': 'GUIA · LAUNCHER',
+  'guides.launcher.intro':
+    'Como instalar o Nova Launcher. Ele cuida do Java, do Forge e dos mods; você só clica em Jogar.',
+  'guides.launcher.download': 'Baixar instalador (Windows)',
+  'guides.launcher.1':
+    '<strong>Baixe:</strong> Clique no botão acima. Abre a página da última versão: baixe o arquivo que termina em .exe.',
+  'guides.launcher.2':
+    '<strong>Se o navegador bloquear:</strong> O Edge e o Chrome às vezes avisam que o arquivo não é seguro ou «não é baixado com frequência». Abra os downloads (Ctrl+J), clique nos três pontos ao lado do arquivo e escolha «Manter»; depois «Mostrar mais» e «Manter mesmo assim». Os nomes podem mudar um pouco conforme o navegador.',
+  'guides.launcher.3':
+    '<strong>Execute:</strong> Se aparecer uma janela azul dizendo «O Windows protegeu o computador», clique em «Mais informações» e depois em «Executar assim mesmo».',
+  'guides.launcher.4':
+    '<strong>Por que esses avisos aparecem:</strong> O instalador ainda não tem assinatura digital, e o Windows desconfia de programas novos que pouca gente baixou. O código do launcher é público e o instalador é compilado diretamente a partir dele.',
+  'guides.launcher.5':
+    '<strong>Entre na conta:</strong> Use sua conta Microsoft (a do Minecraft). Se não tiver premium, digite seu nick.',
+  'guides.launcher.6':
+    '<strong>Jogue:</strong> Clique em «Instalar e jogar». A primeira vez leva de 5 a 15 minutos porque baixa o jogo e os mods; as seguintes, alguns segundos. No menu do jogo, clique em «Entrar al Nova 2».',
+  'guides.launcher.7':
+    '<strong>Se algo der errado:</strong> No launcher, clique em «Problemas?»: salve os registros em um arquivo e mande pelo Discord.',
   'guides.start.title': 'GUIA · COMEÇAR',
   'guides.start.intro': 'O básico para começar a jogar no servidor.',
   'guides.start.1':

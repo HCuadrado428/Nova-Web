@@ -255,6 +255,26 @@ export default {
   'guides.tabWeb': 'The website',
   'guides.tabPj': 'Characters',
   'guides.tabRel': 'Relationships',
+  // ---- Guía del launcher ----
+  'guides.tabLauncher': 'Launcher',
+  'guides.launcher.title': 'GUIDE · LAUNCHER',
+  'guides.launcher.intro':
+    'How to install the Nova Launcher. It takes care of Java, Forge and the mods; you just press Play.',
+  'guides.launcher.download': 'Download installer (Windows)',
+  'guides.launcher.1':
+    '<strong>Download:</strong> Press the button above. It opens the page of the latest version: download the file ending in .exe.',
+  'guides.launcher.2':
+    '<strong>If the browser blocks it:</strong> Edge and Chrome sometimes warn that the file is not safe or "isn\'t commonly downloaded". Open the downloads (Ctrl+J), press the three dots next to the file and choose "Keep"; then "Show more" and "Keep anyway". The names can vary a little depending on the browser.',
+  'guides.launcher.3':
+    '<strong>Run it:</strong> If a blue window says "Windows protected your PC", press "More info" and then "Run anyway".',
+  'guides.launcher.4':
+    "<strong>Why those warnings appear:</strong> The installer has no digital signature yet, and Windows distrusts new programs that few people have downloaded. The launcher's code is public and the installer is built directly from it.",
+  'guides.launcher.5':
+    "<strong>Sign in:</strong> Use your Microsoft account (the Minecraft one). If you don't have premium, type your nickname.",
+  'guides.launcher.6':
+    '<strong>Play:</strong> Press "Install and play". The first time takes 5 to 15 minutes because it downloads the game and the mods; after that, a few seconds. On the game menu, press "Entrar al Nova 2".',
+  'guides.launcher.7':
+    '<strong>If something goes wrong:</strong> In the launcher, press "Having trouble?": save the logs to a file and send it on Discord.',
   'guides.start.title': 'GUIDE · GETTING STARTED',
   'guides.start.intro': 'The basics to start playing on the server.',
   'guides.start.1':
