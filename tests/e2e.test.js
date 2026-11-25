@@ -349,7 +349,7 @@ describe('web sin Firebase', () => {
   });
 
   test('Los 3 templos: el botón sale desactivado con la cuenta atrás y se abre a su hora', async () => {
-    const page = await openPage({ now: '2026-11-25T20:58:00Z' });
+    const page = await openPage({ now: '2026-11-25T07:58:00Z' });
     await enter(page);
     const btn = page.locator('#lore-templos-btn');
     assert.equal(await btn.isDisabled(), true);

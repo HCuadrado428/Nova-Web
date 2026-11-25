@@ -159,7 +159,7 @@ export const LORE_TRACK_NOVA = [
 
 /* ---------------------------------------------------
    Los 3 templos: una conversación ({ type: 'chat' }) que se emite el
-   25 nov 2026 a las 21:00 UTC. Hasta entonces, el botón del menú Lore sale
+   25 nov 2026 a las 08:00 UTC. Hasta entonces, el botón del menú Lore sale
    desactivado con la cuenta atrás (js/lore.js). Cada línea lleva quién habla
    (rojo, azul, morado o rosa: es el color de su texto) y note es la
    acotación final, en gris.
@@ -167,7 +167,7 @@ export const LORE_TRACK_NOVA = [
 export const LORE_TRACK_TEMPLOS = [
   {
     type: 'chat',
-    emisionEn: '2026-11-25T21:00:00Z',
+    emisionEn: '2026-11-25T08:00:00Z',
     lines: [
       { who: 'morado', text: 'Señores, tengo algo importante que explicaros.' },
       { who: 'rojo', text: '¿Qué sucede?' },
