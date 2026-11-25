@@ -125,11 +125,11 @@ export const LORE_TRACK_NOVA = [
 ];
 
 /* The 3 temples: a conversation ({ type: 'chat' }) aired on 25 Nov 2026 at
-   21:00 UTC. Same structure and date as lore.es.js. */
+   08:00 UTC. Same structure and date as lore.es.js. */
 export const LORE_TRACK_TEMPLOS = [
   {
     type: 'chat',
-    emisionEn: '2026-11-25T21:00:00Z',
+    emisionEn: '2026-11-25T08:00:00Z',
     lines: [
       { who: 'morado', text: 'Gentlemen, I have something important to explain to you.' },
       { who: 'rojo', text: "What's going on?" },
